@@ -1,0 +1,14 @@
+Source: package-manager
+Section: unknown
+Priority: optional
+Maintainer: TUBITAK ULAKBIM
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Homepage: http://www.liderahenk.org.tr
+
+Package: package-manager
+Version: 1.0.0
+Architecture: any
+Depends: python3 (>= 3)
+Description: LiderAhenk ahenk-package-manager application
+ Long Desc
