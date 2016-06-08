@@ -1,42 +1,109 @@
 package tr.org.liderahenk.packagemanager.plugininfo;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import tr.org.liderahenk.lider.core.api.plugin.IPluginInfo;
 
 public class PluginInfoImpl implements IPluginInfo {
-	
+
+	private static Logger logger = LoggerFactory.getLogger(PluginInfoImpl.class);
+
+	private String pluginName;
+
+	private String pluginVersion;
+
+	private String description;
+
+	private Boolean machineOriented;
+
+	private Boolean userOriented;
+
+	private Boolean policyPlugin;
+
+	private Boolean xbased;
+
+	public void refresh() {
+		logger.info("Configuration updated using blueprint: {}", prettyPrintConfig());
+	}
+
+	@Override
+	public String toString() {
+		return "PluginInfoImpl [pluginName=" + pluginName + ", pluginVersion=" + pluginVersion + ", description="
+				+ description + ", machineOriented=" + machineOriented + ", userOriented=" + userOriented
+				+ ", policyPlugin=" + policyPlugin + ", xbased=" + xbased + "]";
+	}
+
+	public String prettyPrintConfig() {
+		try {
+			return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+		} catch (Exception e) {
+		}
+		return toString();
+	}
+
 	@Override
 	public String getPluginName() {
-		return "package-manager";
+		return pluginName;
+	}
+
+	public void setPluginName(String pluginName) {
+		this.pluginName = pluginName;
 	}
 
 	@Override
 	public String getPluginVersion() {
-		return "1.0.0";
+		return pluginVersion;
+	}
+
+	public void setPluginVersion(String pluginVersion) {
+		this.pluginVersion = pluginVersion;
 	}
 
 	@Override
 	public String getDescription() {
-		return null;
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override
-	public boolean isMachineOriented() {
-		return false;
+	public Boolean getMachineOriented() {
+		return machineOriented;
+	}
+
+	public void setMachineOriented(Boolean machineOriented) {
+		this.machineOriented = machineOriented;
 	}
 
 	@Override
-	public boolean isUserOriented() {
-		return false;
+	public Boolean getUserOriented() {
+		return userOriented;
+	}
+
+	public void setUserOriented(Boolean userOriented) {
+		this.userOriented = userOriented;
 	}
 
 	@Override
-	public boolean isPolicyPlugin() {
-		return false;
+	public Boolean getPolicyPlugin() {
+		return policyPlugin;
 	}
-	
+
+	public void setPolicyPlugin(Boolean policyPlugin) {
+		this.policyPlugin = policyPlugin;
+	}
+
 	@Override
-	public boolean isxBased() {
-		return false;
+	public Boolean getXbased() {
+		return xbased;
 	}
-	
+
+	public void setXbased(Boolean xbased) {
+		this.xbased = xbased;
+	}
+
 }
