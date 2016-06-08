@@ -1,4 +1,4 @@
-package $
+package tr.org.liderahenk.packagemanager.dialogs;
 
 import java.util.Map;
 import java.util.Set;
@@ -16,10 +16,11 @@ import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
  * 
  */
 public class PackageManagerTaskDialog extends DefaultTaskDialog {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(PackageManagerTaskDialog.class);
-	
-	// TODO do not forget to change this constructor if SingleSelectionHandler is used!
+
+	// TODO do not forget to change this constructor if SingleSelectionHandler
+	// is used!
 	public PackageManagerTaskDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
 	}
@@ -50,7 +51,8 @@ public class PackageManagerTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public String getCommandId() {
-		// TODO command id which is used to match tasks with ICommand class in the corresponding Lider plugin
+		// TODO command id which is used to match tasks with ICommand class in
+		// the corresponding Lider plugin
 		return null;
 	}
 
@@ -65,5 +67,5 @@ public class PackageManagerTaskDialog extends DefaultTaskDialog {
 		// TODO plugin version
 		return null;
 	}
-	
+
 }

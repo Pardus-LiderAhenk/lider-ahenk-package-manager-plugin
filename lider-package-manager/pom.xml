@@ -76,7 +76,7 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>target/classes/tr.org.liderahenk.disk.quota.cfg</file>
+									<file>target/classes/tr.org.liderahenk.package.manager.cfg</file>
 									<type>cfg</type>
 								</artifact>
 							</artifacts>
