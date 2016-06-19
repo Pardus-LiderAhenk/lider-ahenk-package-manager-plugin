@@ -1,40 +1,41 @@
 # lider-ahenk-package-manager-plugin
 
-**Lider Ahenk** is an open source project which provides solutions to manage, monitor and audit unlimited number of different systems and users on a network.
+Package manager (apt) plugin for [Lider Ahenk project](http://www.liderahenk.org.tr).
 
-Lider Ahenk package-manager plugin. **TODO**
+|                   | **user-oriented** | **machine-oriented** |
+|:-----------------:|:-----------------:|:--------------------:|
+| **task plugin**   |                   |           x          |
+| **policy plugin** |                   |                      |
 
-This documentation **only** covers plugin related topics. To learn about core projects, please see other lider ahenk projects section.
-
+## How to Build
 
 > We use Eclipse for Lider and Lider Console related development. See these documentation [here](https://github.com/Pardus-Kurumsal/lider-console/wiki/01.-Setup-Development-Environment) and [here](https://github.com/Pardus-Kurumsal/lider/wiki/01.-Setup-Development-Environment) to setup Eclipse IDE with Lider and Lider Console projects imported.
 
 1. Clone the plugin project by running `git clone https://github.com/Pardus-Kurumsal/lider-ahenk-package-manager-plugin.git`.
 2. Open Eclipse and import the plugin project into Eclipse as 'Existing Maven Projects'.
+3. Navigate to _lider-ahenk-package-manager-plugin/scripts_ directory and run `build-plugin.sh`.
 
+## How to Run
 
-1. Navigate to project root directory and run `mvn clean install -DskipTests`.
+> Make sure you have Lider, Lider Console and Ahenk running. See these documentation:  [\[1\]](https://github.com/Pardus-Kurumsal/lider/wiki/02.-Building-&-Running), [\[2\]](https://github.com/Pardus-Kurumsal/lider-console/wiki/02.-Building-&-Running) and [\[3\]](https://github.com/Pardus-Kurumsal/ahenk/wiki/02.-Running).
 
-
-Plugin project consists of three sub-modules (for **Lider**, **Lider Console** and **Ahenk**). Each sub-module is its own plugin that needs to be handled separately. Below is an explanation regarding how to run each sub-module:
-
-
-> **Prerequisite**: Make sure you have a running Karaf container on which Lider core components installed. See [this documentation](https://github.com/Pardus-Kurumsal/lider/wiki/02.-Building-&-Running) for how to run Lider on Karaf container.
+#### Lider
 
 1. Type `feature:repo-add  mvn:tr.org.liderahenk/lider-package-manager-feature/1.0.0/xml/features` on Karaf shell. This will add plugin repository to the Karaf instance.
 2. Again on Karaf shell, run `feature:install lider-package-manager` to install and run plugin bundles.
 3. Use `log:tail` and `plugin:list` commands to ensure the plugin is installed and working properly.
 
-
-> **Prerequisite**: Make sure you have a running Lider Console application. See [this documentation](https://github.com/Pardus-Kurumsal/lider-console/wiki/02.-Building-&-Running) for how to run Lider Console on Eclipse.
+#### Lider Console
 
 1. Open Eclipse, go to 'Run --> Debug Configurations' menu and on 'Plugins' tab, select _lider-console-package-manager_
 2. Click 'Add Required Plugins' button to add any plugins the project depend on.
 3. Finally you can run Lider Console as explained in its [documentation](https://github.com/Pardus-Kurumsal/lider-console/wiki/02.-Building-&-Running).
 
+#### Ahenk
 
-**TODO**
+1. Create a soft link for _ahenk-package-manager/package-manager_ directory via `sudo ln -s lider-ahenk-package-manager-plugin/ahenk-package-manager/package-manager/ /opt/ahenk/plugins`
 
+## Contribution
 
 We encourage contributions to the project. To contribute:
 
@@ -42,11 +43,13 @@ We encourage contributions to the project. To contribute:
 * Make your commits with clean, understandable comments
 * Perform a pull request
 
+## Other Lider Ahenk Projects
 
 * [Lider Console](https://github.com/Pardus-Kurumsal/lider-console): Administration console built as Eclipse RCP project.
 * [Ahenk](https://github.com/Pardus-Kurumsal/ahenk): Agent service running on remote machines.
 * [Lider Ahenk Installer](https://github.com/Pardus-Kurumsal/lider-ahenk-installer): Installation wizard for Ahenk and Lider (and also its LDAP, database, XMPP servers).
 * [Lider Ahenk Archetype](https://github.com/Pardus-Kurumsal/lider-ahenk-archetype): Maven archetype for easy plugin development.
 
+## License
 
 Lider Ahenk and its sub projects are licensed under the [LGPL v3](https://github.com/Pardus-Kurumsal/lider/blob/master/LICENSE).
