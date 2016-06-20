@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
+import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 
 /**
  * Task execution dialog for package-manager plugin.
@@ -38,9 +39,8 @@ public class PackageManagerTaskDialog extends DefaultTaskDialog {
 	}
 
 	@Override
-	public boolean validateBeforeExecution() {
+	public void validateBeforeExecution() throws ValidationException {
 		// TODO triggered before task execution
-		return false;
 	}
 
 	@Override
