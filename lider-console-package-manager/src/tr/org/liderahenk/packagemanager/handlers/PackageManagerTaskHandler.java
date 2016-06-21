@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.liderconsole.core.handlers.MultipleSelectionHandler;
-import tr.org.liderahenk.packagemanager.dialogs.PackageManagerTaskDialog;
+import tr.org.liderahenk.packagemanager.dialogs.PackageManagementTaskDialog;
 
 //TODO use MultipleSelectionHandler if this task support multiple LDAP entries/DNs otherwise use SingleSelectionHandler.
 public class PackageManagerTaskHandler extends MultipleSelectionHandler {
@@ -17,7 +17,7 @@ public class PackageManagerTaskHandler extends MultipleSelectionHandler {
 	@Override
 	public void executeWithDNSet(Set<String> dnSet) {
 		// TODO dnSet contains distinguished names (DN) of the selected LDAP entries.
-		PackageManagerTaskDialog dialog = new PackageManagerTaskDialog(Display.getDefault().getActiveShell(), dnSet);
+		PackageManagementTaskDialog dialog = new PackageManagementTaskDialog(Display.getDefault().getActiveShell(), dnSet);
 		dialog.create();
 		dialog.open();
 	}

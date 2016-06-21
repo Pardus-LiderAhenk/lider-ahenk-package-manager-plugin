@@ -76,7 +76,7 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>target/classes/tr.org.liderahenk.package.manager.cfg</file>
+									<file>target/classes/tr.org.liderahenk.packagemanager.cfg</file>
 									<type>cfg</type>
 								</artifact>
 							</artifacts>

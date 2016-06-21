@@ -10,23 +10,22 @@
       </category>         
       <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
-            id="tr.org.liderahenk.liderconsole.commands.PackageManagerProfile"            
-            name="%command.profile">
+            id="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"            
+            name="%command.package.task">
       </command>
       <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
-            id="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"            
+            id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"            
             name="%command.task">
       </command>
    </extension>
-   
-   <extension
+         <extension
        point="org.eclipse.ui.handlers">
-
-		<!-- Profile handler -->
-       	<handler
-            class="tr.org.liderahenk.packagemanager.handlers.PackageManagerProfileHandler"
-            commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerProfile">
+      	
+      	<!-- Task handler -->
+       <handler
+            class="tr.org.liderahenk.packagemanager.handlers.PackageSourcesTaskHandler"
+            commandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask">
            <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
 		   <!-- <enabledWhen>
 				<and>
@@ -44,8 +43,8 @@
 	          	</with>
 		       </and>
 		    </enabledWhen> -->        
-      	</handler>
-      	
+      </handler>
+      
       	<!-- Task handler -->
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageManagerTaskHandler"
@@ -74,15 +73,14 @@
   <extension
          point="org.eclipse.ui.menus">
 
-		<!-- Add menu command for "profile definition" dialog -->
+      	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"
-            locationURI="popup:tr.org.liderahenk.liderconsole.menus.ProfileDefinition?after=additions">
+            locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
  				<command
-                  commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerProfile"
-                  id="tr.org.liderahenk.liderconsole.commands.PackageManagerProfile"
-                  icon="icons/sample.png"
-                  tooltip="%command.profile">
+                  commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
+                  id="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
+                  tooltip="%command.package.task">
                   <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
 				  <!-- <visibleWhen>
 					   <and>
@@ -112,14 +110,14 @@
 					</visibleWhen> -->               
            		</command>
 		</menuContribution>
-      
+		
       	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"
             locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
  				<command
-                  commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
-                  id="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
+                  commandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"
+                  id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"
                   tooltip="%command.task">
                   <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
 				  <!-- <visibleWhen>
@@ -151,11 +149,5 @@
            		</command>
 		</menuContribution>
   </extension>
-  
-	<!-- Add extension point contribution for "policy execution" dialogs -->
-	<extension
-  		point="tr.org.liderahenk.liderconsole.core.policymenu">
-  		<policyItem label="%command.profile" pluginName="package-manager" pluginVersion="1.0.0" profileCommandId="tr.org.liderahenk.liderconsole.commands.PackageManagerProfile" />
-  	</extension>
   	
 </plugin>

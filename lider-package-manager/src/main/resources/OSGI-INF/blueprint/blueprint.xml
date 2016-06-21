@@ -11,17 +11,6 @@
 		update-strategy="reload">
 	</cm:property-placeholder>
 
-  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="PackageManagerCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="PackageManagerCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.PackageManagerCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
-        <property name="resultFactory" ref="resultFactory"/>
-  </bean>
-  
   <!-- IPluginInfo implementation is used to register plugin -->
   <service 
       ref="pluginInfoImpl"
@@ -37,6 +26,31 @@
 		<property name="taskPlugin" value="${plugin.task.plugin}" />
 		<property name="xbased" value="${plugin.x.based}" />
 	</bean>
+	
+	  <!-- ICommand implementation is used to process a task execution -->
+  <service 
+      ref="PackageSourcesCommand"
+      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+  <bean id="PackageSourcesCommand" 
+        class="tr.org.liderahenk.packagemanager.commands.PackageSourcesCommand">
+        <property name="pluginDbService" ref="pluginDbService"/>
+        <property name="logService" ref="logService"/>
+        <property name="resultFactory" ref="resultFactory"/>
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+  </bean>
+	
+	  <!-- ICommand implementation is used to process a task execution -->
+  <service 
+      ref="PackageManagerCommand"
+      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+  <bean id="PackageManagerCommand" 
+        class="tr.org.liderahenk.packagemanager.commands.PackageManagerCommand">
+        <property name="pluginDbService" ref="pluginDbService"/>
+        <property name="logService" ref="logService"/>
+        <property name="resultFactory" ref="resultFactory"/>
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+  </bean>
+  
   
   <reference id="pluginDbService" interface="tr.org.liderahenk.lider.core.api.persistence.IPluginDbService" />
   <reference id="logService" interface="tr.org.liderahenk.lider.core.api.log.IOperationLogService" />

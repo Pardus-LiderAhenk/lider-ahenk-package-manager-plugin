@@ -30,7 +30,6 @@
 
     <feature name="lider-package-manager-bundles" version="${project.version}">
 		<bundle>mvn:tr.org.liderahenk/lider-package-manager/${project.version}</bundle>
-		<bundle>mvn:tr.org.liderahenk/lider-package-manager-db/${project.version}</bundle>
     </feature>
 
     <feature name="lider-package-manager-dependencies" version="${project.version}">

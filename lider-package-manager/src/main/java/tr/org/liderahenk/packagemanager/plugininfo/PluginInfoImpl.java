@@ -21,7 +21,7 @@ public class PluginInfoImpl implements IPluginInfo {
 	private Boolean userOriented;
 
 	private Boolean policyPlugin;
-	
+
 	private Boolean taskPlugin;
 
 	private Boolean xbased;
