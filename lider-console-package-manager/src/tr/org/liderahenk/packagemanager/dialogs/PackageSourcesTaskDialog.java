@@ -1,11 +1,9 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import tr.org.liderahenk.packagemanager.i18n.Messages;
-import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
-
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -47,10 +45,15 @@ import org.slf4j.LoggerFactory;
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
+import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
+import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
+import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
+import tr.org.liderahenk.packagemanager.i18n.Messages;
+import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
 
 /**
  * Task execution dialog for package-manager plugin.
@@ -63,12 +66,13 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	private TableViewer tableViewer;
 	private Button btnAdd;
 	private Button btnDelete;
-	private Button btnEdit;
 
 	private PackageSourceItem item;
-	
+	protected static ArrayList<String> addedSources = new ArrayList<>();
+	protected static ArrayList<String> deletedSources = new ArrayList<>();
+
 	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(PackageSourcesTaskDialog.class);
 
 	// TODO do not forget to change this constructor if SingleSelectionHandler
@@ -76,7 +80,20 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	public PackageSourcesTaskDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
 		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
+		getData(dnSet);
 		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
+	}
+
+	private void getData(Set<String> dnSet) {
+
+		try {
+			TaskRequest task = new TaskRequest(new ArrayList<String>(dnSet), DNType.AHENK, getPluginName(),
+					getPluginVersion(), "REPOSITORIES", null, null, new Date());
+			TaskRestUtils.execute(task);
+		} catch (Exception e1) {
+			logger.error(e1.getMessage(), e1);
+			Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
+		}
 	}
 
 	private EventHandler eventHandler = new EventHandler() {
@@ -87,6 +104,8 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("PACKAGE_SOURCES", 100);
 					try {
+						addedSources.clear();
+						deletedSources.clear();
 						TaskStatusNotification taskStatus = (TaskStatusNotification) event
 								.getProperty("org.eclipse.e4.data");
 						byte[] data = taskStatus.getResult().getResponseData();
@@ -97,6 +116,15 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
+								String[] result = responseData.containsKey("Result")
+										? responseData.get("Result").toString().split("\\r?\\n") : null;
+								ArrayList<PackageSourceItem> items = new ArrayList<>(); 
+								for (String data : result) {
+									PackageSourceItem item = new PackageSourceItem(data);
+									items.add(item);
+								}
+								if (items != null)
+									tableViewer.setInput(items);
 							}
 						});
 					} catch (Exception e) {
@@ -126,7 +154,9 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 		createTableArea(parent);
 
 		return null;
-	}	private void createTableArea(Composite parent) {
+	}
+
+	private void createTableArea(Composite parent) {
 		tableComposite = new Composite(parent, SWT.BORDER);
 		tableComposite.setLayout(new GridLayout(1, false));
 		createButtons(tableComposite);
@@ -167,15 +197,13 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 				if (firstElement instanceof PackageSourceItem) {
 					setItem((PackageSourceItem) firstElement);
 				}
-				btnEdit.setEnabled(true);
 				btnDelete.setEnabled(true);
 			}
 		});
 		tableViewer.addDoubleClickListener(new IDoubleClickListener() {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
-				PackageSourceItemDialog dialog = new PackageSourceItemDialog(parent.getShell(), getItem(),
-						tableViewer);
+				PackageSourceItemDialog dialog = new PackageSourceItemDialog(parent.getShell(), getItem(), tableViewer);
 				dialog.open();
 			}
 		});
@@ -220,31 +248,9 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 		btnAdd.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				PackageSourceItemDialog dialog = new PackageSourceItemDialog(
-						Display.getDefault().getActiveShell(), tableViewer);
+				PackageSourceItemDialog dialog = new PackageSourceItemDialog(Display.getDefault().getActiveShell(),
+						tableViewer);
 				dialog.create();
-				dialog.open();
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		});
-
-		btnEdit = new Button(tableButtonComposite, SWT.NONE);
-		btnEdit.setText(Messages.getString("EDIT"));
-		btnEdit.setImage(
-				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/edit.png"));
-		btnEdit.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-		btnEdit.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (null == getItem()) {
-					Notifier.warning(null, Messages.getString("PLEASE_SELECT_ITEM"));
-					return;
-				}
-				PackageSourceItemDialog dialog = new PackageSourceItemDialog(tableButtonComposite.getShell(),
-						getItem(), tableViewer);
 				dialog.open();
 			}
 
@@ -270,6 +276,11 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 				items.remove(tableViewer.getTable().getSelectionIndex());
 				tableViewer.setInput(items);
 				tableViewer.refresh();
+				if (addedSources.contains(getItem().getUrl())){
+					addedSources.remove(getItem().getUrl());
+				}else{
+					deletedSources.add(getItem().getUrl());
+				}
 			}
 
 			@Override
@@ -278,10 +289,9 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 		});
 	}
 
-
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if ( tableViewer.getInput() == null || ((List<PackageSourceItem>) tableViewer.getInput()).isEmpty()) {
+		if (tableViewer.getInput() == null || ((List<PackageSourceItem>) tableViewer.getInput()).isEmpty()) {
 			throw new ValidationException(Messages.getString("ADD_ITEM"));
 		}
 	}
@@ -289,11 +299,8 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Map<String, Object> getParameterMap() {
 		Map<String, Object> taskData = new HashMap<String, Object>();
-		@SuppressWarnings("unchecked")
-		List<PackageSourceItem> items = (List<PackageSourceItem>) tableViewer.getInput();
-		if (items != null) {
-			taskData.put(PackageManagerConstants.PARAMETERS.LIST_ITEMS, items);
-		}
+		taskData.put(PackageManagerConstants.PARAMETERS.ADDED_ITEMS, addedSources);
+		taskData.put(PackageManagerConstants.PARAMETERS.DELETED_ITEMS, deletedSources);
 		return taskData;
 	}
 

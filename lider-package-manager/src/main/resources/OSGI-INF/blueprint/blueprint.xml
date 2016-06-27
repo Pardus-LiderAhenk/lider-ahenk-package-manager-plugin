@@ -26,6 +26,17 @@
 		<property name="taskPlugin" value="${plugin.task.plugin}" />
 		<property name="xbased" value="${plugin.x.based}" />
 	</bean>
+	  <!-- ICommand implementation is used to process a task execution -->
+  <service 
+      ref="RepositoriesCommand"
+      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+  <bean id="RepositoriesCommand" 
+        class="tr.org.liderahenk.packagemanager.commands.RepositoriesCommand">
+        <property name="pluginDbService" ref="pluginDbService"/>
+        <property name="logService" ref="logService"/>
+        <property name="resultFactory" ref="resultFactory"/>
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+  </bean>
 	
 	  <!-- ICommand implementation is used to process a task execution -->
   <service 
