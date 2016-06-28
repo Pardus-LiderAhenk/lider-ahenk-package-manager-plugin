@@ -55,7 +55,7 @@ public class PackageManagerCommand implements ICommand {
 
 	@Override
 	public String getCommandId() {
-		return "PACKAGE_MANAGER";
+		return "PACKAGE_MANAGEMENT";
 	}
 
 	@Override
