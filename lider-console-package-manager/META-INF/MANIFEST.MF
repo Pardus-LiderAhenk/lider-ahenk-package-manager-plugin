@@ -26,6 +26,11 @@ Require-Bundle: javax.inject;bundle-version="1.0.0",
  org.slf4j.api,
  tr.org.liderahenk.liderconsole.core,
  org.codehaus.jackson.core,
- org.codehaus.jackson.mapper
+ org.codehaus.jackson.mapper,
+ org.apache.commons.compress
 Bundle-Vendor: Agem Bilişim
 Bundle-Name: Lider Ahenk PackageManager Plugin
+Import-Package: org.apache.http;version="4.3.3",
+ org.apache.http.client;version="4.3.6",
+ org.apache.http.client.methods;version="4.3.6",
+ org.apache.http.impl.client
