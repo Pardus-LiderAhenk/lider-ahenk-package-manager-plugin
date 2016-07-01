@@ -1,7 +1,9 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -13,14 +15,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -35,10 +31,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.service.event.Event;
@@ -50,11 +45,11 @@ import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
+import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.PackageInfo;
-import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
 import tr.org.liderahenk.packagemanager.model.RepoSourcesListParser;
 
 public class AddRemovePackageDialog extends DefaultTaskDialog {
@@ -68,13 +63,13 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private Text txtDescription;
 	private Composite tableComposite;
 	private Composite packageComposite;
-	private TableViewer tableViewer;
 	private Button btnList;
 	private Button btnDelete;
 	private Button btnAddRep;
+	private CheckboxTableViewer viewer;
 
 	private final String[] debArray = new String[] { "deb", "deb-src" };
-	private PackageSourceItem item;
+	private PackageInfo item;
 
 	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
 
@@ -158,7 +153,10 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		btnAddRep.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				handleAddGroupButton(e);
+				if (!txtUrl.getText().isEmpty() && !txtComponents.getText().isEmpty())
+					handleAddGroupButton(e);
+				else
+					Notifier.error("", Messages.getString("FILL_ALL_FIELDS"));
 			}
 
 			@Override
@@ -167,7 +165,8 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		createSearchingPart(composite);
-		createTableArea(composite);
+
+		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
 
 		return null;
 	}
@@ -233,6 +232,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				cmbDeb.setData(i + "", debArray[i]);
 			}
 		}
+		cmbDeb.select(0);
 
 		txtUrl = new Text(grpPackageEntry, SWT.BORDER);
 		GridData txtGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
@@ -243,117 +243,84 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		txtComponents.setLayoutData(componentsGridData);
 	}
 
-	private void createTableArea(Composite parent) {
-		tableComposite = new Composite(parent, SWT.BORDER);
-		tableComposite.setLayout(new GridLayout(1, false));
-		GridData gridData = new GridData(SWT.FILL, SWT.FILL, false, true);
-		gridData.widthHint = 600;
-		tableComposite.setLayoutData(gridData);
-		createTable(tableComposite);
-	}
-
-	private void createTable(final Composite parent) {
-		tableViewer = new TableViewer(parent,
-				SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-
-		// Create table columns
-		createTableColumns();
-
-		// Configure table layout
-		final Table table = tableViewer.getTable();
-		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
-		table.getVerticalBar().setEnabled(true);
-		table.getVerticalBar().setVisible(true);
-		tableViewer.setContentProvider(new ArrayContentProvider());
-
-		GridData gridData = new GridData();
-		gridData.verticalAlignment = GridData.FILL;
-		gridData.horizontalSpan = 1;
-		gridData.grabExcessHorizontalSpace = true;
-		gridData.grabExcessVerticalSpace = true;
-		gridData.heightHint = 250;
-		gridData.horizontalAlignment = GridData.FILL;
-		tableViewer.getControl().setLayoutData(gridData);
-
-		// Hook up listeners
-		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-				Object firstElement = selection.getFirstElement();
-				firstElement = (PackageSourceItem) firstElement;
-				if (firstElement instanceof PackageSourceItem) {
-					setItem((PackageSourceItem) firstElement);
-				}
-				btnDelete.setEnabled(true);
-			}
-		});
-		tableViewer.addDoubleClickListener(new IDoubleClickListener() {
-			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				PackageSourceItemDialog dialog = new PackageSourceItemDialog(parent.getShell(), getItem(), tableViewer);
-				dialog.open();
-			}
-		});
-	}
-
-	private TableViewerColumn createTableViewerColumn(String title, int bound) {
-		final TableViewerColumn viewerColumn = new TableViewerColumn(tableViewer, SWT.NONE);
-		final TableColumn column = viewerColumn.getColumn();
-		column.setText(title);
-		column.setWidth(bound);
-		column.setResizable(true);
-		column.setMoveable(false);
-		column.setAlignment(SWT.LEFT);
-		return viewerColumn;
-	}
-
 	private void createTableColumns() {
 
 		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("VERSION"),
 				Messages.getString("SIZE"), Messages.getString("DESCRIPTION") };
-		int[] bounds = { 150, 150 };
 
-		TableViewerColumn packageNameColumn = createTableViewerColumn(titles[0], bounds[0]);
+		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
+		selectAllColumn.getColumn().setImage(
+				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
+		selectAllColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				return "";
+			}
+		});
+		selectAllColumn.getColumn().addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				/* If all list selected deselect all */
+				if (viewer.getCheckedElements().length == viewer.getTable().getItemCount()) {
+					viewer.setAllChecked(false);
+					selectAllColumn.getColumn().setImage(SWTResourceManager
+							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
+
+					redraw();
+				} else {
+					viewer.setAllChecked(true);
+					selectAllColumn.getColumn().setImage(SWTResourceManager
+							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-done.png"));
+
+					redraw();
+				}
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+
+		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 150);
 		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageSourceItem) {
-					return ((PackageSourceItem) element).getUrl();
+				if (element instanceof PackageInfo) {
+					return ((PackageInfo) element).getPackageName();
 				}
 				return Messages.getString("UNTITLED");
 			}
 		});
 
-		TableViewerColumn versionColumn = createTableViewerColumn(titles[1], bounds[0]);
+		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 150);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageSourceItem) {
-					return ((PackageSourceItem) element).getUrl();
+				if (element instanceof PackageInfo) {
+					return ((PackageInfo) element).getVersion();
 				}
 				return Messages.getString("UNTITLED");
 			}
 		});
 
-		TableViewerColumn sizeColumn = createTableViewerColumn(titles[2], bounds[0]);
+		TableViewerColumn sizeColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[2], 150);
 		sizeColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageSourceItem) {
-					return ((PackageSourceItem) element).getUrl();
+				if (element instanceof PackageInfo) {
+					return ((PackageInfo) element).getSize();
 				}
 				return Messages.getString("UNTITLED");
 			}
 		});
 
-		TableViewerColumn descriptionColumn = createTableViewerColumn(titles[3], bounds[0]);
+		TableViewerColumn descriptionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[3], 150);
 		descriptionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageSourceItem) {
-					return ((PackageSourceItem) element).getUrl();
+				if (element instanceof PackageInfo) {
+					return ((PackageInfo) element).getDescription();
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -368,9 +335,11 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		GridData txtGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 		txtGridData.widthHint = 200;
 		txtPackageName.setLayoutData(txtGridData);
+		txtPackageName.setMessage(Messages.getString("PACKAGE_NAME"));
 
 		txtDescription = new Text(tableButtonComposite, SWT.BORDER);
 		txtDescription.setLayoutData(txtGridData);
+		txtDescription.setMessage(Messages.getString("DESCRIPTION"));
 
 		Composite packageSearchComposite = new Composite(tableButtonComposite, SWT.RIGHT);
 		packageSearchComposite.setLayout(new GridLayout(1, false));
@@ -384,10 +353,14 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String[] list = list();
-				for(int i =0 ; i<list.length ; i=i+3){
-					System.out.println(list[i] + "   " + list[i+1]  + "   " + list[i+2]);
-					Set<PackageInfo> parseURL = RepoSourcesListParser.parseURL(list[i], list[i+1], list[i+2].split(" "), "amd64");
-					System.out.println(parseURL.size());
+				for (int i = 0; i < list.length; i = i + 3) {
+					List<PackageInfo> resultSet = RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
+							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64");
+					if (checkSearchingCriteria(resultSet) != null && checkSearchingCriteria(resultSet).size() > 0) {
+						recreateTable();
+						viewer.setInput(checkSearchingCriteria(resultSet));
+						redraw();
+					}
 				}
 			}
 
@@ -395,6 +368,50 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
+	}
+
+	private List<PackageInfo> checkSearchingCriteria(List<PackageInfo> resultSet) {
+		List<PackageInfo> result = new ArrayList<>();
+		boolean isProper;
+		if (resultSet != null && resultSet.size() > 0) {
+			for (PackageInfo packageInfo : resultSet) {
+				isProper = false;
+				if (txtPackageName.getText().isEmpty() && txtDescription.getText().isEmpty())
+					isProper = true;
+				if (txtPackageName.getText() != null && !txtPackageName.getText().isEmpty()
+						&& packageInfo.getPackageName().contains(txtPackageName.getText()))
+					isProper = true;
+				if (txtDescription.getText() != null && !txtDescription.getText().isEmpty()
+						&& packageInfo.getDescription().contains(txtDescription.getText()))
+					isProper = true;
+				if (isProper)
+					result.add(packageInfo);
+			}
+		}
+		return result;
+	}
+
+	private void disposeTableColumns() {
+		Table table = viewer.getTable();
+		while (table.getColumnCount() > 0) {
+			table.getColumns()[0].dispose();
+		}
+	}
+
+	private void emptyTable() {
+		recreateTable();
+		viewer.setInput(new ArrayList<PackageInfo>());
+		redraw();
+	}
+
+	private void recreateTable() {
+
+		viewer.getTable().setRedraw(false);
+		viewer.getTable().setHeaderVisible(true);
+
+		disposeTableColumns();
+		createTableColumns();
+		viewer.getTable().setRedraw(true);
 	}
 
 	private String[] list() {
@@ -409,9 +426,9 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				if (child instanceof Group) {
 					Control[] gChildren = ((Group) child).getChildren();
 					if (gChildren != null && gChildren.length == 3) {
-						returningAttributes.add(((Combo)gChildren[0]).getText());
-						returningAttributes.add(((Text)gChildren[1]).getText());
-						returningAttributes.add(((Text)gChildren[2]).getText());
+						returningAttributes.add(((Combo) gChildren[0]).getText());
+						returningAttributes.add(((Text) gChildren[1]).getText());
+						returningAttributes.add(((Text) gChildren[2]).getText());
 					}
 				}
 			}
@@ -432,7 +449,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 	@Override
 	public String getCommandId() {
-		return "ADD_REMOVE_PACKAGES";
+		return "PACKAGES";
 	}
 
 	@Override
@@ -445,11 +462,11 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		return PackageManagerConstants.PLUGIN_VERSION;
 	}
 
-	public PackageSourceItem getItem() {
+	public PackageInfo getItem() {
 		return item;
 	}
 
-	public void setItem(PackageSourceItem item) {
+	public void setItem(PackageInfo item) {
 		this.item = item;
 	}
 

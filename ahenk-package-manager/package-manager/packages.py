@@ -21,7 +21,7 @@ class Packages(AbstractPlugin):
         self.logger.debug('Handling Packages Task')
         try:
             out_bytes = subprocess.check_output(['sh',
-                                                 './plugins/package-manager/packages.sh'])
+                                                 './plugins/package-manager/install_packages.sh'])
             result = out_bytes.decode(encoding='utf-8')
             print(result)
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,

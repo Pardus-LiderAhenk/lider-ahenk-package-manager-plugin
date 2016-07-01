@@ -3,10 +3,9 @@ package tr.org.liderahenk.packagemanager.model;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.http.HttpEntity;
@@ -44,9 +43,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
  */
 public abstract class RepoSourcesListParser {
 	@SuppressWarnings("restriction")
-	public static Set<PackageInfo> parseURL(String url, String distribution,
+	public static List<PackageInfo> parseURL(String url, String distribution,
 			String[] components, String architecture) {
-		Set<PackageInfo> packages = new HashSet<PackageInfo>();
+		List<PackageInfo> packages = new ArrayList<PackageInfo>();
 		for (String component : components) {
 			try {
 				// Find URL pointing to the package file
@@ -96,6 +95,7 @@ public abstract class RepoSourcesListParser {
 				e.printStackTrace();
 			}
 		}
+		packages.remove(packages.get(packages.size()-1));
 		return packages;
 	}
 	
