@@ -1,14 +1,8 @@
 package tr.org.liderahenk.packagemanager.plugininfo;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import tr.org.liderahenk.lider.core.api.plugin.BasePluginInfo;
 
-import tr.org.liderahenk.lider.core.api.plugin.IPluginInfo;
-
-public class PluginInfoImpl implements IPluginInfo {
-
-	private static Logger logger = LoggerFactory.getLogger(PluginInfoImpl.class);
+public class PluginInfoImpl extends BasePluginInfo {
 
 	private String pluginName;
 
@@ -24,25 +18,16 @@ public class PluginInfoImpl implements IPluginInfo {
 
 	private Boolean taskPlugin;
 
-	private Boolean xbased;
+	private Boolean usesFileTransfer;
 
-	public void refresh() {
-		logger.info("Configuration updated using blueprint: {}", prettyPrintConfig());
-	}
+	private Boolean xbased;
 
 	@Override
 	public String toString() {
 		return "PluginInfoImpl [pluginName=" + pluginName + ", pluginVersion=" + pluginVersion + ", description="
 				+ description + ", machineOriented=" + machineOriented + ", userOriented=" + userOriented
-				+ ", policyPlugin=" + policyPlugin + ", taskPlugin=" + taskPlugin + ", xbased=" + xbased + "]";
-	}
-
-	public String prettyPrintConfig() {
-		try {
-			return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
-		} catch (Exception e) {
-		}
-		return toString();
+				+ ", policyPlugin=" + policyPlugin + ", taskPlugin=" + taskPlugin + ", usesFileTransfer="
+				+ usesFileTransfer + ", xbased=" + xbased + "]";
 	}
 
 	@Override
@@ -116,4 +101,14 @@ public class PluginInfoImpl implements IPluginInfo {
 	public void setTaskPlugin(Boolean taskPlugin) {
 		this.taskPlugin = taskPlugin;
 	}
+
+	@Override
+	public Boolean getUsesFileTransfer() {
+		return usesFileTransfer;
+	}
+
+	public void setUsesFileTransfer(Boolean usesFileTransfer) {
+		this.usesFileTransfer = usesFileTransfer;
+	}
+
 }
