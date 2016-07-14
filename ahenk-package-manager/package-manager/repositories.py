@@ -5,6 +5,7 @@
 from base.plugin.abstract_plugin import AbstractPlugin
 from base.model.enum.ContentType import ContentType
 import subprocess
+import json
 
 
 class PackageSourcesList(AbstractPlugin):
@@ -15,17 +16,17 @@ class PackageSourcesList(AbstractPlugin):
         self.logger = self.get_logger()
         self.message_code = self.get_message_code()
 
+
     def handle_task(self):
         print('handle_task')
         try:
-            out_bytes = subprocess.check_output(['sh',
-                                                 './plugins/package-manager/sourcelist.sh'])
-            result = out_bytes.decode(encoding='utf-8')
+            a, result, b = self.execute('/bin/bash {}package-manager/sourcelist.sh'.format(self.Ahenk.plugins_path()))
             data = {'Result': result}
-            self.logger.debug("Repositories are listed")
+            self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Package Manager Task - Getting Repositories Process completed successfully',
-                                         data=data, content_type=ContentType.APPLICATION_JSON.value)
+                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            self.logger.debug("[PACKAGE MANAGER] Repository list sent")
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,

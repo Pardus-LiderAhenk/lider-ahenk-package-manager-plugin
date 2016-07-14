@@ -61,12 +61,12 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private Text txtComponents;
 	private Text txtPackageName;
 	private Text txtDescription;
-	private Composite tableComposite;
 	private Composite packageComposite;
 	private Button btnList;
-	private Button btnDelete;
 	private Button btnAddRep;
 	private CheckboxTableViewer viewer;
+	private Button btnCheckInstall;
+	private Button btnCheckUnInstall;
 
 	private final String[] debArray = new String[] { "deb", "deb-src" };
 	private PackageInfo item;
@@ -101,6 +101,9 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
+								if(responseData.containsKey("Result")){
+									System.out.println(responseData.get("Result"));
+								}
 							}
 						});
 					} catch (Exception e) {
@@ -146,7 +149,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		createPackageEntry(packageComposite);
-
+		
 		btnAddRep = new Button(packageComposite, SWT.NONE);
 		btnAddRep.setImage(
 				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/add.png"));
@@ -165,6 +168,37 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		createSearchingPart(composite);
+
+
+		Composite installationComposite = new Composite(composite, SWT.NONE);
+		installationComposite.setLayout(new GridLayout(2, false));
+		
+		btnCheckInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckInstall.setText(Messages.getString("INSTALL"));
+		btnCheckInstall.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				btnCheckUnInstall.setSelection(false);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		btnCheckInstall.setSelection(true);
+
+		btnCheckUnInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckUnInstall.setText(Messages.getString("UNINSTALL"));
+		btnCheckUnInstall.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				btnCheckInstall.setSelection(false);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
 
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
 
@@ -355,11 +389,13 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				String[] list = list();
 				for (int i = 0; i < list.length; i = i + 3) {
 					List<PackageInfo> resultSet = RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
-							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64");
+							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",list[i]);
 					if (checkSearchingCriteria(resultSet) != null && checkSearchingCriteria(resultSet).size() > 0) {
 						recreateTable();
 						viewer.setInput(checkSearchingCriteria(resultSet));
 						redraw();
+					}else{
+						emptyTable();
 					}
 				}
 			}
@@ -439,11 +475,22 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
+		if(viewer.getCheckedElements().length == 0){
+			throw new ValidationException(Messages.getString("PLEASE_SELECT_AT_LEAST_AN_ITEM"));
+		}
 	}
 
 	@Override
 	public Map<String, Object> getParameterMap() {
 		Map<String, Object> taskData = new HashMap<String, Object>();
+		Object[] checkedElements = viewer.getCheckedElements();
+		for (Object packageInfo : checkedElements) {
+			if(btnCheckInstall.getSelection())
+				((PackageInfo)packageInfo).setTag(Messages.getString("INSTALL"));
+			else
+				((PackageInfo)packageInfo).setTag(Messages.getString("UNINSTALL"));
+		}
+		taskData.put(PackageManagerConstants.PACKAGES.PACKAGE_INFO_LIST, checkedElements);
 		return taskData;
 	}
 

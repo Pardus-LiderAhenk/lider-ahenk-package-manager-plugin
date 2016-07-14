@@ -18,7 +18,7 @@ import tr.org.liderahenk.lider.core.api.service.ICommandResultFactory;
 import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
 
 public class PackagesCommand implements ICommand{
-	private Logger logger = LoggerFactory.getLogger(PackageSourcesCommand.class);
+	private Logger logger = LoggerFactory.getLogger(PackagesCommand.class);
 
 	private ICommandResultFactory resultFactory;
 	private IPluginInfo pluginInfo;

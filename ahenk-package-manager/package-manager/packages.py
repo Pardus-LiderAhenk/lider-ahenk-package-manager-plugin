@@ -4,8 +4,7 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 from base.model.enum.ContentType import ContentType
-import subprocess
-from subprocess import call
+import json
 
 
 class Packages(AbstractPlugin):
@@ -20,12 +19,49 @@ class Packages(AbstractPlugin):
         print('Handling Packages Task')
         self.logger.debug('Handling Packages Task')
         try:
-            out_bytes = subprocess.check_output(['sh',
-                                                 './plugins/package-manager/install_packages.sh'])
-            result = out_bytes.decode(encoding='utf-8')
-            print(result)
+            resultMessage = '';
+            items = (self.data)['packageInfoList']
+            for item in items:
+                try:
+                    try:
+                        param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
+                            self.Ahenk.plugins_path(), item['source'])
+                        self.logger.debug("Adding Repository if not exists... {0}".format(item['source']))
+                        a, result, b = self.execute(param)
+                        self.logger.debug("Repository added")
+                        resultMessage += 'Repository added - {}\r\n'.format(item['source'])
+                    except Exception as e:
+                        resultMessage += 'Repository could not be added - {}'.format(item['source'])
+                    if a == 0 and (item['tag'] == 'Kur' or item['tag'] == 'Install'):
+                        self.logger.debug("Installing new package... {0}".format(item['packageName']))
+                        self.logger.debug(
+                            "sudo apt-get --yes --force-yes install {0}={1}".format(item['packageName'],
+                                                                                         item['version']))
+                        command = "sudo apt-get --yes --force-yes install {0}={1}".format(item['packageName'],
+                                                                                          item['version'])
+                        a, result, b = self.execute(command)
+                        self.logger.debug("Result is : " + result)
+                        resultMessage += 'Package installed - {0}={1}\r\n'.format(item['packageName'], item['version'])
+                    elif a == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
+                        self.logger.debug("Removing package... {0}".format(item['packageName']))
+                        self.logger.debug(
+                            "sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'], item['version']))
+                        command = "sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'], item['version'])
+                        a, result, b = self.execute(command)
+                        self.logger.debug("Result is : " + result)
+                        resultMessage += 'Package uninstalled - {0}={1}\r\n'.format(item['packageName'],
+                                                                                    item['version'])
+                except Exception as e:
+                    if item['tag'] == 'Kur' or item['tag'] == 'Install':
+                        resultMessage += 'Package could not be installed - {0}={1}\r\n'.format(item['packageName'],
+                                                                                               item['version'])
+                    else:
+                        resultMessage += 'Package could not be uninstalled - {0}={1}\r\n'.format(item['packageName'],
+                                                                                                 item['version'])
+            data = {'Result': resultMessage}
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Getting Packages Process completed successfully',
+                                         data=json.dumps(data),
                                          content_type=ContentType.APPLICATION_JSON.value)
         except Exception as e:
             self.logger.debug(str(e))

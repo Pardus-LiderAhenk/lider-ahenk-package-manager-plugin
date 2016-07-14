@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -44,7 +45,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 public abstract class RepoSourcesListParser {
 	@SuppressWarnings("restriction")
 	public static List<PackageInfo> parseURL(String url, String distribution,
-			String[] components, String architecture) {
+			String[] components, String architecture,String deb) {
 		List<PackageInfo> packages = new ArrayList<PackageInfo>();
 		for (String component : components) {
 			try {
@@ -84,6 +85,7 @@ public abstract class RepoSourcesListParser {
 								String propertyValue = tokens[1].trim();
 								setPropertyValue(info, propertyMethodName,
 										propertyValue);
+								info.setSource(deb + " " + url + " " + distribution + " " + StringUtils.join(components," "));
 							}
 						}
 						reader.close();
@@ -95,7 +97,8 @@ public abstract class RepoSourcesListParser {
 				e.printStackTrace();
 			}
 		}
-		packages.remove(packages.get(packages.size()-1));
+		if(packages != null && packages.size() > 0)
+			packages.remove(packages.get(packages.size()-1));
 		return packages;
 	}
 	

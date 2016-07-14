@@ -47,6 +47,7 @@ import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
 import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
+import tr.org.liderahenk.liderconsole.core.rest.responses.IResponse;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
@@ -80,8 +81,8 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	public PackageSourcesTaskDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
 		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
-		getData(dnSet);
 		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
+		getData(dnSet);
 	}
 
 	private void getData(Set<String> dnSet) {

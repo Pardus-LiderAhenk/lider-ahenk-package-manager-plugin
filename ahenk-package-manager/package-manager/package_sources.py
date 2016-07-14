@@ -22,27 +22,32 @@ class PackageSources(AbstractPlugin):
         deleted_items = (self.data)['deletedItems']
         try:
             for item in added_items:
-                subprocess.check_output(['sh', './plugins/package-manager/addedLists.sh', str(item)])
-            self.logger.debug("Added Sources append to /etc/apt/soruces.list.d/ahenk.list file")
+                param = '/bin/bash {0}package-manager/addedLists.sh "{1}"'.format(self.Ahenk.plugins_path(), str(item))
+                self.execute(param)
+            self.logger.debug("[PACKAGE MANAGER] Added Sources append to /etc/apt/sources.list.d/ahenk.list file")
             for item in deleted_items:
-                deleted_files_and_line_numbers = subprocess.check_output(['sh', './plugins/package-manager/deletedLists.sh', str(item)]).decode(encoding='utf-8')
-                deleted_files_andL_line_numbers_array = deleted_files_and_line_numbers.split(':')
-                print(deleted_files_andL_line_numbers_array)
-                with open(deleted_files_andL_line_numbers_array[0], "r") as textobj:
+
+                param = '/bin/bash {0}package-manager/deletedLists.sh "{1}"'.format(self.Ahenk.plugins_path(), str(item))
+                a, result, b = self.execute(param)
+                deleted_files_and_line_numbers_array = result.split(':')
+                print(deleted_files_and_line_numbers_array)
+                with open(deleted_files_and_line_numbers_array[0], "r") as textobj:
                     lines = list(textobj)
-                del lines[int(deleted_files_andL_line_numbers_array[1]) - 1]
-                with open(deleted_files_andL_line_numbers_array[0], "w") as textobj:
+                del lines[int(deleted_files_and_line_numbers_array[1]) - 1]
+                with open(deleted_files_and_line_numbers_array[0], "w") as textobj:
                     for n in lines:
                         textobj.write(n)
-            self.logger.debug("Deleted Sources deleted from interested file")
-            out_bytes = subprocess.check_output(['sh',
-                                                 './plugins/package-manager/sourcelist.sh'])
-            result = out_bytes.decode(encoding='utf-8')
+            self.logger.debug("[PACKAGE MANAGER] Deleted Sources deleted from interested file")
+            self.logger.debug("[PACKAGE MANAGER] Updated all repositories...")
+            a, result, b = self.execute('sudo apt-get update')
+            print(result)
+            param = '/bin/bash {0}package-manager/sourcelist.sh'.format(self.Ahenk.plugins_path())
+            a, result, b = self.execute(param)
             data = {'Result': result}
-            self.logger.debug("Repositories are listed")
+            self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Package Manager Task - Editing Repositories Process completed successfully',
-                                         data=data, content_type=ContentType.APPLICATION_JSON.value)
+                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,

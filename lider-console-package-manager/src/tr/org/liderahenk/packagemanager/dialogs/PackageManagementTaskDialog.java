@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -25,6 +26,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -53,8 +55,7 @@ import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
-import tr.org.liderahenk.packagemanager.model.PackageManagementItem;
-import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
+import tr.org.liderahenk.packagemanager.model.PackageInfo;
 
 /**
  * Task execution dialog for package-manager plugin.
@@ -62,14 +63,16 @@ import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
  */
 public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
+	private ScrolledComposite sc;
 	String upperCase = "";
-	private Composite tableComposite;
-	private TableViewer tableViewer;
 	private Button btnAdd;
 	private Button btnDelete;
 	private Button btnEdit;
+	private Button btnCheckInstall;
+	private Button btnCheckUnInstall;
+	private CheckboxTableViewer viewer;
 
-	private PackageManagementItem item;
+	private PackageInfo item;
 
 	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
 
@@ -80,15 +83,15 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	public PackageManagementTaskDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
 		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
-		getData(dnSet);
 		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
+		getData(dnSet);
 	}
 
 	private void getData(Set<String> dnSet) {
 
 		try {
 			TaskRequest task = new TaskRequest(new ArrayList<String>(dnSet), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "PACKAGES", null, null, new Date());
+					getPluginVersion(), "INSTALLED_PACKAGES", null, null, new Date());
 			TaskRestUtils.execute(task);
 		} catch (Exception e1) {
 			logger.error(e1.getMessage(), e1);
@@ -114,15 +117,22 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
-//								String[] result = responseData.containsKey("Result")
-//										? responseData.get("Result").toString().split("\\r?\\n") : null;
-//								ArrayList<PackageManagementItem> items = new ArrayList<>();
-//								for (String data : result) {
-//									PackageManagementItem item = new PackageManagementItem(data);
-//									items.add(item);
-//								}
-//								if (items != null)
-//									tableViewer.setInput(items);
+								ArrayList<PackageInfo> items = new ArrayList<>();
+								PackageInfo i1 = new PackageInfo();
+								i1.setPackageName("ant");
+								i1.setVersion("1.9.3-2build1");
+								PackageInfo i2 = new PackageInfo();
+								i2.setPackageName("skype");
+								i2.setVersion("4.3.0.37-0ubuntu0.12.04.1");
+								items.add(i1);
+								items.add(i2);
+								if (items != null){
+									recreateTable();
+									viewer.setInput(items);
+									redraw();
+								}else{
+									emptyTable();
+								}
 							}
 						});
 					} catch (Exception e) {
@@ -150,104 +160,163 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
 
-		createTableArea(parent);
+		sc = new ScrolledComposite(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		sc.setLayout(new GridLayout(1, false));
+		parent.setBackgroundMode(SWT.INHERIT_FORCE);
+
+		Composite composite = new Composite(sc, SWT.NONE);
+		composite.setLayout(new GridLayout(1, false));
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		sc.setContent(composite);
+		sc.setExpandHorizontal(true);
+		sc.setExpandVertical(true);
+		
+		createButtons(composite);
+		Composite installationComposite = new Composite(composite, SWT.NONE);
+		installationComposite.setLayout(new GridLayout(2, false));
+		
+		btnCheckInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckInstall.setText(Messages.getString("INSTALL"));
+		btnCheckInstall.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				btnCheckUnInstall.setSelection(false);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		btnCheckInstall.setSelection(true);
+
+		btnCheckUnInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckUnInstall.setText(Messages.getString("UNINSTALL"));
+		btnCheckUnInstall.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				btnCheckInstall.setSelection(false);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
 
 		return null;
 	}
 
-	private void createTableArea(Composite parent) {
-		tableComposite = new Composite(parent, SWT.BORDER);
-		tableComposite.setLayout(new GridLayout(1, false));
-		createButtons(tableComposite);
-		createTable(tableComposite);
-	}
-
-	private void createTable(final Composite parent) {
-		tableViewer = new TableViewer(parent,
-				SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-
-		// Create table columns
-		createTableColumns();
-
-		// Configure table layout
-		final Table table = tableViewer.getTable();
-		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
-		table.getVerticalBar().setEnabled(true);
-		table.getVerticalBar().setVisible(true);
-		tableViewer.setContentProvider(new ArrayContentProvider());
-
-		GridData gridData = new GridData();
-		gridData.verticalAlignment = GridData.FILL;
-		gridData.horizontalSpan = 2;
-		gridData.grabExcessHorizontalSpace = true;
-		gridData.grabExcessVerticalSpace = true;
-		gridData.heightHint = 140;
-		gridData.horizontalAlignment = GridData.FILL;
-		tableViewer.getControl().setLayoutData(gridData);
-
-		// Hook up listeners
-		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-				Object firstElement = selection.getFirstElement();
-				firstElement = (PackageManagementItem) firstElement;
-				if (firstElement instanceof PackageManagementItem) {
-					setItem((PackageManagementItem) firstElement);
+	protected void handleRemoveGroupButton(SelectionEvent e) {
+		Button thisBtn = (Button) e.getSource();
+		Composite parent = thisBtn.getParent();
+		Control[] children = parent.getChildren();
+		if (children != null) {
+			for (int i = 0; i < children.length; i++) {
+				if (children[i].equals(thisBtn) && i - 1 > 0) {
+					children[i - 1].dispose();
+					children[i].dispose();
+					redraw();
+					break;
 				}
-				btnEdit.setEnabled(true);
-				btnDelete.setEnabled(true);
 			}
-		});
-		tableViewer.addDoubleClickListener(new IDoubleClickListener() {
-			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				PackageManagementItemDialog dialog = new PackageManagementItemDialog(parent.getShell(), getItem(),
-						tableViewer);
-				dialog.open();
-			}
-		});
+		}
 	}
 
-	private TableViewerColumn createTableViewerColumn(String title, int bound) {
-		final TableViewerColumn viewerColumn = new TableViewerColumn(tableViewer, SWT.NONE);
-		final TableColumn column = viewerColumn.getColumn();
-		column.setText(title);
-		column.setWidth(bound);
-		column.setResizable(true);
-		column.setMoveable(false);
-		column.setAlignment(SWT.LEFT);
-		return viewerColumn;
+	private void redraw() {
+		sc.layout(true, true);
+		sc.setMinSize(sc.getContent().computeSize(600, SWT.DEFAULT));
 	}
+
+
 
 	private void createTableColumns() {
 
-		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("PACKAGE_VERSION") };
-		int[] bounds = { 300, 200 };
+		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("PACKAGE_VERSION")};
 
-		TableViewerColumn packageName = createTableViewerColumn(titles[0], bounds[0]);
-		packageName.setLabelProvider(new ColumnLabelProvider() {
+		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
+		selectAllColumn.getColumn().setImage(
+				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
+		selectAllColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageManagementItem) {
-					return ((PackageManagementItem) element).getPackageName();
+				return "";
+			}
+		});
+		selectAllColumn.getColumn().addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				/* If all list selected deselect all */
+				if (viewer.getCheckedElements().length == viewer.getTable().getItemCount()) {
+					viewer.setAllChecked(false);
+					selectAllColumn.getColumn().setImage(SWTResourceManager
+							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
+
+					redraw();
+				} else {
+					viewer.setAllChecked(true);
+					selectAllColumn.getColumn().setImage(SWTResourceManager
+							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-done.png"));
+
+					redraw();
+				}
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+
+		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 150);
+		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof PackageInfo) {
+					return ((PackageInfo) element).getPackageName();
 				}
 				return Messages.getString("UNTITLED");
 			}
 		});
 
-		TableViewerColumn packageVersion = createTableViewerColumn(titles[1], bounds[0]);
-		packageVersion.setLabelProvider(new ColumnLabelProvider() {
+		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 150);
+		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageManagementItem) {
-					return ((PackageManagementItem) element).getPackageVersion();
+				if (element instanceof PackageInfo) {
+					return ((PackageInfo) element).getVersion();
 				}
 				return Messages.getString("UNTITLED");
 			}
 		});
 	}
+
+	private void disposeTableColumns() {
+		Table table = viewer.getTable();
+		while (table.getColumnCount() > 0) {
+			table.getColumns()[0].dispose();
+		}
+	}
+
+	private void emptyTable() {
+		recreateTable();
+		viewer.setInput(new ArrayList<PackageInfo>());
+		redraw();
+	}
+
+	private void recreateTable() {
+
+		viewer.getTable().setRedraw(false);
+		viewer.getTable().setHeaderVisible(true);
+
+		disposeTableColumns();
+		createTableColumns();
+		viewer.getTable().setRedraw(true);
+	}
+
+
 
 	private void createButtons(final Composite parent) {
 		final Composite tableButtonComposite = new Composite(parent, SWT.NONE);
@@ -261,7 +330,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				PackageManagementItemDialog dialog = new PackageManagementItemDialog(
-						Display.getDefault().getActiveShell(), tableViewer);
+						Display.getDefault().getActiveShell(), viewer);
 				dialog.create();
 				dialog.open();
 			}
@@ -284,7 +353,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 					return;
 				}
 				PackageManagementItemDialog dialog = new PackageManagementItemDialog(tableButtonComposite.getShell(),
-						getItem(), tableViewer);
+						getItem(), viewer);
 				dialog.open();
 			}
 
@@ -306,10 +375,10 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 					return;
 				}
 				@SuppressWarnings("unchecked")
-				List<PackageManagementItemDialog> items = (List<PackageManagementItemDialog>) tableViewer.getInput();
-				items.remove(tableViewer.getTable().getSelectionIndex());
-				tableViewer.setInput(items);
-				tableViewer.refresh();
+				List<PackageManagementItemDialog> items = (List<PackageManagementItemDialog>) viewer.getInput();
+				items.remove(viewer.getTable().getSelectionIndex());
+				viewer.setInput(items);
+				viewer.refresh();
 			}
 
 			@Override
@@ -320,7 +389,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if (tableViewer.getInput() == null || ((List<PackageManagementItem>) tableViewer.getInput()).isEmpty()) {
+		if (viewer.getInput() == null || ((List<PackageInfo>) viewer.getInput()).isEmpty() || viewer.getCheckedElements().length == 0) {
 			throw new ValidationException(Messages.getString("ADD_ITEM"));
 		}
 	}
@@ -328,12 +397,14 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Map<String, Object> getParameterMap() {
 		Map<String, Object> taskData = new HashMap<String, Object>();
-		@SuppressWarnings("unchecked")
-		List<PackageManagementItem> items = (List<PackageManagementItem>) tableViewer.getInput();
-		if (items != null) {
-			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, items);
-			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_VERSION, items);
+		Object[] checkedElements = viewer.getCheckedElements();
+		for (Object packageInfo : checkedElements) {
+			if(btnCheckInstall.getSelection())
+				((PackageInfo)packageInfo).setTag(Messages.getString("INSTALL"));
+			else
+				((PackageInfo)packageInfo).setTag(Messages.getString("UNINSTALL"));
 		}
+		taskData.put(PackageManagerConstants.PACKAGES.PACKAGE_INFO_LIST, checkedElements);
 		return taskData;
 	}
 
@@ -352,11 +423,11 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		return PackageManagerConstants.PLUGIN_VERSION;
 	}
 
-	public PackageManagementItem getItem() {
+	public PackageInfo getItem() {
 		return item;
 	}
 
-	public void setItem(PackageManagementItem item) {
+	public void setItem(PackageInfo item) {
 		this.item = item;
 	}
 

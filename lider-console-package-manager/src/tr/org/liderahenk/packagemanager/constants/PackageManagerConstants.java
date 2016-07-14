@@ -15,5 +15,7 @@ public class PackageManagerConstants {
 		public static final String PACKAGE_NAME = "packageName";
 		public static final String PACKAGE_VERSION = "packageVersion";
 	}
-	
+	public static final class PACKAGES {
+		public static final String PACKAGE_INFO_LIST = "packageInfoList";
+	}
 }

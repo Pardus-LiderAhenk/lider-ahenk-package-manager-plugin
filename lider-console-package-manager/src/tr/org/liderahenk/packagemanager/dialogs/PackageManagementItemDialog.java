@@ -16,13 +16,12 @@ import org.eclipse.swt.widgets.Text;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultLiderTitleAreaDialog;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
-import tr.org.liderahenk.packagemanager.model.PackageManagementItem;
-import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
+import tr.org.liderahenk.packagemanager.model.PackageInfo;
 
 public class PackageManagementItemDialog extends DefaultLiderTitleAreaDialog {
 
 	// Model
-	private PackageManagementItem item;
+	private PackageInfo item;
 	// Table
 	private TableViewer tableViewer;
 	// Widgets
@@ -36,7 +35,7 @@ public class PackageManagementItemDialog extends DefaultLiderTitleAreaDialog {
 		this.tableViewer = tableViewer;
 	}
 
-	public PackageManagementItemDialog(Shell parentShell, PackageManagementItem item, TableViewer tableViewer) {
+	public PackageManagementItemDialog(Shell parentShell, PackageInfo item, TableViewer tableViewer) {
 		super(parentShell);
 		this.item = item;
 		this.tableViewer = tableViewer;
@@ -80,8 +79,8 @@ public class PackageManagementItemDialog extends DefaultLiderTitleAreaDialog {
 		gridData.widthHint=400;
 		txtPackageVersion.setLayoutData(gridData);
 		
-		if (item != null && item.getPackageVersion() != null) {
-			txtPackageVersion.setText(item.getPackageVersion());
+		if (item != null && item.getVersion() != null) {
+			txtPackageVersion.setText(item.getVersion());
 		}
 
 		return composite;
@@ -100,17 +99,17 @@ public class PackageManagementItemDialog extends DefaultLiderTitleAreaDialog {
 
 		boolean editMode = true;
 		if (item == null) {
-			item = new PackageManagementItem();
+			item = new PackageInfo();
 			editMode = false;
 		}
 		// Set values
 		item.setPackageName(txtPackageName.getText());
-		item.setPackageVersion(txtPackageVersion.getText());
+		item.setVersion(txtPackageVersion.getText());
 
 		// Get previous items...
-		List<PackageManagementItem> items = (List<PackageManagementItem>) tableViewer.getInput();
+		List<PackageInfo> items = (List<PackageInfo>) tableViewer.getInput();
 		if (items == null) {
-			items = new ArrayList<PackageManagementItem>();
+			items = new ArrayList<PackageInfo>();
 		}
 
 		if (editMode) {

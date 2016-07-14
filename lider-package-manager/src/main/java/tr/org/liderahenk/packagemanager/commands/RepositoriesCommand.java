@@ -19,7 +19,7 @@ import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
 
 
 public class RepositoriesCommand implements ICommand{
-		private Logger logger = LoggerFactory.getLogger(PackageSourcesCommand.class);
+		private Logger logger = LoggerFactory.getLogger(RepositoriesCommand.class);
 
 		private ICommandResultFactory resultFactory;
 		private IPluginInfo pluginInfo;
