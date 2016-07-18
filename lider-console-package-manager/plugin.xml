@@ -29,252 +29,80 @@
             name="%command.task">
       </command>
    </extension>
-         <extension
+   
+	<extension
        point="org.eclipse.ui.handlers">
-      	
-      	<!-- Task handler -->
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageSourcesTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask">
-           <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-		   <!-- <enabledWhen>
-				<and>
-		          <with
-		                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
-		             <equals
-		                   value="true">
-		             </equals>
-		          </with>
-				<with
-	                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-	             	<equals
-		                   value="true">
-		            </equals>
-	          	</with>
-		       </and>
-		    </enabledWhen> -->        
       </handler>
-      
-      	<!-- Task handler -->
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageManagerTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask">
-           <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-		   <!-- <enabledWhen>
-				<and>
-		          <with
-		                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
-		             <equals
-		                   value="true">
-		             </equals>
-		          </with>
-				<with
-	                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-	             	<equals
-		                   value="true">
-		            </equals>
-	          	</with>
-		       </and>
-		    </enabledWhen> -->        
       </handler>
-            	<!-- Task handler -->
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackagesTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackagesTask">
-           <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-		   <!-- <enabledWhen>
-				<and>
-		          <with
-		                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
-		             <equals
-		                   value="true">
-		             </equals>
-		          </with>
-				<with
-	                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-	             	<equals
-		                   value="true">
-		            </equals>
-	          	</with>
-		       </and>
-		    </enabledWhen> -->        
       </handler>
-            	<!-- Task handler -->
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.CheckPackageTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask">
-           <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-		   <!-- <enabledWhen>
-				<and>
-		          <with
-		                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
-		             <equals
-		                   value="true">
-		             </equals>
-		          </with>
-				<with
-	                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-	             	<equals
-		                   value="true">
-		            </equals>
-	          	</with>
-		       </and>
-		    </enabledWhen> -->        
       </handler>
-      
   </extension>
   
   <extension
          point="org.eclipse.ui.menus">
+         
+		<menuContribution
+			locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
+			<menu
+				id="tr.org.liderahenk.liderconsole.menus.PackageManager"
+				label="%menu.label.package.manager"
+				icon="icons/16/package-managament.png">
+			</menu>
+		</menuContribution>
+         
 	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"
-            locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
+            locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
  				<command
                   commandId="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   id="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   tooltip="%command.addremovepackage.task">
-                  <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-				  <!-- <visibleWhen>
-					   <and>
-			                <iterate operator="or">		
-			                	<or>
-							  	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSearchSelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					          	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isEntrySelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					        	</or>
-					        </iterate>
-							<with
-				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-				             	<equals
-					                   value="true">
-					            </equals>
-				          	</with>
-					    </and>
-					</visibleWhen> -->               
            		</command>
 		</menuContribution>
 		
       	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"
-            locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
+            locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
  				<command
                   commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
                   id="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
                   tooltip="%command.package.task">
-                  <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-				  <!-- <visibleWhen>
-					   <and>
-			                <iterate operator="or">		
-			                	<or>
-							  	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSearchSelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					          	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isEntrySelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					        	</or>
-					        </iterate>
-							<with
-				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-				             	<equals
-					                   value="true">
-					            </equals>
-				          	</with>
-					    </and>
-					</visibleWhen> -->               
            		</command>
 		</menuContribution>
 		
       	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"
-            locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
+            locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
  				<command
                   commandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"
                   id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"
                   tooltip="%command.task">
-                  <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-				  <!-- <visibleWhen>
-					   <and>
-			                <iterate operator="or">		
-			                	<or>
-							  	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSearchSelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					          	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isEntrySelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					        	</or>
-					        </iterate>
-							<with
-				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-				             	<equals
-					                   value="true">
-					            </equals>
-				          	</with>
-					    </and>
-					</visibleWhen> -->               
            		</command>
 		</menuContribution>
 		
       	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"
-            locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
+            locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
  				<command
                   commandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
                   id="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
                   tooltip="%command.task">
-                  <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-				  <!-- <visibleWhen>
-					   <and>
-			                <iterate operator="or">		
-			                	<or>
-							  	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSearchSelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					          	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isEntrySelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					        	</or>
-					        </iterate>
-							<with
-				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-				             	<equals
-					                   value="true">
-					            </equals>
-				          	</with>
-					    </and>
-					</visibleWhen> -->               
            		</command>
 		</menuContribution>
   </extension>
