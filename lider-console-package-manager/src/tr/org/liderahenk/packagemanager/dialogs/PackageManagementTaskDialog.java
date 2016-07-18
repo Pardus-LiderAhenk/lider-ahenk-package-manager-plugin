@@ -56,6 +56,7 @@ import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotifica
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.PackageInfo;
+import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
 
 /**
  * Task execution dialog for package-manager plugin.
@@ -67,10 +68,10 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	String upperCase = "";
 	private Button btnAdd;
 	private Button btnDelete;
-	private Button btnEdit;
 	private Button btnCheckInstall;
 	private Button btnCheckUnInstall;
 	private CheckboxTableViewer viewer;
+	private Set<String> dnString;
 
 	private PackageInfo item;
 
@@ -84,6 +85,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		super(parentShell, dnSet);
 		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
 		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
+		dnString = dnSet;
 		getData(dnSet);
 	}
 
@@ -117,6 +119,10 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
+								if(responseData != null && responseData.size() > 0 && responseData.containsKey("Result")){
+									System.out.println(responseData.get("Result"));
+									getData(dnString);
+								}
 								ArrayList<PackageInfo> items = new ArrayList<>();
 								PackageInfo i1 = new PackageInfo();
 								i1.setPackageName("ant");
@@ -124,8 +130,12 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 								PackageInfo i2 = new PackageInfo();
 								i2.setPackageName("skype");
 								i2.setVersion("4.3.0.37-0ubuntu0.12.04.1");
+								PackageInfo i3 = new PackageInfo();
+								i3.setPackageName("gedit");
+								i3.setVersion("3.10.4-0ubuntu4");
 								items.add(i1);
 								items.add(i2);
+								items.add(i3);
 								if (items != null){
 									recreateTable();
 									viewer.setInput(items);
@@ -165,7 +175,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		sc.setLayout(new GridLayout(1, false));
 		parent.setBackgroundMode(SWT.INHERIT_FORCE);
 
-		Composite composite = new Composite(sc, SWT.NONE);
+		final Composite composite = new Composite(sc, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
@@ -205,6 +215,20 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		});
 		
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
+		
+		// Hook up listeners
+				viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+					@Override
+					public void selectionChanged(SelectionChangedEvent event) {
+						IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+						Object firstElement = selection.getFirstElement();
+						firstElement = (PackageInfo) firstElement;
+						if (firstElement instanceof PackageInfo) {
+							setItem((PackageInfo) firstElement);
+						}
+						btnDelete.setEnabled(true);
+					}
+				});
 
 		return null;
 	}
@@ -340,28 +364,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		btnEdit = new Button(tableButtonComposite, SWT.NONE);
-		btnEdit.setText(Messages.getString("EDIT"));
-		btnEdit.setImage(
-				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/edit.png"));
-		btnEdit.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-		btnEdit.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (null == getItem()) {
-					Notifier.warning(null, Messages.getString("PLEASE_SELECT_ITEM"));
-					return;
-				}
-				PackageManagementItemDialog dialog = new PackageManagementItemDialog(tableButtonComposite.getShell(),
-						getItem(), viewer);
-				dialog.open();
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		});
-
 		btnDelete = new Button(tableButtonComposite, SWT.NONE);
 		btnDelete.setText(Messages.getString("DELETE"));
 		btnDelete.setImage(
@@ -387,6 +389,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		});
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
 		if (viewer.getInput() == null || ((List<PackageInfo>) viewer.getInput()).isEmpty() || viewer.getCheckedElements().length == 0) {

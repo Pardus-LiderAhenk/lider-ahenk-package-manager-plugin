@@ -3,11 +3,8 @@
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
 from base.plugin.abstract_plugin import AbstractPlugin
-from base.system.system import System
 from base.model.enum.ContentType import ContentType
-from time import sleep
-import smtplib
-import string
+import json
 
 
 class PackageManagement(AbstractPlugin):
@@ -20,8 +17,39 @@ class PackageManagement(AbstractPlugin):
 
     def handle_task(self):
         print('handle_task')
-     #   self.context.create_response(code=self.message_code.TASK_PROCESSED.value, message='resource-usage-response',
-     #                                data=data, content_type=ContentType.APPLICATION_JSON.value)
+
+        try:
+            items = (self.data)['packageInfoList']
+            result_message = ''
+            tag='installed'
+            for item in items:
+                if item['tag'] == 'Kur' or item['tag'] == 'Install':
+                    self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
+                if item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall':
+                    tag = 'uninstalled'
+                    self.logger.debug(
+                        "[PACKAGE MANAGER] Removing process will be started... {0}".format(item['packageName']))
+                command = '/bin/bash {0}package-manager/install_packages.sh {1} {2} {3}'.format(
+                    self.Ahenk.plugins_path(), item['packageName'], item['version'], item['tag'])
+                self.logger.debug(command)
+                a, result, b = self.execute(command)
+                self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
+                if a == 0:
+                    result_message += 'Package is {0} - {1}={2}\r\n'.format(tag, item['packageName'], item['version'])
+                else:
+                    result_message += 'Package could not be {0} - {1}={2}\r\n'.format(tag, item['packageName'],
+                                                                                           item['version'])
+            data = {'Result': result_message}
+            self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                                         message='Installing/Uninstalling Packages Process completed successfully',
+                                         data=json.dumps(data),
+                                         content_type=ContentType.APPLICATION_JSON.value)
+
+        except Exception as e:
+            self.logger.debug(str(e))
+            self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                         message='Error in Packages Task - Installing/Uninstalling Packages Process ',
+                                         content_type=ContentType.APPLICATION_JSON.value)
 
 
 def handle_task(task, context):

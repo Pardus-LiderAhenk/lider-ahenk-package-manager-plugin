@@ -1,12 +1,9 @@
 #!bin/bash
 
-if $3 == "Kur" or
-
-sudo apt-get install $1=$2
-
-if [ $? != 0 ];
-then
-echo "basarili"
-else
-echo "basarısız"
+if [ $3 = "Kur" ] || [ $3 = "Install" ]; then
+echo sudo apt-get --yes --force-yes install $1=$2
+sudo apt-get --yes --force-yes install $1=$2
+elif [ $3 = "Kaldır" ] || [ $3 = "Uninstall" ]; then
+echo sudo apt-get --yes --force-yes purge $1=$2
+sudo apt-get --yes --force-yes purge $1=$2
 fi
