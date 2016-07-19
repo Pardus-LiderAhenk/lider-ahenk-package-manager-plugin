@@ -10,7 +10,6 @@ public class PackageManagerConstants {
 		public static final String ADDED_ITEMS = "addedItems";
 		public static final String DELETED_ITEMS = "deletedItems";
 	}
-	
 	public static final class PACKAGE_PARAMETERS {
 		public static final String PACKAGE_NAME = "packageName";
 		public static final String PACKAGE_VERSION = "packageVersion";

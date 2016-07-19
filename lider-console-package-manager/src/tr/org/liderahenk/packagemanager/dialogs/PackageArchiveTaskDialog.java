@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +52,7 @@ import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotifica
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.PackageArchiveItem;
+import tr.org.liderahenk.packagemanager.model.PackageInfo;
 
 public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
@@ -59,6 +62,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 	private Composite packageComposite;
 	private Label lblPackageName;
 	private Text txtPackageName;
+	private Set<String> dnSet = new HashSet<>();
+	private Button btnList;
 
 	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
 
@@ -70,16 +75,17 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 		super(parentShell, dn);
 		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
 		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
-		Set<String> dnSet = new HashSet<>();
 		dnSet.add(dn);
-		getData(dnSet);
+//		getData(dnSet);
 	}
 
 	private void getData(Set<String> dnSet) {
 
 		try {
+			Map<String, Object> taskData = new HashMap<String, Object>();
+			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
 			TaskRequest task = new TaskRequest(new ArrayList<String>(dnSet), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "SHOW_PACKAGE_ARCHIVE", null, null, new Date());
+					getPluginVersion(), "SHOW_PACKAGE_ARCHIVE", taskData, null, new Date());
 			TaskRestUtils.execute(task);
 		} catch (Exception e1) {
 			logger.error(e1.getMessage(), e1);
@@ -87,6 +93,10 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 		}
 	}
 
+@SuppressWarnings("unchecked")
+public static <T extends List<?>> T cast(Object obj) {
+    return (T) obj;
+}
 	private EventHandler eventHandler = new EventHandler() {
 		@Override
 		public void handleEvent(final Event event) {
@@ -106,22 +116,27 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 							@SuppressWarnings("unchecked")
 							@Override
 							public void run() {
-								if(responseData.containsKey("Result")){
-									recreateTable();
-									PackageArchiveItem item = new PackageArchiveItem(responseData.get("Result").toString(), responseData.get("uid").toString());
-									ArrayList<PackageArchiveItem> listItems = (ArrayList<PackageArchiveItem>)viewer.getInput();
-									if(listItems == null){
-										listItems = new ArrayList<>();
+								if(responseData != null && !responseData.isEmpty() && responseData.containsKey("Result")){
+									Object itemms = responseData.get("Result");
+									List<PackageArchiveItem> its = new ArrayList<>();
+									List<LinkedHashMap<String, String>> list = cast(itemms);
+									for (Map<String, String> item : list) {
+										PackageArchiveItem it = new PackageArchiveItem(item.get("version"),item.get("installationDate"));
+										its.add(it);
 									}
-									listItems.add(item);
-									viewer.setInput(listItems);
+									recreateTable();
+									viewer.setInput(its);
 									redraw();
+								}else if(responseData != null && !responseData.isEmpty() && responseData.containsKey("ResultMessage")){
+									Notifier.info(Messages.getString("INSTALL_FROM_ARCHIVE_TITLE"), responseData.get("ResultMessage").toString());
+								}else{
+									emptyTable();
 								}
 							}
 						});
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
-						 Notifier.error("",Messages.getString("UNEXPECTED_ERROR_ACCESSING_PACKAGE_INFO"));
+						 Notifier.error("",Messages.getString("UNEXPECTED_ERROR_ACCESSING_PACKAGE_ARCHIVE"));
 					}
 					monitor.worked(100);
 					monitor.done();
@@ -158,8 +173,6 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 		sc.setExpandHorizontal(true);
 		sc.setExpandVertical(true);
 		
-		composite.setBounds(composite.getBounds().x, composite.getBounds().y, 1000, composite.getBounds().height);
-
 		packageComposite = new Composite(composite, SWT.NONE);
 		packageComposite.setLayout(new GridLayout(2, false));
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -169,6 +182,25 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 		txtPackageName = new Text(packageComposite, SWT.BORDER);
 		txtPackageName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		new Label(packageComposite, SWT.BOLD);
+		
+		btnList = new Button(packageComposite, SWT.NONE);
+		btnList.setText(Messages.getString("LIST_PACKAGES"));
+		GridData btnGridData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
+		btnGridData.widthHint = 120;
+		btnList.setLayoutData(btnGridData);
+		btnList.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				validateBeforeExecution();
+				getData(dnSet);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
 		
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
 
@@ -194,14 +226,14 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 	private void redraw() {
 		sc.layout(true, true);
-		sc.setMinSize(sc.getContent().computeSize(800, SWT.DEFAULT));
+		sc.setMinSize(sc.getContent().computeSize(1000, SWT.DEFAULT));
 	}
 
 
 
 	private void createTableColumns() {
 
-		String[] titles = { Messages.getString("PACKAGE_INFO"), Messages.getString("UID")};
+		String[] titles = { Messages.getString("VERSION"), Messages.getString("INSTALLATION_DATE")};
 
 		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
 		selectAllColumn.getColumn().setImage(
@@ -237,8 +269,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn packageInfoColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 600);
-		packageInfoColumn.setLabelProvider(new ColumnLabelProvider() {
+		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 500);
+		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof PackageArchiveItem) {
@@ -248,8 +280,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn uidColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 300);
-		uidColumn.setLabelProvider(new ColumnLabelProvider() {
+		TableViewerColumn installationDateColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 500);
+		installationDateColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof PackageArchiveItem) {
@@ -294,13 +326,22 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Map<String, Object> getParameterMap() {
 		Map<String, Object> taskData = new HashMap<String, Object>();
-		taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
+		List<PackageInfo> data = new ArrayList<>(); 
+		Object[] checkedElements = viewer.getCheckedElements();
+		for (Object checkedElement : checkedElements) {
+			PackageInfo info = new PackageInfo();
+			info.setTag(Messages.getString("INSTALL"));
+			info.setPackageName(txtPackageName.getText());
+			info.setVersion(((PackageArchiveItem)checkedElement).getVersion());
+			data.add(info);
+		}
+		taskData.put(PackageManagerConstants.PACKAGES.PACKAGE_INFO_LIST, data);
 		return taskData;
 	}
 
 	@Override
 	public String getCommandId() {
-		return "PACKAGE_ARCHIVE";
+		return "PACKAGES";
 	}
 
 	@Override

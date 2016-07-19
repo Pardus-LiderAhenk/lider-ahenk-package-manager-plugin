@@ -21,17 +21,19 @@ class Packages(AbstractPlugin):
         try:
             resultMessage = ''
             items = (self.data)['packageInfoList']
+            a = 0
             for item in items:
                 try:
-                    try:
-                        param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
-                            self.Ahenk.plugins_path(), item['source'])
-                        self.logger.debug("[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
-                        a, result, b = self.execute(param)
-                        self.logger.debug("[PACKAGE MANAGER] Repository added")
-                        resultMessage += 'Repository added - {}\r\n'.format(item['source'])
-                    except Exception as e:
-                        resultMessage += 'Repository could not be added - {}'.format(item['source'])
+                    if item['source'] is not None:
+                        try:
+                            param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
+                                self.Ahenk.plugins_path(), item['source'])
+                            self.logger.debug("[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
+                            a, result, b = self.execute(param)
+                            self.logger.debug("[PACKAGE MANAGER] Repository added")
+                            resultMessage += 'Repository added - {}\r\n'.format(item['source'])
+                        except Exception as e:
+                            resultMessage += 'Repository could not be added - {}'.format(item['source'])
                     if a == 0 and (item['tag'] == 'Kur' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
                         self.logger.debug(
@@ -58,7 +60,7 @@ class Packages(AbstractPlugin):
                     else:
                         resultMessage += 'Package could not be uninstalled - {0}={1}\r\n'.format(item['packageName'],
                                                                                                  item['version'])
-            data = {'Result': resultMessage}
+            data = {'ResultMessage': resultMessage}
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Getting Packages Process completed successfully',
                                          data=json.dumps(data),
