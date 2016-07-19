@@ -1,7 +1,9 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -39,14 +41,17 @@ import org.slf4j.LoggerFactory;
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
+import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
+import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
+import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
-import tr.org.liderahenk.packagemanager.model.PackageCheckItem;
+import tr.org.liderahenk.packagemanager.model.PackageArchiveItem;
 
-public class CheckPackageTaskDialog extends DefaultTaskDialog {
+public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 	private ScrolledComposite sc;
 	private CheckboxTableViewer viewer;
@@ -54,19 +59,32 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	private Composite packageComposite;
 	private Label lblPackageName;
 	private Text txtPackageName;
-	private Label lblVersion;
-	private Text txtVersion;
 
 	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
 
-	private static final Logger logger = LoggerFactory.getLogger(CheckPackageTaskDialog.class);
+	private static final Logger logger = LoggerFactory.getLogger(PackageArchiveTaskDialog.class);
 
 	// TODO do not forget to change this constructor if SingleSelectionHandler
 	// is used!
-	public CheckPackageTaskDialog(Shell parentShell, Set<String> dnSet) {
-		super(parentShell, dnSet);
+	public PackageArchiveTaskDialog(Shell parentShell, String dn) {
+		super(parentShell, dn);
 		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
 		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
+		Set<String> dnSet = new HashSet<>();
+		dnSet.add(dn);
+		getData(dnSet);
+	}
+
+	private void getData(Set<String> dnSet) {
+
+		try {
+			TaskRequest task = new TaskRequest(new ArrayList<String>(dnSet), DNType.AHENK, getPluginName(),
+					getPluginVersion(), "SHOW_PACKAGE_ARCHIVE", null, null, new Date());
+			TaskRestUtils.execute(task);
+		} catch (Exception e1) {
+			logger.error(e1.getMessage(), e1);
+			Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
+		}
 	}
 
 	private EventHandler eventHandler = new EventHandler() {
@@ -75,7 +93,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 			Job job = new Job("TASK") {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("PACKAGE_SOURCES", 100);
+					monitor.beginTask("PACKAGE_ARCHIVE", 100);
 					try {
 						TaskStatusNotification taskStatus = (TaskStatusNotification) event
 								.getProperty("org.eclipse.e4.data");
@@ -90,8 +108,8 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 							public void run() {
 								if(responseData.containsKey("Result")){
 									recreateTable();
-									PackageCheckItem item = new PackageCheckItem(responseData.get("Result").toString(), responseData.get("uid").toString());
-									ArrayList<PackageCheckItem> listItems = (ArrayList<PackageCheckItem>)viewer.getInput();
+									PackageArchiveItem item = new PackageArchiveItem(responseData.get("Result").toString(), responseData.get("uid").toString());
+									ArrayList<PackageArchiveItem> listItems = (ArrayList<PackageArchiveItem>)viewer.getInput();
 									if(listItems == null){
 										listItems = new ArrayList<>();
 									}
@@ -119,7 +137,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public String createTitle() {
-		return Messages.getString("CheckPackage");
+		return Messages.getString("PackageArchive");
 	}
 
 	@Override
@@ -151,12 +169,6 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 		txtPackageName = new Text(packageComposite, SWT.BORDER);
 		txtPackageName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
-		lblVersion = new Label(packageComposite, SWT.BOLD);
-		lblVersion.setText(Messages.getString("VERSION"));
-
-		txtVersion = new Text(packageComposite, SWT.BORDER);
-		txtVersion.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
 
@@ -229,8 +241,8 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		packageInfoColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageCheckItem) {
-					return ((PackageCheckItem) element).getResult();
+				if (element instanceof PackageArchiveItem) {
+					return ((PackageArchiveItem) element).getVersion();
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -240,8 +252,8 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		uidColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof PackageCheckItem) {
-					return ((PackageCheckItem) element).getUid();
+				if (element instanceof PackageArchiveItem) {
+					return ((PackageArchiveItem) element).getInstallationDate();
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -257,7 +269,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 	private void emptyTable() {
 		recreateTable();
-		viewer.setInput(new ArrayList<PackageCheckItem>());
+		viewer.setInput(new ArrayList<PackageArchiveItem>());
 		redraw();
 	}
 
@@ -283,13 +295,12 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	public Map<String, Object> getParameterMap() {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
-		taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_VERSION, txtVersion.getText());
 		return taskData;
 	}
 
 	@Override
 	public String getCommandId() {
-		return "CHECK_PACKAGE";
+		return "PACKAGE_ARCHIVE";
 	}
 
 	@Override

@@ -21,7 +21,7 @@ class PackageManagement(AbstractPlugin):
         try:
             items = (self.data)['packageInfoList']
             result_message = ''
-            tag='installed'
+            tag = 'installed'
             for item in items:
                 if item['tag'] == 'Kur' or item['tag'] == 'Install':
                     self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))

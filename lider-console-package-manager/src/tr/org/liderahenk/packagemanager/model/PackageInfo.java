@@ -1,7 +1,6 @@
 package tr.org.liderahenk.packagemanager.model;
 
 import java.io.Serializable;
-import java.util.Set;
 
 public class PackageInfo implements Serializable {
 	private static final long serialVersionUID = 5165756804600495682L;
