@@ -20,23 +20,28 @@ class ShowPackageArchive(AbstractPlugin):
     def handle_task(self):
         print('handle_task')
         try:
-            packageName = str((self.data)['packageName'])
-            a, result, b = self.execute('/bin/bash {0}package-manager/installed_packages.sh {1}'.format(self.Ahenk.plugins_path(), self.Ahenk.plugins_path()))
+            package_name = str((self.data)['packageName'])
+            self.logger.debug('[PACKAGE MANAGER] Package Installation History query is executing...')
+            a, result, b = self.execute('grep " installed {0}:" /var/log/dpkg*.log'.format(package_name))
             data = {}
-            md5sum = self.get_md5_file(str(self.Ahenk.plugins_path() + "package-manager/installed_packages.txt"))
-            self.logger.debug('[PACKAGE MANAGER] {0} renaming to {1}'.format(str(self.Ahenk.plugins_path() + 'package-manager/installed_packages.txt'), md5sum))
-            self.rename_file('{0}{1}'.format(self.Ahenk.plugins_path(), 'package-manager/installed_packages.txt'), self.Ahenk.received_dir_path() + '/' + md5sum)
-            self.logger.debug('[PACKAGE MANAGER] Renamed.')
-            data['md5'] = md5sum
-            json_data = json.dumps(data)
+            res = []
+            self.logger.debug('[PACKAGE MANAGER] Package archive info is being parsed...')
+            if result is not None:
+                result_lines = result.splitlines()
+                for line in result_lines:
+                    result_array = line.split(' ')
+                    obj = {"installationDate": '{0} {1}'.format(result_array[0], result_array[1]), "version": result_array[5]}
+                    res.append(obj)
+            if len(res) > 0:
+                data = {"Result": res}
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Package Manager Task - Getting Installed Packages completed successfully',
-                                         data=json_data, content_type=self.get_content_type().TEXT_PLAIN.value)
-            self.logger.debug('[PACKAGE MANAGER] Installed Packages task is handled successfully')
+                                         message='Package Manager Task - Getting Package Archive Process completed successfully',
+                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            self.logger.debug('[PACKAGE MANAGER] Getting Package Archive task is handled successfully')
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Error in Package Manager Task - Getting Repositories Process ',
+                                         message='Error in Package Manager Task - Getting Package Archive Process ',
                                          content_type=ContentType.APPLICATION_JSON.value)
 
 

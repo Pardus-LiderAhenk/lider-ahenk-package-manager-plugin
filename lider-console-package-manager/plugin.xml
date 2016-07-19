@@ -15,7 +15,7 @@
       </command>    
       <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
-            id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"            
+            id="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask"            
             name="%command.packagearchive.task">
       </command>    
       <command
@@ -38,7 +38,7 @@
 	<extension
        point="org.eclipse.ui.handlers">
        <handler
-            class="tr.org.liderahenk.packagemanager.handlers.PackageSourcesTaskHandler"
+            class="tr.org.liderahenk.packagemanager.handlers.PackageArchiveTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask">
       </handler>
        <handler

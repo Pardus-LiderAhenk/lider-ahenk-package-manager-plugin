@@ -101,8 +101,8 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
-								if(responseData.containsKey("Result")){
-									System.out.println(responseData.get("Result"));
+								if(responseData.containsKey("ResultMessage")){
+									System.out.println(responseData.get("ResultMessage"));
 								}
 							}
 						});
