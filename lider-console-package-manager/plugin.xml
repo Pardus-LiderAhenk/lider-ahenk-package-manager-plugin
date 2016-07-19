@@ -79,6 +79,14 @@
                   commandId="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   id="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   tooltip="%command.addremovepackage.task">
+				  	<visibleWhen>
+						<with
+			                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+			             	<equals
+				                   value="true">
+				            </equals>
+			          	</with>
+					</visibleWhen>
            		</command>
 		</menuContribution>
 		
@@ -90,6 +98,22 @@
                   commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
                   id="tr.org.liderahenk.liderconsole.commands.PackageManagerTask"
                   tooltip="%command.package.task">
+				  	<visibleWhen>
+				  		<and>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSingleEntrySelected">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
+			          	</and>
+					</visibleWhen>
            		</command>
 		</menuContribution>
 		
@@ -101,6 +125,22 @@
                   commandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"
                   id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"
                   tooltip="%command.task">
+				  	<visibleWhen>
+				  		<and>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSingleEntrySelected">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
+			          	</and>
+					</visibleWhen>
            		</command>
 		</menuContribution>
          
@@ -123,6 +163,14 @@
                   commandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
                   id="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
                   tooltip="%command.task">
+				  	<visibleWhen>
+						<with
+			                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+			             	<equals
+				                   value="true">
+				            </equals>
+			          	</with>
+					</visibleWhen>
            		</command>
 		</menuContribution>
   </extension>
