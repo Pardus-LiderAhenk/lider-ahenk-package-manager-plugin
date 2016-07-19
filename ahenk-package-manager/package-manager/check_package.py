@@ -4,8 +4,8 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 from base.model.enum.ContentType import ContentType
-import subprocess
 import json
+from base.system.system import System
 
 
 class CheckPackage(AbstractPlugin):
@@ -20,9 +20,9 @@ class CheckPackage(AbstractPlugin):
     def handle_task(self):
         print('handle_task')
         try:
-            result = ''
             packageName = str((self.data)['packageName'])
             packageVersion = str((self.data)['packageVersion'])
+            uid = System.Ahenk.uid()
             a, result, b = self.execute('dpkg -s {} | grep Version'.format(packageName))
             data = result.split(':')
             if data[0] == 'Version': #Package is installed
@@ -34,7 +34,7 @@ class CheckPackage(AbstractPlugin):
                     result = 'PACKAGE IS INSTALLED BUT WITH DIFFERENT VERSION - {}'.format(data[1])
             else: #Package is not installed
                 result = 'PACKAGE IS NOT INSTALLED'
-            res = {"Result": result}
+            res = {"uid": uid, "Result": result}
             self.logger.debug("[PACKAGE MANAGER] Result is: - {}".format(result))
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Package Manager Task - Getting Package Info Process completed successfully',

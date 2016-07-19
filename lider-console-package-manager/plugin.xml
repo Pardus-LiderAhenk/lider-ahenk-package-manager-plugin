@@ -12,7 +12,12 @@
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
             id="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"            
             name="%command.checkpackage.task">
-      </command>        
+      </command>    
+      <command
+            categoryId="tr.org.liderahenk.liderconsole.commands.category"
+            id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"            
+            name="%command.packagearchive.task">
+      </command>    
       <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
             id="tr.org.liderahenk.liderconsole.commands.PackagesTask"            
@@ -32,6 +37,10 @@
    
 	<extension
        point="org.eclipse.ui.handlers">
+       <handler
+            class="tr.org.liderahenk.packagemanager.handlers.PackageSourcesTaskHandler"
+            commandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask">
+      </handler>
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageSourcesTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask">
@@ -132,6 +141,17 @@
 				          	</with>
 			          	</and>
 					</visibleWhen>
+           		</command>
+		</menuContribution>
+         
+	<!-- Add extension point contribution for "task execution" dialogs -->
+		<menuContribution
+      		allPopups="false"
+            locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
+ 				<command
+                  commandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask"
+                  id="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask"
+                  tooltip="%command.packagearchive.task">
            		</command>
 		</menuContribution>
 		
