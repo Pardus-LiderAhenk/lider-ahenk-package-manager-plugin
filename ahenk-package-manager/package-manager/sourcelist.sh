@@ -4,7 +4,7 @@ for APT in `find /etc/apt/ -name \*.list`; do
         USER=`echo $ENTRY | cut -d/ -f4`
         PPA=`echo $ENTRY | cut -d/ -f5`
         if [ "ppa.launchpad.net" != "$HOST" ]; then
-            echo ${ENTRY}
+            echo deb ${ENTRY}
         fi
     done
 done
