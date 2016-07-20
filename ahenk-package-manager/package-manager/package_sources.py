@@ -43,7 +43,7 @@ class PackageSources(AbstractPlugin):
             self.logger.debug("[PACKAGE MANAGER] Updated package lists")
 
             # Read package repositories
-            command = '/bin/bash {0}package-manager/sourcelist.sh'.format(self.Ahenk.plugins_path())
+            command = '/bin/bash {0}package-manager/scripts/sourcelist.sh'.format(self.Ahenk.plugins_path())
             result_code, p_out, p_err = self.execute(command)
             data = {}
             if result_code != 0:
@@ -67,6 +67,7 @@ class PackageSources(AbstractPlugin):
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message="Paket depoları güncellenirken hata oluştu: " + str(e),
                                          content_type=ContentType.APPLICATION_JSON.value)
+
 
 def handle_task(task, context):
     plugin = PackageSources(task, context)

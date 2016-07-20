@@ -1,3 +1,5 @@
+#!/bin/bash
+
 for APT in `find /etc/apt/ -name \*.list`; do
     grep -Po "(?<=^deb\s).*?(?=#|$)" $APT | while read ENTRY ; do
         HOST=`echo $ENTRY | cut -d/ -f3`

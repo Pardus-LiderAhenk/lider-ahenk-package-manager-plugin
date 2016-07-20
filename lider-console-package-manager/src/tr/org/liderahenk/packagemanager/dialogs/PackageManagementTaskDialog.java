@@ -1,5 +1,8 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -8,8 +11,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -47,6 +48,7 @@ import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+import tr.org.liderahenk.liderconsole.core.xmpp.enums.ContentType;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
@@ -73,8 +75,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(PackageManagementTaskDialog.class);
 
-	// TODO do not forget to change this constructor if SingleSelectionHandler
-	// is used!
 	public PackageManagementTaskDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
 		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
@@ -84,7 +84,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	}
 
 	private void getData(Set<String> dnSet) {
-
 		try {
 			TaskRequest task = new TaskRequest(new ArrayList<String>(dnSet), DNType.AHENK, getPluginName(),
 					getPluginVersion(), "INSTALLED_PACKAGES", null, null, new Date());
@@ -102,47 +101,41 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("PACKAGE_MANAGEMENT", 100);
+					emptyTable();
+
 					try {
 						TaskStatusNotification taskStatus = (TaskStatusNotification) event
 								.getProperty("org.eclipse.e4.data");
-						byte[] data = taskStatus.getResult().getResponseData();
-						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
-								new TypeReference<HashMap<String, Object>>() {
-						});
-						Display.getDefault().asyncExec(new Runnable() {
-
-							@Override
-							public void run() {
-								if(responseData != null && responseData.size() > 0 && responseData.containsKey("Result")){
-									System.out.println(responseData.get("Result"));
-									getData(dnString);
-								}
-								ArrayList<PackageInfo> items = new ArrayList<>();
-								PackageInfo i1 = new PackageInfo();
-								i1.setPackageName("ant");
-								i1.setVersion("1.9.3-2build1");
-								PackageInfo i2 = new PackageInfo();
-								i2.setPackageName("skype");
-								i2.setVersion("4.3.0.37-0ubuntu0.12.04.1");
-								PackageInfo i3 = new PackageInfo();
-								i3.setPackageName("gedit");
-								i3.setVersion("3.10.4-0ubuntu4");
-								items.add(i1);
-								items.add(i2);
-								items.add(i3);
-								if (items != null){
-									recreateTable();
-									viewer.setInput(items);
-									redraw();
-								}else{
-									emptyTable();
-								}
+						if (ContentType.getFileContentTypes().contains(taskStatus.getResult().getContentType())) {
+							byte[] data = taskStatus.getResult().getResponseData();
+							BufferedReader bufReader = new BufferedReader(
+									new StringReader(new String(data, StandardCharsets.UTF_8)));
+							String line = null;
+							final ArrayList<PackageInfo> items = new ArrayList<>();
+							while ((line = bufReader.readLine()) != null) {
+								String[] tokens = line.split(",");
+								PackageInfo packageInfo = new PackageInfo();
+								packageInfo.setPackageName(tokens[1]);
+								packageInfo.setVersion(tokens[2]);
+								items.add(packageInfo);
 							}
-						});
+							if (items != null && !items.isEmpty()) {
+								Display.getDefault().asyncExec(new Runnable() {
+									@Override
+									public void run() {
+										recreateTable();
+										viewer.setInput(items);
+										redraw();
+									}
+								});
+							}
+						}
+
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
 						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_ACCESSING_PACKAGES"));
 					}
+
 					monitor.worked(100);
 					monitor.done();
 
@@ -176,11 +169,11 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		sc.setContent(composite);
 		sc.setExpandHorizontal(true);
 		sc.setExpandVertical(true);
-		
+
 		createButtons(composite);
 		Composite installationComposite = new Composite(composite, SWT.NONE);
 		installationComposite.setLayout(new GridLayout(2, false));
-		
+
 		btnCheckInstall = new Button(installationComposite, SWT.CHECK);
 		btnCheckInstall.setText(Messages.getString("INSTALL"));
 		btnCheckInstall.addSelectionListener(new SelectionListener() {
@@ -207,22 +200,22 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-		
+
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
-		
+
 		// Hook up listeners
-				viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-					@Override
-					public void selectionChanged(SelectionChangedEvent event) {
-						IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-						Object firstElement = selection.getFirstElement();
-						firstElement = (PackageInfo) firstElement;
-						if (firstElement instanceof PackageInfo) {
-							setItem((PackageInfo) firstElement);
-						}
-						btnDelete.setEnabled(true);
-					}
-				});
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+				Object firstElement = selection.getFirstElement();
+				firstElement = (PackageInfo) firstElement;
+				if (firstElement instanceof PackageInfo) {
+					setItem((PackageInfo) firstElement);
+				}
+				btnDelete.setEnabled(true);
+			}
+		});
 
 		return null;
 	}
@@ -248,11 +241,9 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		sc.setMinSize(sc.getContent().computeSize(600, SWT.DEFAULT));
 	}
 
-
-
 	private void createTableColumns() {
 
-		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("PACKAGE_VERSION")};
+		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("PACKAGE_VERSION") };
 
 		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
 		selectAllColumn.getColumn().setImage(
@@ -334,8 +325,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		viewer.getTable().setRedraw(true);
 	}
 
-
-
 	private void createButtons(final Composite parent) {
 		final Composite tableButtonComposite = new Composite(parent, SWT.NONE);
 		tableButtonComposite.setLayout(new GridLayout(3, false));
@@ -386,7 +375,8 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if (viewer.getInput() == null || ((List<PackageInfo>) viewer.getInput()).isEmpty() || viewer.getCheckedElements().length == 0) {
+		if (viewer.getInput() == null || ((List<PackageInfo>) viewer.getInput()).isEmpty()
+				|| viewer.getCheckedElements().length == 0) {
 			throw new ValidationException(Messages.getString("ADD_ITEM"));
 		}
 	}
@@ -396,10 +386,10 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		Object[] checkedElements = viewer.getCheckedElements();
 		for (Object packageInfo : checkedElements) {
-			if(btnCheckInstall.getSelection())
-				((PackageInfo)packageInfo).setTag(Messages.getString("INSTALL"));
+			if (btnCheckInstall.getSelection())
+				((PackageInfo) packageInfo).setTag("INSTALL");
 			else
-				((PackageInfo)packageInfo).setTag(Messages.getString("UNINSTALL"));
+				((PackageInfo) packageInfo).setTag("UNINSTALL");
 		}
 		taskData.put(PackageManagerConstants.PACKAGES.PACKAGE_INFO_LIST, checkedElements);
 		return taskData;

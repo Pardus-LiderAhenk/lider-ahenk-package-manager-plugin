@@ -18,7 +18,7 @@ class PackageSourcesList(AbstractPlugin):
     def handle_task(self):
         error_message = ""
         try:
-            result_code, p_out, p_err = self.execute('/bin/bash {}package-manager/sourcelist.sh'.format(self.Ahenk.plugins_path()))
+            result_code, p_out, p_err = self.execute('/bin/bash {}package-manager/scripts/sourcelist.sh'.format(self.Ahenk.plugins_path()))
             data = {}
             if result_code != 0:
                 self.logger.error("[PACKAGE MANAGER] Error occurred while listing repositories: " + str(p_err))
@@ -41,6 +41,7 @@ class PackageSourcesList(AbstractPlugin):
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message="Paket depoları okunurken hata oluştu: " + str(e),
                                          content_type=ContentType.APPLICATION_JSON.value)
+
 
 def handle_task(task, context):
     plugin = PackageSourcesList(task, context)
