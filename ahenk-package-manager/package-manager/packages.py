@@ -36,7 +36,7 @@ class Packages(AbstractPlugin):
                             resultMessage += 'Repository could not be added - {}'.format(item['source'])
                     if a == 0 and (item['tag'] == 'Kur' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
-                        a, result, b = self.install_package(item['packageName'], item['version'])
+                        a, result, b = self.install_with_apt_get(item['packageName'], item['version'])
                         self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
                         resultMessage += 'Package installed - {0}={1}\r\n'.format(item['packageName'], item['version'])
                     elif a == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
