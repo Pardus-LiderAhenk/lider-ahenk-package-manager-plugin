@@ -18,7 +18,7 @@ class PackageSources(AbstractPlugin):
     def handle_task(self):
         added_items = self.data['addedItems']
         deleted_items = self.data['deletedItems']
-        error_message = "Paket depoları güncellenirken hata oluştu"
+        error_message = ""
         try:
             # Add desired repositories
             for item in added_items:
@@ -26,7 +26,7 @@ class PackageSources(AbstractPlugin):
                 result_code, p_out, p_err = self.execute(command)
                 if result_code != 0:
                     self.logger.error("[PACKAGE MANAGER] Error occurred while adding repository: " + str(p_err))
-                    error_message = "Paket deposu eklenirken hata oluştu: " + str(p_err)
+                    error_message += " Paket deposu eklenirken hata oluştu: " + str(p_err)
             self.logger.debug("[PACKAGE MANAGER] Added repositories")
 
             # Remove desired repositories
@@ -35,7 +35,7 @@ class PackageSources(AbstractPlugin):
                 result_code, p_out, p_err = self.execute(command)
                 if result_code != 0:
                     self.logger.error("[PACKAGE MANAGER] Error occurred while removing repository: " + str(p_err))
-                    error_message = "Paket deposu silinirken hata oluştu: " + str(p_err)
+                    error_message += " Paket deposu silinirken hata oluştu: " + str(p_err)
             self.logger.debug("[PACKAGE MANAGER] Removed repositories")
 
             # Update package lists
@@ -45,21 +45,28 @@ class PackageSources(AbstractPlugin):
             # Read package repositories
             command = '/bin/bash {0}package-manager/sourcelist.sh'.format(self.Ahenk.plugins_path())
             result_code, p_out, p_err = self.execute(command)
+            data = {}
             if result_code != 0:
                 self.logger.error("[PACKAGE MANAGER] Error occurred while listing repositories: " + str(p_err))
-                error_message = "Paket depoları okunurken hata oluştu: " + str(p_err)
-            data = {'Result': p_out}
-            self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
+                error_message += " Paket depoları okunurken hata oluştu: " + str(p_err)
+            else:
+                data['Result'] = p_out
+                self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
 
-            self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Paket depoları başarıyla güncellendi.',
-                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            if not error_message:
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                                             message='Paket depoları başarıyla güncellendi.',
+                                             data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            else:
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message=error_message,
+                                             content_type=ContentType.APPLICATION_JSON.value)
+
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message=error_message,
+                                         message="Paket depoları güncellenirken hata oluştu: " + str(e),
                                          content_type=ContentType.APPLICATION_JSON.value)
-
 
 def handle_task(task, context):
     plugin = PackageSources(task, context)
