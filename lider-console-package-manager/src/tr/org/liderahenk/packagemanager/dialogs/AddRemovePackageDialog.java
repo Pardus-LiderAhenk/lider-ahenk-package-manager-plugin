@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -31,7 +30,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
@@ -132,7 +130,9 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	public Control createTaskDialogArea(Composite parent) {
 
 		sc = new ScrolledComposite(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-		sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gridData.widthHint = 1000;
+		sc.setLayoutData(gridData);
 		sc.setLayout(new GridLayout(1, false));
 		parent.setBackgroundMode(SWT.INHERIT_FORCE);
 
@@ -156,7 +156,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		btnAddRep.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (!txtUrl.getText().isEmpty() && !txtComponents.getText().isEmpty())
+				if (txtUrl != null && !txtUrl.getText().isEmpty() &&txtComponents != null && !txtComponents.getText().isEmpty())
 					handleAddGroupButton(e);
 				else
 					Notifier.error("", Messages.getString("FILL_ALL_FIELDS"));
@@ -270,10 +270,12 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 		txtUrl = new Text(grpPackageEntry, SWT.BORDER);
 		GridData txtGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		txtGridData.widthHint = 400;
 		txtUrl.setLayoutData(txtGridData);
 
 		txtComponents = new Text(grpPackageEntry, SWT.BORDER);
 		GridData componentsGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		componentsGridData.widthHint = 300;
 		txtComponents.setLayoutData(componentsGridData);
 	}
 
@@ -387,9 +389,10 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String[] list = list();
+				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
-					List<PackageInfo> resultSet = RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
-							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",list[i]);
+					 resultSet.addAll(RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
+							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",list[i]));
 					if (checkSearchingCriteria(resultSet) != null && checkSearchingCriteria(resultSet).size() > 0) {
 						recreateTable();
 						viewer.setInput(checkSearchingCriteria(resultSet));
