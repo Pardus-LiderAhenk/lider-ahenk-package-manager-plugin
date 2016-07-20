@@ -33,8 +33,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="ShowPackageArchiveCommand" 
         class="tr.org.liderahenk.packagemanager.commands.ShowPackageArchiveCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>
@@ -44,8 +42,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="PackageArchiveCommand" 
         class="tr.org.liderahenk.packagemanager.commands.PackageArchiveCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>
@@ -55,8 +51,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="CheckPackageCommand" 
         class="tr.org.liderahenk.packagemanager.commands.CheckPackageCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>
@@ -66,8 +60,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="PackagesCommand" 
         class="tr.org.liderahenk.packagemanager.commands.PackagesCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>
@@ -77,8 +69,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="InstalledPackagesCommand" 
         class="tr.org.liderahenk.packagemanager.commands.InstalledPackagesCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>
@@ -88,8 +78,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="RepositoriesCommand" 
         class="tr.org.liderahenk.packagemanager.commands.RepositoriesCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>
@@ -100,8 +88,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="PackageSourcesCommand" 
         class="tr.org.liderahenk.packagemanager.commands.PackageSourcesCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>
@@ -112,8 +98,6 @@
       interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
   <bean id="PackageManagerCommand" 
         class="tr.org.liderahenk.packagemanager.commands.PackageManagerCommand">
-        <property name="pluginDbService" ref="pluginDbService"/>
-        <property name="logService" ref="logService"/>
         <property name="resultFactory" ref="resultFactory"/>
 		<property name="pluginInfo" ref="pluginInfoImpl" />
   </bean>

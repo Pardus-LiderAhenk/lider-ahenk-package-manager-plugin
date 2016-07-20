@@ -88,8 +88,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 							@SuppressWarnings("unchecked")
 							@Override
 							public void run() {
-								if(responseData.containsKey("Result")){
-									recreateTable();
+								if(responseData != null && responseData.containsKey("Result") && responseData.containsKey("uid")){
 									PackageCheckItem item = new PackageCheckItem(responseData.get("Result").toString(), responseData.get("uid").toString());
 									ArrayList<PackageCheckItem> listItems = (ArrayList<PackageCheckItem>)viewer.getInput();
 									if(listItems == null){
@@ -98,6 +97,16 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 									listItems.add(item);
 									viewer.setInput(listItems);
 									redraw();
+									
+//									recreateTable();
+//									PackageCheckItem item = new PackageCheckItem(responseData.get("Result").toString(), responseData.get("uid").toString());
+//									ArrayList<PackageCheckItem> listItems = (ArrayList<PackageCheckItem>)viewer.getInput();
+//									if(listItems == null){
+//										listItems = new ArrayList<>();
+//									}
+//									listItems.add(item);
+//									viewer.setInput(listItems);
+//									redraw();
 								}
 							}
 						});
@@ -284,6 +293,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
 		taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_VERSION, txtVersion.getText());
+		emptyTable();
 		return taskData;
 	}
 

@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -114,7 +115,6 @@ public static <T extends List<?>> T cast(Object obj) {
 						});
 						Display.getDefault().asyncExec(new Runnable() {
 
-							@SuppressWarnings("unchecked")
 							@Override
 							public void run() {
 								if(responseData != null && !responseData.isEmpty() && responseData.containsKey("Result")){
@@ -207,6 +207,17 @@ public static <T extends List<?>> T cast(Object obj) {
 		});
 		
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
+		
+		viewer.getTable().addSelectionListener(new SelectionAdapter() {
+
+			  @Override
+			  public void widgetSelected(SelectionEvent e) {
+			      int df = viewer.getTable().getSelectionIndex();
+
+			      viewer.setAllChecked(false);
+				  viewer.setChecked(viewer.getElementAt(df), !viewer.getChecked(viewer.getElementAt(df)));
+			  }         
+			});
 
 		return null;
 	}
@@ -329,7 +340,6 @@ public static <T extends List<?>> T cast(Object obj) {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		Object[] checkedElements = viewer.getCheckedElements();
 		for (Object checkedElement : checkedElements) {
-			PackageArchiveItem info = new PackageArchiveItem();
 			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
 			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_VERSION, ((PackageArchiveItem)checkedElement).getVersion());
 		}
