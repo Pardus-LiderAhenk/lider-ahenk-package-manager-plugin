@@ -4,7 +4,6 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 from base.model.enum.ContentType import ContentType
-import subprocess
 import json
 
 
@@ -16,26 +15,34 @@ class PackageSourcesList(AbstractPlugin):
         self.logger = self.get_logger()
         self.message_code = self.get_message_code()
 
-
     def handle_task(self):
-        print('handle_task')
+        error_message = ""
         try:
-            a, result, b = self.execute('/bin/bash {}package-manager/sourcelist.sh'.format(self.Ahenk.plugins_path()))
-            data = {'Result': result}
-            self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
-            self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Package Manager Task - Getting Repositories Process completed successfully',
-                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
-            self.logger.debug("[PACKAGE MANAGER] Repository list sent")
+            result_code, p_out, p_err = self.execute('/bin/bash {}package-manager/sourcelist.sh'.format(self.Ahenk.plugins_path()))
+            data = {}
+            if result_code != 0:
+                self.logger.error("[PACKAGE MANAGER] Error occurred while listing repositories: " + str(p_err))
+                error_message += " Paket depoları okunurken hata oluştu: " + str(p_err)
+            else:
+                data['Result'] = p_out
+                self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
+
+            if not error_message:
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                                             message='Paket depoları başarıyla okundu.',
+                                             data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            else:
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message=error_message,
+                                             content_type=ContentType.APPLICATION_JSON.value)
+
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Error in Package Manager Task - Getting Repositories Process ',
+                                         message="Paket depoları okunurken hata oluştu: " + str(e),
                                          content_type=ContentType.APPLICATION_JSON.value)
 
 
 def handle_task(task, context):
-    print('PackageManager Plugin Task')
-    print('Task Data : {}'.format(str(task)))
     plugin = PackageSourcesList(task, context)
     plugin.handle_task()
