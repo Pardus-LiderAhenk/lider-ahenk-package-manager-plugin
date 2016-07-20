@@ -35,13 +35,13 @@ class ShowPackageArchive(AbstractPlugin):
             if len(res) > 0:
                 data = {"Result": res}
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Package Manager Task - Getting Package Archive Process completed successfully',
+                                         message='Paket arşivi başarıyla getirildi',
                                          data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
             self.logger.debug('[PACKAGE MANAGER] Getting Package Archive task is handled successfully')
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Error in Package Manager Task - Getting Package Archive Process ',
+                                         message='Paket arşivi getirilirken beklenmedik hata!',
                                          content_type=ContentType.APPLICATION_JSON.value)
 
 

@@ -24,13 +24,13 @@ class PackageSourcesList(AbstractPlugin):
             data = {'Result': result}
             self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Package Manager Task - Getting Repositories Process completed successfully',
+                                         message='Paket Depoları başarıyla getirildi',
                                          data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
             self.logger.debug("[PACKAGE MANAGER] Repository list sent")
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Error in Package Manager Task - Getting Repositories Process ',
+                                         message='Paket Depoları getirilirken beklenmedik hata!',
                                          content_type=ContentType.APPLICATION_JSON.value)
 
 

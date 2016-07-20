@@ -7,8 +7,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tr.org.liderahenk.lider.core.api.log.IOperationLogService;
-import tr.org.liderahenk.lider.core.api.persistence.IPluginDbService;
 import tr.org.liderahenk.lider.core.api.plugin.ICommand;
 import tr.org.liderahenk.lider.core.api.plugin.IPluginInfo;
 import tr.org.liderahenk.lider.core.api.rest.requests.ITaskRequest;
@@ -17,13 +15,11 @@ import tr.org.liderahenk.lider.core.api.service.ICommandResult;
 import tr.org.liderahenk.lider.core.api.service.ICommandResultFactory;
 import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
 
-public class PackagesCommand implements ICommand{
+public class PackagesCommand implements ICommand {
 	private Logger logger = LoggerFactory.getLogger(PackagesCommand.class);
 
 	private ICommandResultFactory resultFactory;
 	private IPluginInfo pluginInfo;
-	private IOperationLogService logService;
-	private IPluginDbService pluginDbService;
 
 	@Override
 	public ICommandResult execute(ICommandContext context) {
@@ -78,14 +74,6 @@ public class PackagesCommand implements ICommand{
 
 	public void setPluginInfo(IPluginInfo pluginInfo) {
 		this.pluginInfo = pluginInfo;
-	}
-
-	public void setLogService(IOperationLogService logService) {
-		this.logService = logService;
-	}
-
-	public void setPluginDbService(IPluginDbService pluginDbService) {
-		this.pluginDbService = pluginDbService;
 	}
 
 }

@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class PackageArchiveItem implements Serializable {
 
 	private static final long serialVersionUID = 8410790905721952374L;
+	private String packageName;
 	private String version;
 	private String installationDate;
 
@@ -33,5 +34,13 @@ public class PackageArchiveItem implements Serializable {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
 	}
 }

@@ -194,7 +194,7 @@ public static <T extends List<?>> T cast(Object obj) {
 		btnList.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if(txtPackageName != null || txtPackageName.getText() != null || txtPackageName.getText().isEmpty())
+				if(txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty())
 					Notifier.error("Paket Kurulumu Sonucu", Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
 				else
 					getData(dnSet);
@@ -327,22 +327,19 @@ public static <T extends List<?>> T cast(Object obj) {
 	@Override
 	public Map<String, Object> getParameterMap() {
 		Map<String, Object> taskData = new HashMap<String, Object>();
-		List<PackageInfo> data = new ArrayList<>(); 
 		Object[] checkedElements = viewer.getCheckedElements();
 		for (Object checkedElement : checkedElements) {
-			PackageInfo info = new PackageInfo();
-			info.setTag(Messages.getString("INSTALL"));
-			info.setPackageName(txtPackageName.getText());
-			info.setVersion(((PackageArchiveItem)checkedElement).getVersion());
-			data.add(info);
+			PackageArchiveItem info = new PackageArchiveItem();
+			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
+			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_VERSION, ((PackageArchiveItem)checkedElement).getVersion());
 		}
-		taskData.put(PackageManagerConstants.PACKAGES.PACKAGE_INFO_LIST, data);
+		
 		return taskData;
 	}
 
 	@Override
 	public String getCommandId() {
-		return "PACKAGES";
+		return "PACKAGE_ARCHIVE";
 	}
 
 	@Override
