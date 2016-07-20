@@ -42,7 +42,6 @@ class PackageSourcesList(AbstractPlugin):
                                          message="Paket depoları okunurken hata oluştu: " + str(e),
                                          content_type=ContentType.APPLICATION_JSON.value)
 
-
 def handle_task(task, context):
     plugin = PackageSourcesList(task, context)
     plugin.handle_task()

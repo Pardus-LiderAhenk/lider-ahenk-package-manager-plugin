@@ -36,20 +36,14 @@ class Packages(AbstractPlugin):
                             resultMessage += 'Repository could not be added - {}'.format(item['source'])
                     if a == 0 and (item['tag'] == 'Kur' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
-                        self.logger.debug(
-                            "[PACKAGE MANAGER] sudo apt-get --yes --force-yes install {0}={1}".format(item['packageName'],
-                                                                                         item['version']))
-                        command = "sudo apt-get --yes --force-yes install {0}={1}".format(item['packageName'],
-                                                                                          item['version'])
-                        a, result, b = self.execute(command)
+                        a, result, b = self.install_package(item['packageName'], item['packageVersion'])
                         self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
                         resultMessage += 'Package installed - {0}={1}\r\n'.format(item['packageName'], item['version'])
                     elif a == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
                         self.logger.debug("[PACKAGE MANAGER] Removing package... {0}".format(item['packageName']))
                         self.logger.debug(
                             "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'], item['version']))
-                        command = "sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'], item['version'])
-                        a, result, b = self.execute(command)
+                        a, result, b = self.remove_package(item['packageName'], item['packageVersion'])
                         self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
                         resultMessage += 'Package uninstalled - {0}={1}\r\n'.format(item['packageName'],
                                                                                     item['version'])
@@ -62,13 +56,13 @@ class Packages(AbstractPlugin):
                                                                                                  item['version'])
             data = {'ResultMessage': resultMessage}
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Getting Packages Process completed successfully',
+                                         message='Paketler listelendi',
                                          data=json.dumps(data),
                                          content_type=ContentType.APPLICATION_JSON.value)
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Error in Packages Task - Getting Packages Process ',
+                                         message='Paketler listelenirken beklenmedik hata!',
                                          content_type=ContentType.APPLICATION_JSON.value)
 
 

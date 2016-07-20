@@ -41,14 +41,14 @@ class PackageManagement(AbstractPlugin):
                                                                                            item['version'])
             data = {'Result': result_message}
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Installing/Uninstalling Packages Process completed successfully',
+                                         message='Paket Kur/Kaldır işlemleri başarıyla gerçekleştirildi',
                                          data=json.dumps(data),
                                          content_type=ContentType.APPLICATION_JSON.value)
 
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Error in Packages Task - Installing/Uninstalling Packages Process ',
+                                         message='Paket Kur/Kaldır işlemleri gerçekleştirilirken beklenmedik hata!',
                                          content_type=ContentType.APPLICATION_JSON.value)
 
 

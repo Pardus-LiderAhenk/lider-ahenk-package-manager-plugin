@@ -29,13 +29,13 @@ class InstalledPackages(AbstractPlugin):
             data['md5'] = md5sum
             json_data = json.dumps(data)
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Package Manager Task - Getting Installed Packages completed successfully',
+                                         message='Kurulu olan paketler başarıyla getirildi',
                                          data=json_data, content_type=self.get_content_type().TEXT_PLAIN.value)
             self.logger.debug('[PACKAGE MANAGER] Installed Packages task is handled successfully')
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Error in Package Manager Task - Getting Repositories Process ',
+                                         message='Kurulu olan paketler getirilirken beklenmedik hata!',
                                          content_type=ContentType.APPLICATION_JSON.value)
 
 
