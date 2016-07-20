@@ -4,7 +4,6 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 from base.model.enum.ContentType import ContentType
-import re
 import json
 
 

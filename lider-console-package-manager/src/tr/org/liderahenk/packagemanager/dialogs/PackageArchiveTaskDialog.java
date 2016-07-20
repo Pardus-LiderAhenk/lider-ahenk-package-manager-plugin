@@ -78,6 +78,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 		dnSet.add(dn);
 //		getData(dnSet);
 	}
+	
 
 	private void getData(Set<String> dnSet) {
 
@@ -154,7 +155,7 @@ public static <T extends List<?>> T cast(Object obj) {
 	public String createTitle() {
 		return Messages.getString("PackageArchive");
 	}
-
+	
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
 
@@ -193,8 +194,11 @@ public static <T extends List<?>> T cast(Object obj) {
 		btnList.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				validateBeforeExecution();
-				getData(dnSet);
+				if(txtPackageName != null || txtPackageName.getText() != null || txtPackageName.getText().isEmpty())
+					Notifier.error("Paket Kurulumu Sonucu", Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
+				else
+					getData(dnSet);
+				
 			}
 
 			@Override
@@ -318,9 +322,6 @@ public static <T extends List<?>> T cast(Object obj) {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if(txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty()){
-			throw new ValidationException(Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
-		}
 	}
 
 	@Override
