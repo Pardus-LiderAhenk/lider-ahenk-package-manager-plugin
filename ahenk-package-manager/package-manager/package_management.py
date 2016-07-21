@@ -26,45 +26,44 @@ class PackageManagement(AbstractPlugin):
             for item in items:
 
                 # Install package
-                if item['tag'] == 'Install':
+                if item['tag'] == 'i':
                     self.logger.debug("[PACKAGE MANAGER] Installing package: {0}".format(item['packageName']))
                     try:
                         self.install_with_apt_get(item['packageName'], item['version'])
                         self.logger.debug("[PACKAGE MANAGER] Installed package: {0}".format(item['packageName']))
                         installed_packages += ' ' + item['packageName']
-                    except Exception as e:
-                        self.logger.error(str(e))
+                    except Exception as e1:
+                        self.logger.error(str(e1))
                         failed_packages += ' ' + item['packageName']
 
                 # Uninstall package
-                if item['tag'] == 'Uninstall':
+                elif item['tag'] == 'u':
                     self.logger.debug("[PACKAGE MANAGER] Uninstalling package: {0}".format(item['packageName']))
                     try:
                         self.uninstall_package(item['packageName'], item['version'])
                         self.logger.debug("[PACKAGE MANAGER] Uninstalled package: {0}".format(item['packageName']))
                         uninstalled_packages += ' ' + item['packageName']
-                    except Exception as e:
-                        self.logger.error(str(e))
+                    except Exception as e2:
+                        self.logger.error(str(e2))
                         failed_packages += ' ' + item['packageName']
 
-                # Result message
-                if not installed_packages:
-                    result_message += ' Kurulan paketler: (' + installed_packages + ' )'
-                if not uninstalled_packages:
-                    result_message += ' Kaldırılan paketler: (' + uninstalled_packages + ' )'
-                if not failed_packages:
-                    result_message += ' İşlem sırasında hata alan paketler: (' + failed_packages + ' )'
-                    self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                                 message='Paket kur/kaldır işlemleri gerçekleştirilirken hata oluştu:' + str(e),
-                                                 data=json.dumps({'Result': result_message}),
-                                                 content_type=ContentType.APPLICATION_JSON.value)
-                else:
-                    self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                                 message='Paket kur/kaldır işlemleri başarıyla gerçekleştirildi',
-                                                 data=json.dumps({'Result': result_message}),
-                                                 content_type=ContentType.APPLICATION_JSON.value)
-
-                # TODO return package list!
+            # Result message
+            if installed_packages:
+                result_message += ' Kurulan paketler: (' + installed_packages + ' )'
+            if uninstalled_packages:
+                result_message += ' Kaldırılan paketler: (' + uninstalled_packages + ' )'
+            if failed_packages:
+                result_message += ' Hata alan paketler: (' + failed_packages + ' )'
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message='Paket işlemleri sırasında hata oluştu: ' + result_message,
+                                             data=json.dumps({'Result': result_message}),
+                                             content_type=ContentType.APPLICATION_JSON.value)
+            else:
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                                             message='Paket işlemleri başarıyla gerçekleştirildi: ' + result_message,
+                                             data=json.dumps({'Result': result_message}),
+                                             content_type=ContentType.APPLICATION_JSON.value)
+            # TODO return package list!
 
         except Exception as e:
             self.logger.error(str(e))
