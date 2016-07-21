@@ -44,29 +44,25 @@ import org.apache.http.impl.client.HttpClientBuilder;
  */
 public abstract class RepoSourcesListParser {
 	@SuppressWarnings("restriction")
-	public static List<PackageInfo> parseURL(String url, String distribution,
-			String[] components, String architecture,String deb) {
+	public static List<PackageInfo> parseURL(String url, String distribution, String[] components, String architecture,
+			String deb) {
 		List<PackageInfo> packages = new ArrayList<PackageInfo>();
 		for (String component : components) {
 			try {
 				// Find URL pointing to the package file
-				String packageURL = findPackageURL(url, distribution,
-						component, architecture);
+				String packageURL = findPackageURL(url, distribution, component, architecture);
 				System.out.println("URL: " + packageURL);
 				// GET package file
 				HttpClient client = HttpClientBuilder.create().build();
 				HttpGet request = new HttpGet(packageURL);
 				HttpResponse response = client.execute(request);
-				System.out.println("Response code: "
-						+ response.getStatusLine().getStatusCode());
+				System.out.println("Response code: " + response.getStatusLine().getStatusCode());
 				HttpEntity entity = response.getEntity();
 				if (entity != null) {
 					// Extract package file
-					BZip2CompressorInputStream inputStream = new BZip2CompressorInputStream(
-							entity.getContent());
+					BZip2CompressorInputStream inputStream = new BZip2CompressorInputStream(entity.getContent());
 					if (inputStream != null) {
-						BufferedReader reader = new BufferedReader(
-								new InputStreamReader(inputStream));
+						BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 						if (reader != null) {
 							String line = "";
 							PackageInfo info = null;
@@ -80,12 +76,11 @@ public abstract class RepoSourcesListParser {
 									continue;
 								}
 								String[] tokens = line.split(":", 2);
-								String propertyMethodName = getPropertyMethodName(tokens[0]
-										.trim());
+								String propertyMethodName = getPropertyMethodName(tokens[0].trim());
 								String propertyValue = tokens[1].trim();
-								setPropertyValue(info, propertyMethodName,
-										propertyValue);
-								info.setSource(deb + " " + url + " " + distribution + " " + StringUtils.join(components," "));
+								setPropertyValue(info, propertyMethodName, propertyValue);
+								info.setSource(
+										deb + " " + url + " " + distribution + " " + StringUtils.join(components, " "));
 							}
 						}
 						reader.close();
@@ -97,13 +92,12 @@ public abstract class RepoSourcesListParser {
 				e.printStackTrace();
 			}
 		}
-		if(packages != null && packages.size() > 0)
-			packages.remove(packages.get(packages.size()-1));
+		if (packages != null && packages.size() > 0)
+			packages.remove(packages.get(packages.size() - 1));
 		return packages;
 	}
-	
-	private static String findPackageURL(String url, String distribution,
-			String component, String architecture) {
+
+	private static String findPackageURL(String url, String distribution, String component, String architecture) {
 		String packageURL = url;
 		if (!url.endsWith("/")) {
 			packageURL += "/";

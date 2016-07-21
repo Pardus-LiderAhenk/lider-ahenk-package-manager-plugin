@@ -3,7 +3,9 @@ package tr.org.liderahenk.packagemanager.model;
 import java.io.Serializable;
 
 public class PackageInfo implements Serializable {
+
 	private static final long serialVersionUID = 5165756804600495682L;
+
 	private String packageName;
 	private String priority;
 	private String section;
@@ -30,6 +32,10 @@ public class PackageInfo implements Serializable {
 	private String replaces;
 	private String provides;
 	private String preDepends;
+	// Indicates whether the package is installed or not
+	private boolean installed;
+	// Desired status of the package (INSTALL, UNINSTALL or NA)
+	private DesiredPackageStatus desiredStatus;
 
 	public String getPackageName() {
 		return packageName;
@@ -239,8 +245,26 @@ public class PackageInfo implements Serializable {
 		this.preDepends = preDepends;
 	}
 
+	public boolean isInstalled() {
+		return installed;
+	}
+
+	public void setInstalled(boolean installed) {
+		this.installed = installed;
+	}
+
+	public DesiredPackageStatus getDesiredStatus() {
+		return desiredStatus;
+	}
+
+	public void setDesiredStatus(DesiredPackageStatus desiredStatus) {
+		this.desiredStatus = desiredStatus;
+	}
+
 	@Override
 	public String toString() {
-		return "Package: " + packageName + " " + version;
+		return "PackageInfo [packageName=" + packageName + ", version=" + version + ", installed=" + installed
+				+ ", desiredStatus=" + desiredStatus + "]";
 	}
+
 }
