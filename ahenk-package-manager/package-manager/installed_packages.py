@@ -21,7 +21,7 @@ class InstalledPackages(AbstractPlugin):
     def handle_task(self):
         try:
             self.logger.debug('[PACKAGE MANAGER] Executing command for package list.')
-            self.execute('dpkg --list | tail -n +6 | awk \'{{print $1\",\"$2\",\"$3}}\' > {0}'.format(self.file_path))
+            self.execute('dpkg-query -f=\'${{Status}},${{binary:Package}},${{Version}}\n\' -W \'*\' | sed \'s/install ok installed/i/\' | sed \'s/unknown ok not-installed/u/\' | sed \'s/deinstall ok config-files/u/\' > {0}'.format(self.file_path))
             self.logger.debug('[PACKAGE MANAGER] Command executed.')
 
             if self.is_exist(self.file_path):
