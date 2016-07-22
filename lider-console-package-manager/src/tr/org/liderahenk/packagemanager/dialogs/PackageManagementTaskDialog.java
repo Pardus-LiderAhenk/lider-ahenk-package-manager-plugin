@@ -7,15 +7,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -39,7 +36,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
@@ -61,10 +57,6 @@ import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.DesiredPackageStatus;
 import tr.org.liderahenk.packagemanager.model.PackageInfo;
 
-/**
- * Task execution dialog for package-manager plugin.
- * 
- */
 public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(PackageManagementTaskDialog.class);
@@ -78,11 +70,10 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 	private PackageInfo selectedPackage;
 
-	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
 
-	public PackageManagementTaskDialog(Shell parentShell, Set<String> dnSet) {
-		super(parentShell, dnSet);
-		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), taskStatusNotificationHandler);
+	public PackageManagementTaskDialog(Shell parentShell, String dn) {
+		super(parentShell, dn);
+		subscribeEventHandler(taskStatusNotificationHandler);
 		installImage = new Image(Display.getDefault(),
 				this.getClass().getClassLoader().getResourceAsStream("icons/16/install.png"));
 		uninstallImage = new Image(Display.getDefault(),
@@ -149,12 +140,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		tableViewer.addFilter(tableFilter);
 		tableViewer.refresh();
 	}
-
-	/**
-	 * Create table filter area
-	 * 
-	 * @param parent
-	 */
 	private void createTableFilterArea(Composite parent) {
 		Composite filterContainer = new Composite(parent, SWT.NONE);
 		filterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));

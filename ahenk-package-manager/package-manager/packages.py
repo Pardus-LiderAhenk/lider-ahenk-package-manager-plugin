@@ -19,12 +19,12 @@ class Packages(AbstractPlugin):
         print('Handling Packages Task')
         self.logger.debug('Handling Packages Task')
         try:
-            resultMessage = ''
+            resultMessage = 'Machine uid    :   {}\r\n'.format(self.Ahenk.uid())
             items = (self.data)['packageInfoList']
             a = 0
             for item in items:
                 try:
-                    if item['source'] is not None and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
+                    if (str(item['tag']) == 'Kur' or str(item['tag']) == 'Install') and item['source'] is not None:
                         try:
                             param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
                                 self.Ahenk.plugins_path(), item['source'])
@@ -36,14 +36,14 @@ class Packages(AbstractPlugin):
                             resultMessage += 'Repository could not be added - {}'.format(item['source'])
                     if a == 0 and (item['tag'] == 'Kur' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
-                        a, result, b = self.install_with_apt_get(item['packageName'], item['version'])
+                        self.install_with_apt_get(item['packageName'], item['version'])
                         self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
                         resultMessage += 'Package installed - {0}={1}\r\n'.format(item['packageName'], item['version'])
                     elif a == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
                         self.logger.debug("[PACKAGE MANAGER] Removing package... {0}".format(item['packageName']))
                         self.logger.debug(
                             "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'], item['version']))
-                        a, result, b = self.remove_package(item['packageName'], item['version'])
+                        self.uninstall_package(item['packageName'], item['version'])
                         self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
                         resultMessage += 'Package uninstalled - {0}={1}\r\n'.format(item['packageName'],
                                                                                     item['version'])

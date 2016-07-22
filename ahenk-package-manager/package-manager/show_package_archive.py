@@ -25,6 +25,7 @@ class ShowPackageArchive(AbstractPlugin):
             a, result, b = self.execute('grep " installed {0}:" /var/log/dpkg*.log'.format(package_name))
             data = {}
             res = []
+            message = ""
             self.logger.debug('[PACKAGE MANAGER] Package archive info is being parsed...')
             if result is not None:
                 result_lines = result.splitlines()
@@ -32,10 +33,14 @@ class ShowPackageArchive(AbstractPlugin):
                     result_array = line.split(' ')
                     obj = {"installationDate": '{0} {1}'.format(result_array[0], result_array[1]), "version": result_array[5]}
                     res.append(obj)
-            if len(res) > 0:
+
+            if a == 0 and len(res) > 0:
                 data = {"Result": res}
+                message = 'Paket arşivi başarıyla getirildi'
+            elif a != 0:
+                message = 'Paket bulunamadı'
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Paket arşivi başarıyla getirildi',
+                                         message=message,
                                          data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
             self.logger.debug('[PACKAGE MANAGER] Getting Package Archive task is handled successfully')
         except Exception as e:

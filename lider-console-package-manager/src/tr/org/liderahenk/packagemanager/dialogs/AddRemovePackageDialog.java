@@ -53,7 +53,6 @@ import tr.org.liderahenk.packagemanager.model.RepoSourcesListParser;
 public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 	private ScrolledComposite sc;
-	String upperCase = "";
 	private Combo cmbDeb;
 	private Text txtUrl;
 	private Text txtComponents;
@@ -69,16 +68,11 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private final String[] debArray = new String[] { "deb", "deb-src" };
 	private PackageInfo item;
 
-	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
-
 	private static final Logger logger = LoggerFactory.getLogger(PackageSourcesTaskDialog.class);
 
-	// TODO do not forget to change this constructor if SingleSelectionHandler
-	// is used!
 	public AddRemovePackageDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
-		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
-		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
+		subscribeEventHandler(eventHandler);
 	}
 
 	private EventHandler eventHandler = new EventHandler() {
@@ -168,7 +162,6 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		createSearchingPart(composite);
-
 
 		Composite installationComposite = new Composite(composite, SWT.NONE);
 		installationComposite.setLayout(new GridLayout(2, false));

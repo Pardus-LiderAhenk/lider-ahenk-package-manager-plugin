@@ -24,7 +24,7 @@ class PackageSourcesList(AbstractPlugin):
                 self.logger.error("[PACKAGE MANAGER] Error occurred while listing repositories: " + str(p_err))
                 error_message += " Paket depoları okunurken hata oluştu: " + str(p_err)
             else:
-                data['Result'] = p_out
+                data['packageSource'] = p_out
                 self.logger.debug("[PACKAGE MANAGER] Repositories are listed")
 
             if not error_message:

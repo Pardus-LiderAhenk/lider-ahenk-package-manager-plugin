@@ -71,23 +71,18 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	protected static ArrayList<String> addedSources = new ArrayList<>();
 	protected static ArrayList<String> deletedSources = new ArrayList<>();
 
-	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
 
 	private static final Logger logger = LoggerFactory.getLogger(PackageSourcesTaskDialog.class);
 
-	// TODO do not forget to change this constructor if SingleSelectionHandler
-	// is used!
-	public PackageSourcesTaskDialog(Shell parentShell, Set<String> dnSet) {
-		super(parentShell, dnSet);
-		upperCase = getPluginName().toUpperCase(Locale.ENGLISH);
-		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
-		getData(dnSet);
+	public PackageSourcesTaskDialog(Shell parentShell, String dn) {
+		super(parentShell, dn);
+		subscribeEventHandler(eventHandler);
+		getData();
 	}
 
-	private void getData(Set<String> dnSet) {
-
+	private void getData() {
 		try {
-			TaskRequest task = new TaskRequest(new ArrayList<String>(dnSet), DNType.AHENK, getPluginName(),
+			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
 					getPluginVersion(), "REPOSITORIES", null, null, new Date());
 			TaskRestUtils.execute(task);
 		} catch (Exception e1) {
@@ -116,9 +111,9 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
-								String[] result = responseData.containsKey("Result")
-										? responseData.get("Result").toString().split("\\r?\\n") : null;
-								ArrayList<PackageSourceItem> items = new ArrayList<>(); 
+								String[] result = responseData.containsKey("packageSource")
+										? responseData.get("packageSource").toString().split("\\r?\\n") : null;
+								ArrayList<PackageSourceItem> items = new ArrayList<>();
 								for (String data : result) {
 									PackageSourceItem item = new PackageSourceItem(data);
 									items.add(item);
@@ -276,9 +271,9 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 				items.remove(tableViewer.getTable().getSelectionIndex());
 				tableViewer.setInput(items);
 				tableViewer.refresh();
-				if (addedSources.contains(getItem().getUrl())){
+				if (addedSources.contains(getItem().getUrl())) {
 					addedSources.remove(getItem().getUrl());
-				}else{
+				} else {
 					deletedSources.add(getItem().getUrl());
 				}
 			}

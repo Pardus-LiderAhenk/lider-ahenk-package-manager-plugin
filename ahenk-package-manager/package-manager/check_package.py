@@ -34,7 +34,7 @@ class CheckPackage(AbstractPlugin):
                     result = 'PACKAGE IS INSTALLED BUT WITH DIFFERENT VERSION - {}'.format(data[1])
             else: #Package is not installed
                 result = 'PACKAGE IS NOT INSTALLED'
-            res = {"uid": uid, "Result": result}
+            res = {"uid": uid, "res": result}
             self.logger.debug("[PACKAGE MANAGER] Result is: - {}".format(result))
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Paket Bilgileri başarıyla getirildi',
