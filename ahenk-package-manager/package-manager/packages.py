@@ -24,7 +24,7 @@ class Packages(AbstractPlugin):
             a = 0
             for item in items:
                 try:
-                    if (str(item['tag']) == 'Kur' or str(item['tag']) == 'Install') and item['source'] is not None:
+                    if (str(item['tag']) == 'Yükle' or str(item['tag']) == 'Install') and item['source'] is not None:
                         try:
                             param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
                                 self.Ahenk.plugins_path(), item['source'])
@@ -34,7 +34,7 @@ class Packages(AbstractPlugin):
                             resultMessage += 'Repository added - {}\r\n'.format(item['source'])
                         except Exception as e:
                             resultMessage += 'Repository could not be added - {}'.format(item['source'])
-                    if a == 0 and (item['tag'] == 'Kur' or item['tag'] == 'Install'):
+                    if a == 0 and (item['tag'] == 'Yükle' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
                         self.install_with_apt_get(item['packageName'], item['version'])
                         self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
@@ -48,7 +48,7 @@ class Packages(AbstractPlugin):
                         resultMessage += 'Package uninstalled - {0}={1}\r\n'.format(item['packageName'],
                                                                                     item['version'])
                 except Exception as e:
-                    if item['tag'] == 'Kur' or item['tag'] == 'Install':
+                    if item['tag'] == 'Yükle' or item['tag'] == 'Install':
                         resultMessage += 'Package could not be installed - {0}={1}\r\n'.format(item['packageName'],
                                                                                                item['version'])
                     else:

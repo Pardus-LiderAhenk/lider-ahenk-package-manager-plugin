@@ -6,7 +6,7 @@ public class PackageCheckItem implements Serializable{
 
 	private static final long serialVersionUID = 5605455949309964919L;
 	
-	private String uid;
+	private String dn;
 	private String result;
 
 	public PackageCheckItem() {
@@ -16,7 +16,7 @@ public class PackageCheckItem implements Serializable{
 	public PackageCheckItem(String result, String uid) {
 		super();
 		this.result = result;
-		this.uid = uid;
+		this.dn = uid;
 	}
 
 	public String getResult() {
@@ -27,12 +27,12 @@ public class PackageCheckItem implements Serializable{
 		this.result = result;
 	}
 
-	public String getUid() {
-		return uid;
+	public String getDn() {
+		return dn;
 	}
 
-	public void setUid(String uid) {
-		this.uid = uid;
+	public void setDn(String uid) {
+		this.dn = uid;
 	}
 	
 

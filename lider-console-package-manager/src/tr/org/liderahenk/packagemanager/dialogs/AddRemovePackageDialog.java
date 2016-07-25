@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,7 +13,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -33,7 +31,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
@@ -93,7 +90,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
-								if(responseData.containsKey("ResultMessage")){
+								if (responseData.containsKey("ResultMessage")) {
 									System.out.println(responseData.get("ResultMessage"));
 								}
 							}
@@ -143,14 +140,15 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		createPackageEntry(packageComposite);
-		
+
 		btnAddRep = new Button(packageComposite, SWT.NONE);
 		btnAddRep.setImage(
 				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/add.png"));
 		btnAddRep.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (txtUrl != null && !txtUrl.getText().isEmpty() &&txtComponents != null && !txtComponents.getText().isEmpty())
+				if (txtUrl != null && !txtUrl.getText().isEmpty() && txtComponents != null
+						&& !txtComponents.getText().isEmpty())
 					handleAddGroupButton(e);
 				else
 					Notifier.error("", Messages.getString("FILL_ALL_FIELDS"));
@@ -165,7 +163,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 		Composite installationComposite = new Composite(composite, SWT.NONE);
 		installationComposite.setLayout(new GridLayout(2, false));
-		
+
 		btnCheckInstall = new Button(installationComposite, SWT.CHECK);
 		btnCheckInstall.setText(Messages.getString("INSTALL"));
 		btnCheckInstall.addSelectionListener(new SelectionListener() {
@@ -384,13 +382,14 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
-					 resultSet.addAll(RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
-							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",list[i]));
+					resultSet.addAll(RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
+							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",
+							list[i]));
 					if (checkSearchingCriteria(resultSet) != null && checkSearchingCriteria(resultSet).size() > 0) {
 						recreateTable();
 						viewer.setInput(checkSearchingCriteria(resultSet));
 						redraw();
-					}else{
+					} else {
 						emptyTable();
 					}
 				}
@@ -471,7 +470,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if(viewer.getCheckedElements().length == 0){
+		if (viewer.getCheckedElements().length == 0) {
 			throw new ValidationException(Messages.getString("PLEASE_SELECT_AT_LEAST_AN_ITEM"));
 		}
 	}
@@ -481,10 +480,10 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		Object[] checkedElements = viewer.getCheckedElements();
 		for (Object packageInfo : checkedElements) {
-			if(btnCheckInstall.getSelection())
-				((PackageInfo)packageInfo).setTag(Messages.getString("INSTALL"));
+			if (btnCheckInstall.getSelection())
+				((PackageInfo) packageInfo).setTag(Messages.getString("INSTALL"));
 			else
-				((PackageInfo)packageInfo).setTag(Messages.getString("UNINSTALL"));
+				((PackageInfo) packageInfo).setTag(Messages.getString("UNINSTALL"));
 		}
 		taskData.put(PackageManagerConstants.PACKAGES.PACKAGE_INFO_LIST, checkedElements);
 		return taskData;

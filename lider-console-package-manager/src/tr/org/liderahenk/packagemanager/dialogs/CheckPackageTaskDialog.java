@@ -2,6 +2,7 @@ package tr.org.liderahenk.packagemanager.dialogs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -35,7 +37,10 @@ import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
+import tr.org.liderahenk.liderconsole.core.dialogs.SearchGroupDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
+import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
+import tr.org.liderahenk.liderconsole.core.model.SearchGroupEntry;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
@@ -52,6 +57,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	private Text txtPackageName;
 	private Label lblVersion;
 	private Text txtVersion;
+	private Button btnCreateSearchGroup;
 
 	private static final Logger logger = LoggerFactory.getLogger(CheckPackageTaskDialog.class);
 
@@ -80,9 +86,10 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 							@Override
 							public void run() {
 								if (responseData != null && responseData.containsKey("res")
-										&& responseData.containsKey("uid")) {
+										&& responseData.containsKey("dn")) {
 									PackageCheckItem item = new PackageCheckItem(responseData.get("res").toString(),
-											responseData.get("uid").toString());
+											responseData.get("dn").toString());
+
 									ArrayList<PackageCheckItem> listItems = (ArrayList<PackageCheckItem>) viewer
 											.getInput();
 									if (listItems == null) {
@@ -153,7 +160,38 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
 
+		btnCreateSearchGroup = new Button(composite, SWT.PUSH);
+		btnCreateSearchGroup.setImage(
+				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/list.png"));
+		btnCreateSearchGroup.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
+		btnCreateSearchGroup.setText(Messages.getString("CREATE_SEARCH_GROUP"));
+		btnCreateSearchGroup.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (viewer != null && viewer.getCheckedElements().length > 0) {
+					Set<SearchGroupEntry> entries = buildEntrySet();
+					SearchGroupDialog dialog = new SearchGroupDialog(Display.getDefault().getActiveShell(), true, true,
+							true, null, entries);
+					dialog.create();
+					dialog.open();
+				} else {
+					Notifier.warning("", Messages.getString("PLEASE_SELECT_AT_LEAST_AN_ITEM"));
+				}
+			}
+		});
+
 		return null;
+	}
+
+	protected Set<SearchGroupEntry> buildEntrySet() {
+		HashSet<SearchGroupEntry> entries = new HashSet<SearchGroupEntry>();
+		Object[] checkedElements = viewer.getCheckedElements();
+		for (int i = 0; i < checkedElements.length; ++i) {
+			PackageCheckItem item = (PackageCheckItem) checkedElements[i];
+			SearchGroupEntry entry = new SearchGroupEntry(null, item.getDn(), DNType.AHENK);
+			entries.add(entry);
+		}
+		return entries;
 	}
 
 	protected void handleRemoveGroupButton(SelectionEvent e) {
@@ -179,7 +217,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 	private void createTableColumns() {
 
-		String[] titles = { Messages.getString("PACKAGE_INFO"), Messages.getString("UID") };
+		String[] titles = { Messages.getString("PACKAGE_INFO"), Messages.getString("DN") };
 
 		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
 		selectAllColumn.getColumn().setImage(
@@ -226,12 +264,12 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn uidColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 300);
-		uidColumn.setLabelProvider(new ColumnLabelProvider() {
+		TableViewerColumn dnColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 300);
+		dnColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof PackageCheckItem) {
-					return ((PackageCheckItem) element).getUid();
+					return ((PackageCheckItem) element).getDn();
 				}
 				return Messages.getString("UNTITLED");
 			}

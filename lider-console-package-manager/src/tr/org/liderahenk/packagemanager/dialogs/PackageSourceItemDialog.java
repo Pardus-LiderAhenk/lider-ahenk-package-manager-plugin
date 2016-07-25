@@ -62,9 +62,9 @@ public class PackageSourceItemDialog extends DefaultLiderTitleAreaDialog {
 
 		txtUrl = new Text(mailComposite, SWT.BORDER);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-		gridData.widthHint=400;
+		gridData.widthHint = 400;
 		txtUrl.setLayoutData(gridData);
-		
+
 		if (item != null && item.getUrl() != null) {
 			txtUrl.setText(item.getUrl());
 		}

@@ -22,7 +22,9 @@ class CheckPackage(AbstractPlugin):
         try:
             package_name = str((self.data)['packageName'])
             package_version = str((self.data)['packageVersion'])
-            uid = System.Ahenk.uid()
+            dn = self.Ahenk.dn()
+            if dn is None:
+                dn = " "
             a, result, b = self.execute('dpkg -s {} | grep Version'.format(package_name))
             data = result.split(':')
             if data[0] == 'Version': #Package is installed
@@ -34,7 +36,7 @@ class CheckPackage(AbstractPlugin):
                     result = 'PACKAGE IS INSTALLED BUT WITH DIFFERENT VERSION - {}'.format(data[1])
             else: #Package is not installed
                 result = 'PACKAGE IS NOT INSTALLED'
-            res = {"uid": uid, "res": result}
+            res = {"dn": dn, "res": result}
             self.logger.debug("[PACKAGE MANAGER] Result is: - {}".format(result))
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Paket Bilgileri başarıyla getirildi',

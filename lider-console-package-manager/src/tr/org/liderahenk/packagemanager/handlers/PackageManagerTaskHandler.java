@@ -11,7 +11,7 @@ public class PackageManagerTaskHandler extends SingleSelectionHandler {
 	public void executeWithDn(String dn) {
 		PackageManagementTaskDialog dialog = new PackageManagementTaskDialog(Display.getDefault().getActiveShell(), dn);
 		dialog.create();
-		dialog.open();
+		dialog.openWithEventBroker();
 	}
 	
 }

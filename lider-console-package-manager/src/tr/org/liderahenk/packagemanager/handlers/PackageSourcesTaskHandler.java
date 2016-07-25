@@ -11,7 +11,7 @@ public class PackageSourcesTaskHandler extends SingleSelectionHandler {
 	public void executeWithDn(String dn) {
 		PackageSourcesTaskDialog dialog = new PackageSourcesTaskDialog(Display.getDefault().getActiveShell(), dn);
 		dialog.create();
-		dialog.open();
+		dialog.openWithEventBroker();
 	}
 
 }

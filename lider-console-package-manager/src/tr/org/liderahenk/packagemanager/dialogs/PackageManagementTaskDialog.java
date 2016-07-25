@@ -70,7 +70,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 	private PackageInfo selectedPackage;
 
-
 	public PackageManagementTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
 		subscribeEventHandler(taskStatusNotificationHandler);
@@ -140,6 +139,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		tableViewer.addFilter(tableFilter);
 		tableViewer.refresh();
 	}
+
 	private void createTableFilterArea(Composite parent) {
 		Composite filterContainer = new Composite(parent, SWT.NONE);
 		filterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -278,8 +278,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 				if (packageInfo.getDesiredStatus() == DesiredPackageStatus.NA) {
 					continue;
 				}
-				packageInfo.setTag(
-						packageInfo.getDesiredStatus() == DesiredPackageStatus.INSTALL ? "i" : "u");
+				packageInfo.setTag(packageInfo.getDesiredStatus() == DesiredPackageStatus.INSTALL ? "i" : "u");
 				selectedPackages.add(packageInfo);
 				System.out.println("PACKAGE:" + packageInfo);
 			}
@@ -317,12 +316,14 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 							final ArrayList<PackageInfo> packages = new ArrayList<>();
 							while ((line = bufReader.readLine()) != null) {
 								String[] tokens = line.split(",");
-								PackageInfo packageInfo = new PackageInfo();
-								packageInfo.setPackageName(tokens[1]);
-								packageInfo.setVersion(tokens[2]);
-								packageInfo.setInstalled("i".equalsIgnoreCase(tokens[0]));
-								packageInfo.setDesiredStatus(DesiredPackageStatus.NA);
-								packages.add(packageInfo);
+								if(tokens.length >= 3){
+									PackageInfo packageInfo = new PackageInfo();
+									packageInfo.setPackageName(tokens[1]);
+									packageInfo.setVersion(tokens[2]);
+									packageInfo.setInstalled("i".equalsIgnoreCase(tokens[0]));
+									packageInfo.setDesiredStatus(DesiredPackageStatus.NA);
+									packages.add(packageInfo);
+								}
 							}
 							// Refresh table
 							if (packages != null && !packages.isEmpty()) {

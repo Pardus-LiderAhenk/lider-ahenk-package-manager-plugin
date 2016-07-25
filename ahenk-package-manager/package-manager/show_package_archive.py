@@ -22,7 +22,7 @@ class ShowPackageArchive(AbstractPlugin):
         try:
             package_name = str((self.data)['packageName'])
             self.logger.debug('[PACKAGE MANAGER] Package Installation History query is executing...')
-            a, result, b = self.execute('grep " installed {0}:" /var/log/dpkg*.log'.format(package_name))
+            a, result, b = self.execute('grep "status installed {0}:" /var/log/dpkg*.log'.format(package_name))
             data = {}
             res = []
             message = ""

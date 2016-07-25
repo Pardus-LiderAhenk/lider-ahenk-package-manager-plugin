@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -14,7 +12,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -36,7 +33,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.PlatformUI;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
@@ -70,7 +66,6 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	private PackageSourceItem item;
 	protected static ArrayList<String> addedSources = new ArrayList<>();
 	protected static ArrayList<String> deletedSources = new ArrayList<>();
-
 
 	private static final Logger logger = LoggerFactory.getLogger(PackageSourcesTaskDialog.class);
 
@@ -113,13 +108,15 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 							public void run() {
 								String[] result = responseData.containsKey("packageSource")
 										? responseData.get("packageSource").toString().split("\\r?\\n") : null;
-								ArrayList<PackageSourceItem> items = new ArrayList<>();
-								for (String data : result) {
-									PackageSourceItem item = new PackageSourceItem(data);
-									items.add(item);
+								if (result != null && result.length > 0) {
+									ArrayList<PackageSourceItem> items = new ArrayList<>();
+									for (String data : result) {
+										PackageSourceItem item = new PackageSourceItem(data);
+										items.add(item);
+									}
+									if (items != null)
+										tableViewer.setInput(items);
 								}
-								if (items != null)
-									tableViewer.setInput(items);
 							}
 						});
 					} catch (Exception e) {
