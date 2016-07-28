@@ -86,15 +86,6 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
 								new TypeReference<HashMap<String, Object>>() {
 						});
-						Display.getDefault().asyncExec(new Runnable() {
-
-							@Override
-							public void run() {
-								if (responseData.containsKey("ResultMessage")) {
-									System.out.println(responseData.get("ResultMessage"));
-								}
-							}
-						});
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
 						// Notifier.error("",

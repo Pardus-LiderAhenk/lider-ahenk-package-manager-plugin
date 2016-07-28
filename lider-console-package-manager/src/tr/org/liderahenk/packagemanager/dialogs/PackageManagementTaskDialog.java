@@ -280,9 +280,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 				}
 				packageInfo.setTag(packageInfo.getDesiredStatus() == DesiredPackageStatus.INSTALL ? "i" : "u");
 				selectedPackages.add(packageInfo);
-				System.out.println("PACKAGE:" + packageInfo);
 			}
-			System.out.println("SELECTED PACKAGES: " + selectedPackages.size());
 		}
 		return selectedPackages;
 	}

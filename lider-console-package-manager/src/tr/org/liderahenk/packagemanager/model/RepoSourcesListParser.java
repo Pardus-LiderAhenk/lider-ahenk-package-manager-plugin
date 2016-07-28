@@ -51,12 +51,12 @@ public abstract class RepoSourcesListParser {
 			try {
 				// Find URL pointing to the package file
 				String packageURL = findPackageURL(url, distribution, component, architecture);
-				System.out.println("URL: " + packageURL);
+				
 				// GET package file
 				HttpClient client = HttpClientBuilder.create().build();
 				HttpGet request = new HttpGet(packageURL);
 				HttpResponse response = client.execute(request);
-				System.out.println("Response code: " + response.getStatusLine().getStatusCode());
+				
 				HttpEntity entity = response.getEntity();
 				if (entity != null) {
 					// Extract package file
