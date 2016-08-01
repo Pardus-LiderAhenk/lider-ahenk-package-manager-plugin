@@ -291,7 +291,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
 					getPluginVersion(), "INSTALLED_PACKAGES", null, null, new Date());
 			TaskRestUtils.execute(task);
-			  
+
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
@@ -309,7 +309,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 						TaskStatusNotification taskStatus = (TaskStatusNotification) event
 								.getProperty("org.eclipse.e4.data");
 						if (ContentType.getFileContentTypes().contains(taskStatus.getResult().getContentType())) {
-							byte[] data = taskStatus.getResult().getResponseData();
+							byte[] data = TaskRestUtils.getResponseData(taskStatus.getResult().getId());
 							BufferedReader bufReader = new BufferedReader(
 									new StringReader(new String(data, StandardCharsets.UTF_8)));
 							String line = null;
@@ -383,5 +383,5 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	public void setTableViewer(TableViewer tableViewer) {
 		this.tableViewer = tableViewer;
 	}
-	
+
 }
