@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
-from base.plugin.abstract_plugin import AbstractPlugin
-from base.model.enum.ContentType import ContentType
 import json
+
+from base.model.enum.ContentType import ContentType
+from base.plugin.abstract_plugin import AbstractPlugin
 
 
 class InstalledPackages(AbstractPlugin):
@@ -21,7 +22,9 @@ class InstalledPackages(AbstractPlugin):
     def handle_task(self):
         try:
             self.logger.debug('[PACKAGE MANAGER] Executing command for package list.')
-            self.execute('dpkg-query -f=\'${{Status}},${{binary:Package}},${{Version}}\n\' -W \'*\' | sed \'s/install ok installed/i/\' | sed \'s/unknown ok not-installed/u/\' | sed \'s/deinstall ok config-files/u/\' | grep -v ahenk > {0}'.format(self.file_path))
+            self.execute(
+                'dpkg-query -f=\'${{Status}},${{binary:Package}},${{Version}}\n\' -W \'*\' | sed \'s/install ok installed/i/\' | sed \'s/unknown ok not-installed/u/\' | sed \'s/deinstall ok config-files/u/\' | grep -v ahenk > {0}'.format(
+                    self.file_path))
             self.logger.debug('[PACKAGE MANAGER] Command executed.')
 
             if self.is_exist(self.file_path):

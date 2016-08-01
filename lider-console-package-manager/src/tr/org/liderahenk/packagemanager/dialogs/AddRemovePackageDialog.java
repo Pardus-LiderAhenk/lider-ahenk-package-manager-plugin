@@ -7,12 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -26,22 +20,16 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
-import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.PackageInfo;
@@ -65,43 +53,9 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private final String[] debArray = new String[] { "deb", "deb-src" };
 	private PackageInfo item;
 
-	private static final Logger logger = LoggerFactory.getLogger(PackageSourcesTaskDialog.class);
-
 	public AddRemovePackageDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
-		subscribeEventHandler(eventHandler);
 	}
-
-	private EventHandler eventHandler = new EventHandler() {
-		@Override
-		public void handleEvent(final Event event) {
-			Job job = new Job("TASK") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("PACKAGE_SOURCES", 100);
-					try {
-						TaskStatusNotification taskStatus = (TaskStatusNotification) event
-								.getProperty("org.eclipse.e4.data");
-						byte[] data = taskStatus.getResult().getResponseData();
-						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
-								new TypeReference<HashMap<String, Object>>() {
-						});
-					} catch (Exception e) {
-						logger.error(e.getMessage(), e);
-						// Notifier.error("",
-						// Messages.getString("UNEXPECTED_ERROR_ACCESSING_PACKAGE_SOURCES"));
-					}
-					monitor.worked(100);
-					monitor.done();
-
-					return Status.OK_STATUS;
-				}
-			};
-
-			job.setUser(true);
-			job.schedule();
-		}
-	};
 
 	@Override
 	public String createTitle() {

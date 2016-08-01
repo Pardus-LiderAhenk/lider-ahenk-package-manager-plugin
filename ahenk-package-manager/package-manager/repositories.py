@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
-from base.plugin.abstract_plugin import AbstractPlugin
-from base.model.enum.ContentType import ContentType
 import json
+
+from base.model.enum.ContentType import ContentType
+from base.plugin.abstract_plugin import AbstractPlugin
 
 
 class PackageSourcesList(AbstractPlugin):
@@ -18,8 +19,10 @@ class PackageSourcesList(AbstractPlugin):
     def handle_task(self):
         error_message = ""
         try:
-            result_code, p_out, p_err = self.execute('/bin/bash {}package-manager/scripts/sourcelist.sh'.format(self.Ahenk.plugins_path()))
+            result_code, p_out, p_err = self.execute(
+                '/bin/bash {}package-manager/scripts/sourcelist.sh'.format(self.Ahenk.plugins_path()))
             data = {}
+
             if result_code != 0:
                 self.logger.error("[PACKAGE MANAGER] Error occurred while listing repositories: " + str(p_err))
                 error_message += " Paket depoları okunurken hata oluştu: " + str(p_err)

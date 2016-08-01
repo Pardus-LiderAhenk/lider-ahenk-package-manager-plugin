@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
-from base.plugin.abstract_plugin import AbstractPlugin
-from base.model.enum.ContentType import ContentType
 import json
+
+from base.model.enum.ContentType import ContentType
+from base.plugin.abstract_plugin import AbstractPlugin
 
 
 class Packages(AbstractPlugin):
@@ -16,7 +17,6 @@ class Packages(AbstractPlugin):
         self.message_code = self.get_message_code()
 
     def handle_task(self):
-        print('Handling Packages Task')
         self.logger.debug('Handling Packages Task')
         try:
             resultMessage = 'Machine uid    :   {}\r\n'.format(self.Ahenk.uid())
@@ -28,12 +28,14 @@ class Packages(AbstractPlugin):
                         try:
                             param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
                                 self.Ahenk.plugins_path(), item['source'])
-                            self.logger.debug("[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
+                            self.logger.debug(
+                                "[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
                             a, result, b = self.execute(param)
                             self.logger.debug("[PACKAGE MANAGER] Repository added")
                             resultMessage += 'Repository added - {}\r\n'.format(item['source'])
                         except Exception as e:
                             resultMessage += 'Repository could not be added - {}'.format(item['source'])
+
                     if a == 0 and (item['tag'] == 'Yükle' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
                         self.install_with_apt_get(item['packageName'], item['version'])
@@ -42,7 +44,8 @@ class Packages(AbstractPlugin):
                     elif a == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
                         self.logger.debug("[PACKAGE MANAGER] Removing package... {0}".format(item['packageName']))
                         self.logger.debug(
-                            "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'], item['version']))
+                            "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'],
+                                                                                                    item['version']))
                         self.uninstall_package(item['packageName'], item['version'])
                         self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
                         resultMessage += 'Package uninstalled - {0}={1}\r\n'.format(item['packageName'],
@@ -55,6 +58,7 @@ class Packages(AbstractPlugin):
                         resultMessage += 'Package could not be uninstalled - {0}={1}\r\n'.format(item['packageName'],
                                                                                                  item['version'])
             data = {'ResultMessage': resultMessage}
+
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Paketler listelendi',
                                          data=json.dumps(data),
@@ -67,7 +71,5 @@ class Packages(AbstractPlugin):
 
 
 def handle_task(task, context):
-    print('PackageManager Plugin Task')
-    print('Task Data : {}'.format(str(task)))
     plugin = Packages(task, context)
     plugin.handle_task()

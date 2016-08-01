@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
-from base.plugin.abstract_plugin import AbstractPlugin
-from base.model.enum.ContentType import ContentType
 import json
+
+from base.model.enum.ContentType import ContentType
+from base.plugin.abstract_plugin import AbstractPlugin
 
 
 class PackageManagement(AbstractPlugin):
@@ -63,7 +64,7 @@ class PackageManagement(AbstractPlugin):
                                              message='Paket işlemleri başarıyla gerçekleştirildi: ' + result_message,
                                              data=json.dumps({'Result': result_message}),
                                              content_type=ContentType.APPLICATION_JSON.value)
-            # TODO return package list!
+                # TODO return package list!
 
         except Exception as e:
             self.logger.error(str(e))

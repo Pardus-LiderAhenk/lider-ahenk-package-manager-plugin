@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
-from base.plugin.abstract_plugin import AbstractPlugin
-from base.model.enum.ContentType import ContentType
 import json
+
+from base.model.enum.ContentType import ContentType
+from base.plugin.abstract_plugin import AbstractPlugin
 
 
 class PackageSources(AbstractPlugin):
@@ -22,7 +23,8 @@ class PackageSources(AbstractPlugin):
         try:
             # Add desired repositories
             for item in added_items:
-                command = '(find /etc/apt/ -name \*.list -type f | xargs grep -q \'' + str(item) + '\') || echo \'' + str(item) + '\' >> /etc/apt/sources.list.d/liderahenk.list'
+                command = '(find /etc/apt/ -name \*.list -type f | xargs grep -q \'' + str(
+                    item) + '\') || echo \'' + str(item) + '\' >> /etc/apt/sources.list.d/liderahenk.list'
                 result_code, p_out, p_err = self.execute(command)
                 if result_code != 0:
                     self.logger.error("[PACKAGE MANAGER] Error occurred while adding repository: " + str(p_err))
@@ -31,8 +33,10 @@ class PackageSources(AbstractPlugin):
 
             # Remove desired repositories
             for item in deleted_items:
-                command = 'find /etc/apt/ -name \*.list -type f -exec sed -i \'/' + str(item).replace("/", "\\/") + '/d\' \{\} \;'
+                command = 'find /etc/apt/ -name \*.list -type f -exec sed -i \'/' + str(item).replace("/",
+                                                                                                      "\\/") + '/d\' \{\} \;'
                 result_code, p_out, p_err = self.execute(command)
+
                 if result_code != 0:
                     self.logger.error("[PACKAGE MANAGER] Error occurred while removing repository: " + str(p_err))
                     error_message += " Paket deposu silinirken hata oluştu: " + str(p_err)
@@ -46,6 +50,7 @@ class PackageSources(AbstractPlugin):
             command = '/bin/bash {0}package-manager/scripts/sourcelist.sh'.format(self.Ahenk.plugins_path())
             result_code, p_out, p_err = self.execute(command)
             data = {}
+
             if result_code != 0:
                 self.logger.error("[PACKAGE MANAGER] Error occurred while listing repositories: " + str(p_err))
                 error_message += " Paket depoları okunurken hata oluştu: " + str(p_err)
