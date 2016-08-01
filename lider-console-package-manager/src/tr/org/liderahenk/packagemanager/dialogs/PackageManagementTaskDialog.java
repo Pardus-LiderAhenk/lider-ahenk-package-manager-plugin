@@ -182,7 +182,8 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 				return true;
 			}
 			PackageInfo packageInfo = (PackageInfo) element;
-			return packageInfo.getPackageName().matches(searchString) || packageInfo.getVersion().matches(searchString);
+			return packageInfo.getPackageName().matches(searchString)
+					|| (packageInfo.getVersion() != null && packageInfo.getVersion().matches(searchString));
 		}
 
 	}
@@ -290,6 +291,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
 					getPluginVersion(), "INSTALLED_PACKAGES", null, null, new Date());
 			TaskRestUtils.execute(task);
+			  
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
@@ -314,10 +316,12 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 							final ArrayList<PackageInfo> packages = new ArrayList<>();
 							while ((line = bufReader.readLine()) != null) {
 								String[] tokens = line.split(",");
-								if(tokens.length >= 3){
+								if (tokens.length >= 2) {
 									PackageInfo packageInfo = new PackageInfo();
 									packageInfo.setPackageName(tokens[1]);
-									packageInfo.setVersion(tokens[2]);
+									if (tokens.length == 3) {
+										packageInfo.setVersion(tokens[2]);
+									}
 									packageInfo.setInstalled("i".equalsIgnoreCase(tokens[0]));
 									packageInfo.setDesiredStatus(DesiredPackageStatus.NA);
 									packages.add(packageInfo);
@@ -372,4 +376,12 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		this.selectedPackage = selectedPackage;
 	}
 
+	public TableViewer getTableViewer() {
+		return tableViewer;
+	}
+
+	public void setTableViewer(TableViewer tableViewer) {
+		this.tableViewer = tableViewer;
+	}
+	
 }

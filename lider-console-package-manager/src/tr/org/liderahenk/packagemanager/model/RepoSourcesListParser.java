@@ -76,11 +76,14 @@ public abstract class RepoSourcesListParser {
 									continue;
 								}
 								String[] tokens = line.split(":", 2);
-								String propertyMethodName = getPropertyMethodName(tokens[0].trim());
-								String propertyValue = tokens[1].trim();
-								setPropertyValue(info, propertyMethodName, propertyValue);
-								info.setSource(
-										deb + " " + url + " " + distribution + " " + StringUtils.join(components, " "));
+								
+								if(tokens.length > 1) {
+									String propertyMethodName = getPropertyMethodName(tokens[0].trim());
+									String propertyValue = tokens[1].trim();
+									setPropertyValue(info, propertyMethodName, propertyValue);
+									info.setSource(
+											deb + " " + url + " " + distribution + " " + StringUtils.join(components, " "));
+								}
 							}
 						}
 						reader.close();
