@@ -16,6 +16,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+
 /**
  * A utility class which is responsible for parsing specified Linux package
  * repository URL and returning a set of packages.<br/>
@@ -91,8 +93,10 @@ public abstract class RepoSourcesListParser {
 				}
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
+				Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının dopruluğundan emin olup tekrar deneyiniz");
 			} catch (IOException e) {
 				e.printStackTrace();
+				Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının dopruluğundan emin olup tekrar deneyiniz");
 			}
 		}
 		if (packages != null && packages.size() > 0)
