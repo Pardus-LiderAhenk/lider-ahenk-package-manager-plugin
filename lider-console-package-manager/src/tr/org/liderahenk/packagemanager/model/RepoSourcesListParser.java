@@ -93,7 +93,6 @@ public abstract class RepoSourcesListParser {
 				}
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
-				Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının dopruluğundan emin olup tekrar deneyiniz");
 			} catch (IOException e) {
 				e.printStackTrace();
 				Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının dopruluğundan emin olup tekrar deneyiniz");
