@@ -93,10 +93,14 @@ public abstract class RepoSourcesListParser {
 				}
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
+				Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olup tekrar deneyiniz");
 			} catch (IOException e) {
 				e.printStackTrace();
-				Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının dopruluğundan emin olup tekrar deneyiniz");
+				Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olup tekrar deneyiniz");
 			}
+		}
+		if(components.length == 0){
+			Notifier.error("", "Depo alanının doğruluğundan emin olup tekrar deneyiniz");
 		}
 		if (packages != null && packages.size() > 0)
 			packages.remove(packages.get(packages.size() - 1));
