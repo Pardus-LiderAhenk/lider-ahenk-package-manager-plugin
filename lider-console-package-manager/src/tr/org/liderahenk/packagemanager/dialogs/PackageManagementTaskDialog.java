@@ -69,7 +69,8 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	private Button btnRefreshPackage;
 
 	private PackageInfo selectedPackage;
-
+	private PackageManagementLoadingDialog loadingDialog;
+	
 	public PackageManagementTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
 		subscribeEventHandler(taskStatusNotificationHandler);
@@ -91,6 +92,13 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		createButtonsArea(composite);
 		createTableArea(composite);
 		getPackages();
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
+				loadingDialog.open();
+			}
+		});
 		return composite;
 	}
 
@@ -340,11 +348,21 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 								});
 							}
 						}
+						
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
 					}
+
 					monitor.worked(100);
 					monitor.done();
+
+					Display.getDefault().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							loadingDialog.close();
+						}
+					});
+
 					return Status.OK_STATUS;
 				}
 			};
@@ -352,6 +370,8 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			job.schedule();
 		}
 	};
+	
+	
 
 	@Override
 	public String getCommandId() {
@@ -375,13 +395,4 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	public void setSelectedPackage(PackageInfo selectedPackage) {
 		this.selectedPackage = selectedPackage;
 	}
-
-	public TableViewer getTableViewer() {
-		return tableViewer;
-	}
-
-	public void setTableViewer(TableViewer tableViewer) {
-		this.tableViewer = tableViewer;
-	}
-
 }
