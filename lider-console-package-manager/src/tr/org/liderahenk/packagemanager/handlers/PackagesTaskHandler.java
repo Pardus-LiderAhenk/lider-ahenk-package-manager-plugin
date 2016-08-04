@@ -13,7 +13,7 @@ public class PackagesTaskHandler extends MultipleSelectionHandler {
 	public void executeWithDNSet(Set<String> dnSet) {
 		AddRemovePackageDialog dialog = new AddRemovePackageDialog(Display.getDefault().getActiveShell(), dnSet);
 		dialog.create();
-		dialog.open();
+		dialog.openWithEventBroker();
 	}
 
 }

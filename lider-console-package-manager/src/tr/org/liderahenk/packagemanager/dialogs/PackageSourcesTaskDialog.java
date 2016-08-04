@@ -281,6 +281,7 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 		});
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
 		if (tableViewer.getInput() == null || ((List<PackageSourceItem>) tableViewer.getInput()).isEmpty()) {

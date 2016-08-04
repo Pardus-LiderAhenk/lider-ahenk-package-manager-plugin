@@ -47,7 +47,7 @@ class Packages(AbstractPlugin):
                             "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'],
                                                                                                     item['version']))
                         self.uninstall_package(item['packageName'], item['version'])
-                        self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
+                        self.logger.debug('[PACKAGE MANAGER] : Package uninstalled - {0}={1}\r\n'.format(item['packageName'], item['version']))
                         resultMessage += 'Package uninstalled - {0}={1}\r\n'.format(item['packageName'],
                                                                                     item['version'])
                 except Exception as e:
@@ -60,7 +60,7 @@ class Packages(AbstractPlugin):
             data = {'ResultMessage': resultMessage}
 
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Paketler listelendi',
+                                         message='Paketler listelendi\r\n {}'.format(resultMessage),
                                          data=json.dumps(data),
                                          content_type=ContentType.APPLICATION_JSON.value)
         except Exception as e:

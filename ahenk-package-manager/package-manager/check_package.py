@@ -29,14 +29,14 @@ class CheckPackage(AbstractPlugin):
 
             if data[0] == 'Version':  # Package is installed
                 if package_version is None or len(package_version) == 0:
-                    result = 'PACKAGE IS INSTALLED BUT WITH DIFFERENT VERSION - {}'.format(data[1])
+                    result = 'Paket yüklü; fakat başka bir versiyonla - {}'.format(data[1])
                 elif data[1] is not None and (package_version + '\n') in data[
                     1]:  # Package version is the same with wanted version
-                    result = 'PACKAGE IS INSTALLED'
+                    result = 'Paket yüklü'
                 else:
-                    result = 'PACKAGE IS INSTALLED BUT WITH DIFFERENT VERSION - {}'.format(data[1])
+                    result = 'Paket yüklü; fakat başka bir versiyonla - {}'.format(data[1])
             else:  # Package is not installed
-                result = 'PACKAGE IS NOT INSTALLED'
+                result = 'Paket yüklü değil'
             res = {"dn": dn, "res": result}
 
             self.logger.debug("[PACKAGE MANAGER] Result is: - {}".format(result))

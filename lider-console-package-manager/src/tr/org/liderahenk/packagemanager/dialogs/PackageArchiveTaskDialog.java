@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -43,6 +44,7 @@ import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
 import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
+import tr.org.liderahenk.liderconsole.core.widgets.LiderConfirmBox;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
@@ -57,7 +59,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 	private Label lblPackageName;
 	private Text txtPackageName;
 	private Button btnList;
-
+	private Button btnExecuteNow; 
+	
 	private static final Logger logger = LoggerFactory.getLogger(PackageArchiveTaskDialog.class);
 
 	public PackageArchiveTaskDialog(Shell parentShell, String dn) {
@@ -109,7 +112,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 									List<LinkedHashMap<String, String>> list = cast(itemms);
 									for (Map<String, String> item : list) {
 										PackageArchiveItem it = new PackageArchiveItem(item.get("version"),
-												item.get("installationDate"));
+												item.get("installationDate"),item.get("packageName"), item.get("operation"));
 										its.add(it);
 									}
 									recreateTable();
@@ -117,8 +120,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 									redraw();
 								} else if (responseData != null && !responseData.isEmpty()
 										&& responseData.containsKey("ResultMessage")) {
-									Notifier.success(Messages.getString("INSTALL_FROM_ARCHIVE_TITLE"),
-											responseData.get("ResultMessage").toString());
+										Notifier.success(Messages.getString("INSTALL_FROM_ARCHIVE_TITLE"),
+												responseData.get("ResultMessage").toString());	
 								} else if (responseData == null || responseData.isEmpty()) {
 									emptyTable();
 								}
@@ -184,7 +187,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty())
-					Notifier.error("Paket Kurulumu Sonucu", Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
+					Notifier.error("",Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
 				else
 					getData();
 
@@ -234,43 +237,30 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 	private void createTableColumns() {
 
-		String[] titles = { Messages.getString("VERSION"), Messages.getString("INSTALLATION_DATE") };
+		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("VERSION"),  Messages.getString("OPERATION"), Messages.getString("INSTALLATION_DATE") };
 
 		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
-		selectAllColumn.getColumn().setImage(
-				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
 		selectAllColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				return "";
 			}
 		});
-		selectAllColumn.getColumn().addSelectionListener(new SelectionListener() {
+
+		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 500);
+		packageNameColumn.getColumn().setAlignment(SWT.LEFT);
+		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
-				/* If all list selected deselect all */
-				if (viewer.getCheckedElements().length == viewer.getTable().getItemCount()) {
-					viewer.setAllChecked(false);
-					selectAllColumn.getColumn().setImage(SWTResourceManager
-							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
-
-					redraw();
-				} else {
-					viewer.setAllChecked(true);
-					selectAllColumn.getColumn().setImage(SWTResourceManager
-							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-done.png"));
-
-					redraw();
+			public String getText(Object element) {
+				if (element instanceof PackageArchiveItem) {
+					return ((PackageArchiveItem) element).getPackageName();
 				}
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-
+				return Messages.getString("UNTITLED");
 			}
 		});
 
-		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 500);
+		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 500);
+		versionColumn.getColumn().setAlignment(SWT.LEFT);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -281,7 +271,19 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn installationDateColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 500);
+		TableViewerColumn operationColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[2], 500);
+		operationColumn.getColumn().setAlignment(SWT.LEFT);
+		operationColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof PackageArchiveItem) {
+					return ((PackageArchiveItem) element).getOperation();
+				}
+				return Messages.getString("UNTITLED");
+			}
+		});
+
+		TableViewerColumn installationDateColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[3], 500);
 		installationDateColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -318,6 +320,9 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
+		if(txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty()){
+			Notifier.error("", Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
+		}
 	}
 
 	@Override
@@ -346,6 +351,47 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 	@Override
 	public String getPluginVersion() {
 		return PackageManagerConstants.PLUGIN_VERSION;
+	}
+
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd.widthHint = 200;
+		
+		// Execute task now
+		btnExecuteNow = createButton(parent, 5000, Messages.getString("GO_BACK_OLD_VERSION"), false);
+		btnExecuteNow.setLayoutData(gd);
+		btnExecuteNow.setImage(
+				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/task-play.png"));
+		btnExecuteNow.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// Validation of task data
+					validateBeforeExecution();
+
+					if(txtPackageName != null && txtPackageName.getText() != null && !txtPackageName.getText().isEmpty()){
+						if (LiderConfirmBox.open(Display.getDefault().getActiveShell(),
+								Messages.getString("TASK_EXEC_TITLE"), Messages.getString("TASK_EXEC_MESSAGE"))) {
+							try {
+								TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK,
+										getPluginName(), getPluginVersion(), getCommandId(), getParameterMap(), null,
+										new Date());
+								TaskRestUtils.execute(task);
+							} catch (Exception e1) {
+								logger.error(e1.getMessage(), e1);
+								Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
+							}
+						}
+						
+					}
+				}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("CANCEL"), true);
 	}
 
 }

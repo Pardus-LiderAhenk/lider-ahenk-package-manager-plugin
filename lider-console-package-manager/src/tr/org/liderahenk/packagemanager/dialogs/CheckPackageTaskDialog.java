@@ -20,6 +20,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -213,6 +214,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	private void redraw() {
 		sc.layout(true, true);
 		sc.setMinSize(sc.getContent().computeSize(800, SWT.DEFAULT));
+		viewer.refresh();
 	}
 
 	private void createTableColumns() {
@@ -254,6 +256,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn packageInfoColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 600);
+		packageInfoColumn.getColumn().setAlignment(SWT.LEFT);
 		packageInfoColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -262,6 +265,12 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 				}
 				return Messages.getString("UNTITLED");
 			}
+
+			@Override
+			public Font getFont(Object element) {
+				return super.getFont(element);
+			}
+			
 		});
 
 		TableViewerColumn dnColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 300);

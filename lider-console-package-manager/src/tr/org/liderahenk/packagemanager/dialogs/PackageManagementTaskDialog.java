@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -92,13 +94,13 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		createButtonsArea(composite);
 		createTableArea(composite);
 		getPackages();
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
-				loadingDialog.open();
-			}
-		});
+//		Display.getDefault().asyncExec(new Runnable() {
+//			@Override
+//			public void run() {
+//				loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
+//				loadingDialog.open();
+//			}
+//		});
 		return composite;
 	}
 
@@ -237,6 +239,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		// Package name
 		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("PACKAGE_NAME"), 200);
+		packageNameColumn.getColumn().setAlignment(SWT.LEFT);
 		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -250,6 +253,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		// Package version
 		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("PACKAGE_VERSION"), 100);
+		versionColumn.getColumn().setAlignment(SWT.LEFT);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -296,6 +300,13 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 	private void getPackages() {
 		try {
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
+					loadingDialog.open();
+				}
+			});
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
 					getPluginVersion(), "INSTALLED_PACKAGES", null, null, new Date());
 			TaskRestUtils.execute(task);
@@ -343,11 +354,28 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 										if (tableViewer != null) {
 											tableViewer.setInput(packages);
 											tableViewer.refresh();
+										
 										}
+										loadingDialog.close();
 									}
 								});
 							}
 						}
+						else{
+							byte[] data = taskStatus.getResult().getResponseData();
+							final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+									new TypeReference<HashMap<String, Object>>() {
+							});
+							
+							Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									if(responseData != null && responseData.containsKey("Result"))
+										getPackages();
+								}
+							});
+						}
+						
 						
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
@@ -355,13 +383,13 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 					monitor.worked(100);
 					monitor.done();
-
-					Display.getDefault().asyncExec(new Runnable() {
-						@Override
-						public void run() {
-							loadingDialog.close();
-						}
-					});
+					
+//					Display.getDefault().asyncExec(new Runnable() {
+//						@Override
+//						public void run() {
+//							getPackages();
+//						}
+//					});
 
 					return Status.OK_STATUS;
 				}

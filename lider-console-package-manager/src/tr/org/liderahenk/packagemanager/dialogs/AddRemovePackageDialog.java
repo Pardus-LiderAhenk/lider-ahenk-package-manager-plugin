@@ -7,6 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -20,16 +26,21 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
 
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.PackageInfo;
@@ -49,14 +60,66 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private CheckboxTableViewer viewer;
 	private Button btnCheckInstall;
 	private Button btnCheckUnInstall;
+	private AddRemovePackageLoadingDialog loadingDialog;
+	private Label lblUrl;
+	private Label lblComponents;
 
 	private final String[] debArray = new String[] { "deb", "deb-src" };
 	private PackageInfo item;
 
 	public AddRemovePackageDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
+		subscribeEventHandler(eventHandler);
 	}
+	private EventHandler eventHandler = new EventHandler() {
+		@Override
+		public void handleEvent(final Event event) {
+			Job job = new Job("TASK") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("PACKAGES", 100);
+					try {
+						TaskStatusNotification taskStatus = (TaskStatusNotification) event
+								.getProperty("org.eclipse.e4.data");
+						byte[] data = taskStatus.getResult().getResponseData();
+						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+								new TypeReference<HashMap<String, Object>>() {
+						});
+						Display.getDefault().asyncExec(new Runnable() {
 
+							@Override
+							public void run() {
+
+								Display.getDefault().asyncExec(new Runnable() {
+									@Override
+									public void run() {
+										loadingDialog = new AddRemovePackageLoadingDialog(Display.getDefault().getActiveShell());
+										loadingDialog.open();
+									}
+								});
+								
+								if (responseData != null && responseData.containsKey("ResultMessage")) {
+									if(viewer.getCheckedElements() != null){
+										viewer.setAllChecked(false);
+										redraw();
+									}
+								}
+							}
+						});
+					} catch (Exception e) {
+						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_WHILE_INSTALL_UNINSTALL_PACKAGE"));
+					}
+					monitor.worked(100);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				}
+			};
+
+			job.setUser(true);
+			job.schedule();
+		}
+	};
 	@Override
 	public String createTitle() {
 		return Messages.getString("AddRemovePackages");
@@ -83,6 +146,18 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		packageComposite = new Composite(composite, SWT.NONE);
 		packageComposite.setLayout(new GridLayout(2, false));
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		lblUrl = new Label(packageComposite, SWT.NONE);
+		lblUrl.setText(Messages.getString("URL"));
+		GridData gdUrl = new GridData(SWT.CENTER, SWT.FILL, false, true);
+		gdUrl.widthHint = 300;
+		lblUrl.setLayoutData(gdUrl);
+		
+		lblComponents = new Label(packageComposite, SWT.NONE);
+		lblComponents.setText(Messages.getString("COMPONENTS"));
+//		GridData gdComponents = new GridData(SWT.FILL, SWT.FILL, false, true);
+//		gdComponents.widthHint = 600;
+//		lblUrl.setLayoutData(gdComponents);
 
 		createPackageEntry(packageComposite);
 
@@ -92,11 +167,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		btnAddRep.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (txtUrl != null && !txtUrl.getText().isEmpty() && txtComponents != null
-						&& !txtComponents.getText().isEmpty())
 					handleAddGroupButton(e);
-				else
-					Notifier.error("", Messages.getString("FILL_ALL_FIELDS"));
 			}
 
 			@Override
@@ -137,7 +208,6 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
-
 		return null;
 	}
 
@@ -160,6 +230,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private void redraw() {
 		sc.layout(true, true);
 		sc.setMinSize(sc.getContent().computeSize(600, SWT.DEFAULT));
+		viewer.refresh();
 	}
 
 	protected void handleAddGroupButton(SelectionEvent e) {
@@ -206,11 +277,13 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 		txtUrl = new Text(grpPackageEntry, SWT.BORDER);
 		GridData txtGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		txtUrl.setMessage(Messages.getString("URL_EXAMPLE"));
 		txtGridData.widthHint = 400;
 		txtUrl.setLayoutData(txtGridData);
 
 		txtComponents = new Text(grpPackageEntry, SWT.BORDER);
 		GridData componentsGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		txtComponents.setMessage(Messages.getString("COMPONENT_EXAMPLE"));
 		componentsGridData.widthHint = 300;
 		txtComponents.setLayoutData(componentsGridData);
 	}
@@ -255,6 +328,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 150);
+		packageNameColumn.getColumn().setAlignment(SWT.LEFT);
 		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -266,6 +340,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 150);
+		versionColumn.getColumn().setAlignment(SWT.LEFT);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -288,6 +363,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn descriptionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[3], 150);
+		descriptionColumn.getColumn().setAlignment(SWT.LEFT);
 		descriptionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -322,8 +398,18 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		btnGridData.widthHint = 120;
 		btnList.setLayoutData(btnGridData);
 		btnList.addSelectionListener(new SelectionListener() {
+			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						loadingDialog = new AddRemovePackageLoadingDialog(Display.getDefault().getActiveShell());
+						loadingDialog.open();
+					}
+				});
+				
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
@@ -338,6 +424,13 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 						emptyTable();
 					}
 				}
+
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						loadingDialog.close();
+					}
+				});
 			}
 
 			@Override
@@ -455,6 +548,22 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 	public void setItem(PackageInfo item) {
 		this.item = item;
+	}
+
+	public Label getLblUrl() {
+		return lblUrl;
+	}
+
+	public void setLblUrl(Label lblUrl) {
+		this.lblUrl = lblUrl;
+	}
+
+	public Label getLblComponents() {
+		return lblComponents;
+	}
+
+	public void setLblComponents(Label lblComponents) {
+		this.lblComponents = lblComponents;
 	}
 
 }

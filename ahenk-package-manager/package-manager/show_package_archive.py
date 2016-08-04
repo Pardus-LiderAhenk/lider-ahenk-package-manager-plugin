@@ -20,7 +20,8 @@ class ShowPackageArchive(AbstractPlugin):
         try:
             package_name = str((self.data)['packageName'])
             self.logger.debug('[PACKAGE MANAGER] Package Installation History query is executing...')
-            a, result, b = self.execute('grep "status installed {0}:" /var/log/dpkg*.log'.format(package_name))
+            print(' cat /var/log/dpkg*.log | grep {} | grep "install \|upgrade"'.format(package_name))
+            a, result, b = self.execute(' cat /var/log/dpkg*.log | grep {} | grep "install \|upgrade"'.format(package_name))
             data = {}
             res = []
             message = ""
@@ -31,16 +32,23 @@ class ShowPackageArchive(AbstractPlugin):
                 for line in result_lines:
                     result_array = line.split(' ')
                     obj = {"installationDate": '{0} {1}'.format(result_array[0], result_array[1]),
-                           "version": result_array[5]}
+                           "version": result_array[5], "operation": result_array[2], "packageName": (result_array[3].split(':'))[0]}
                     res.append(obj)
 
             if a == 0 and len(res) > 0:
                 data = {"Result": res}
                 message = 'Paket arşivi başarıyla getirildi'
+
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                                         message=message,
+                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
             elif a != 0:
                 message = 'Paket bulunamadı'
-
-            self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                         message=message,
+                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            else:
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message=message,
                                          data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
             self.logger.debug('[PACKAGE MANAGER] Getting Package Archive task is handled successfully')
