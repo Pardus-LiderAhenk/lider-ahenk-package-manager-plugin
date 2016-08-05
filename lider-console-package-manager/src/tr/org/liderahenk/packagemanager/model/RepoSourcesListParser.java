@@ -19,8 +19,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
-
 /**
  * A utility class which is responsible for parsing specified Linux package
  * repository URL and returning a set of packages.<br/>
@@ -55,7 +53,8 @@ public abstract class RepoSourcesListParser {
 			String deb) {
 		List<PackageInfo> packages = new ArrayList<PackageInfo>();
 		for (String component : components) {
-			for (String filename : filenames) {
+			for (int i = 0; i < filenames.length; i++) {
+				String filename = filenames[i];
 				try {
 					// Find URL pointing to the package file
 					String packageURL = findPackageURL(url, distribution, component, architecture, filename);
@@ -97,15 +96,9 @@ public abstract class RepoSourcesListParser {
 						}
 					}
 				} catch (ClientProtocolException e) {
-					Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olup tekrar deneyiniz");
 				} catch (IOException e) {
-					Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olup tekrar deneyiniz");
-					System.out.println(e);
 				}
 			}
-		}
-		if(components.length == 0){
-			Notifier.error("", "Depo alanının doğruluğundan emin olup tekrar deneyiniz");
 		}
 		if (packages != null && packages.size() > 0)
 			packages.remove(packages.get(packages.size() - 1));

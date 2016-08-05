@@ -434,9 +434,14 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
-					resultSet.addAll(RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
+					List<PackageInfo> items = RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
 							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",
-							list[i]));
+							list[i]);
+					if(items != null && !items.isEmpty())
+						resultSet.addAll(items);
+					else{
+						Notifier.error("", "Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olunuz");
+					}
 					if (checkSearchingCriteria(resultSet) != null && checkSearchingCriteria(resultSet).size() > 0) {
 						recreateTable();
 						viewer.setInput(checkSearchingCriteria(resultSet));
