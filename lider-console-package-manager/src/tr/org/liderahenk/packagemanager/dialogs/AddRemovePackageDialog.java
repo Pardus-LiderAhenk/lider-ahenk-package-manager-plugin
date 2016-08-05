@@ -154,23 +154,31 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		sc.setExpandHorizontal(true);
 		sc.setExpandVertical(true);
 
+
+		Composite packageLabelComposite = new Composite(composite, SWT.NONE);
+		packageLabelComposite.setLayout(new GridLayout(3, false));
+		packageLabelComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		Label tmpLbl =new Label(packageLabelComposite, SWT.NONE);
+		GridData gdUrl = new GridData(SWT.CENTER, SWT.FILL, false, true);
+		gdUrl.widthHint = 350;
+		tmpLbl.setLayoutData(gdUrl);
+		lblUrl = new Label(packageLabelComposite, SWT.NONE);
+		lblUrl.setText(Messages.getString("URL"));
+		lblUrl.setLayoutData(gdUrl);
+
+		lblComponents = new Label(packageLabelComposite, SWT.NONE);
+		lblComponents.setText(Messages.getString("COMPONENTS"));
+		 GridData gdComponents = new GridData(SWT.LEFT, SWT.FILL, false,
+		 true);
+		 gdComponents.widthHint = 300;
+		 lblComponents.setLayoutData(gdComponents);
+
+
 		packageComposite = new Composite(composite, SWT.NONE);
 		packageComposite.setLayout(new GridLayout(2, false));
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-		lblUrl = new Label(packageComposite, SWT.NONE);
-		lblUrl.setText(Messages.getString("URL"));
-		GridData gdUrl = new GridData(SWT.CENTER, SWT.FILL, false, true);
-		gdUrl.widthHint = 300;
-		lblUrl.setLayoutData(gdUrl);
-
-		lblComponents = new Label(packageComposite, SWT.NONE);
-		lblComponents.setText(Messages.getString("COMPONENTS"));
-		// GridData gdComponents = new GridData(SWT.FILL, SWT.FILL, false,
-		// true);
-		// gdComponents.widthHint = 600;
-		// lblUrl.setLayoutData(gdComponents);
-
+		
 		createPackageEntry(packageComposite);
 
 		btnAddRep = new Button(packageComposite, SWT.NONE);
@@ -220,6 +228,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
+		
 		return null;
 	}
 
