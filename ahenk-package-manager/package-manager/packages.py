@@ -31,7 +31,7 @@ class Packages(AbstractPlugin):
                             self.logger.debug(
                                 "[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
                             a, result, b = self.execute(param)
-                            self.logger.debug("[PACKAGE MANAGER] Repository added")
+                            self.logger.debug("[PACKAGE MANAGER] Repository added, Result Code : {0} , result : {1}".format(a, result))
                             resultMessage += 'Repository added - {}\r\n'.format(item['source'])
                         except Exception as e:
                             resultMessage += 'Repository could not be added - {}'.format(item['source'])
@@ -57,6 +57,9 @@ class Packages(AbstractPlugin):
                     else:
                         resultMessage += 'Package could not be uninstalled - {0}={1}\r\n'.format(item['packageName'],
                                                                                                  item['version'])
+
+                    self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                                 message=resultMessage.format(resultMessage))
             data = {'ResultMessage': resultMessage}
 
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,

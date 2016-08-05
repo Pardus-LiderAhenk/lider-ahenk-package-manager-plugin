@@ -94,13 +94,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 		createButtonsArea(composite);
 		createTableArea(composite);
 		getPackages();
-//		Display.getDefault().asyncExec(new Runnable() {
-//			@Override
-//			public void run() {
-//				loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
-//				loadingDialog.open();
-//			}
-//		});
 		return composite;
 	}
 
@@ -383,13 +376,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 					monitor.worked(100);
 					monitor.done();
-					
-//					Display.getDefault().asyncExec(new Runnable() {
-//						@Override
-//						public void run() {
-//							getPackages();
-//						}
-//					});
 
 					return Status.OK_STATUS;
 				}
