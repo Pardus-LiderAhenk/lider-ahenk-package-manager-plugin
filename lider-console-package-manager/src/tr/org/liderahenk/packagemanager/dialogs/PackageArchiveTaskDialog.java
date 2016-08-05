@@ -204,10 +204,12 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				int df = viewer.getTable().getSelectionIndex();
-
-				viewer.setAllChecked(false);
-				viewer.setChecked(viewer.getElementAt(df), !viewer.getChecked(viewer.getElementAt(df)));
+				if(viewer != null && viewer.getTable() != null && viewer.getTable().getItemCount() > 0){
+					viewer.setAllChecked(false);
+					int df = viewer.getTable().getSelectionIndex();
+					if(df != -1)
+						viewer.getTable().getItem(df).setChecked(true);	
+				}
 			}
 		});
 
@@ -247,7 +249,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 500);
+		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 250);
 		packageNameColumn.getColumn().setAlignment(SWT.LEFT);
 		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -259,7 +261,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 500);
+		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 250);
 		versionColumn.getColumn().setAlignment(SWT.LEFT);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -271,7 +273,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn operationColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[2], 500);
+		TableViewerColumn operationColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[2], 250);
 		operationColumn.getColumn().setAlignment(SWT.LEFT);
 		operationColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -283,7 +285,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn installationDateColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[3], 500);
+		TableViewerColumn installationDateColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[3], 250);
 		installationDateColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -330,7 +332,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		Object[] checkedElements = viewer.getCheckedElements();
 		for (Object checkedElement : checkedElements) {
-			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
+			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, ((PackageArchiveItem) checkedElement).getPackageName());
 			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_VERSION,
 					((PackageArchiveItem) checkedElement).getVersion());
 		}

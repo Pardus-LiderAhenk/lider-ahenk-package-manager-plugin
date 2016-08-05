@@ -60,7 +60,8 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private CheckboxTableViewer viewer;
 	private Button btnCheckInstall;
 	private Button btnCheckUnInstall;
-	private AddRemovePackageLoadingDialog loadingDialog;
+	private PackageManagementLoadingDialog loadingDialog;
+	private AddRemovePackageLoadingDialog addRemLoadingDialog;
 	private Label lblUrl;
 	private Label lblComponents;
 
@@ -71,14 +72,25 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		super(parentShell, dnSet);
 		subscribeEventHandler(eventHandler);
 	}
+
 	private EventHandler eventHandler = new EventHandler() {
 		@Override
 		public void handleEvent(final Event event) {
+
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					addRemLoadingDialog = new AddRemovePackageLoadingDialog(Display.getDefault().getActiveShell());
+					addRemLoadingDialog.open();
+				}
+			});
+
 			Job job = new Job("TASK") {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("PACKAGES", 100);
 					try {
+
 						TaskStatusNotification taskStatus = (TaskStatusNotification) event
 								.getProperty("org.eclipse.e4.data");
 						byte[] data = taskStatus.getResult().getResponseData();
@@ -89,17 +101,8 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
-
-								Display.getDefault().asyncExec(new Runnable() {
-									@Override
-									public void run() {
-										loadingDialog = new AddRemovePackageLoadingDialog(Display.getDefault().getActiveShell());
-										loadingDialog.open();
-									}
-								});
-								
 								if (responseData != null && responseData.containsKey("ResultMessage")) {
-									if(viewer.getCheckedElements() != null){
+									if (viewer.getCheckedElements() != null) {
 										viewer.setAllChecked(false);
 										redraw();
 									}
@@ -118,8 +121,16 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 			job.setUser(true);
 			job.schedule();
+
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					addRemLoadingDialog.close();
+				}
+			});
 		}
 	};
+
 	@Override
 	public String createTitle() {
 		return Messages.getString("AddRemovePackages");
@@ -146,18 +157,19 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		packageComposite = new Composite(composite, SWT.NONE);
 		packageComposite.setLayout(new GridLayout(2, false));
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
+
 		lblUrl = new Label(packageComposite, SWT.NONE);
 		lblUrl.setText(Messages.getString("URL"));
 		GridData gdUrl = new GridData(SWT.CENTER, SWT.FILL, false, true);
 		gdUrl.widthHint = 300;
 		lblUrl.setLayoutData(gdUrl);
-		
+
 		lblComponents = new Label(packageComposite, SWT.NONE);
 		lblComponents.setText(Messages.getString("COMPONENTS"));
-//		GridData gdComponents = new GridData(SWT.FILL, SWT.FILL, false, true);
-//		gdComponents.widthHint = 600;
-//		lblUrl.setLayoutData(gdComponents);
+		// GridData gdComponents = new GridData(SWT.FILL, SWT.FILL, false,
+		// true);
+		// gdComponents.widthHint = 600;
+		// lblUrl.setLayoutData(gdComponents);
 
 		createPackageEntry(packageComposite);
 
@@ -167,7 +179,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		btnAddRep.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-					handleAddGroupButton(e);
+				handleAddGroupButton(e);
 			}
 
 			@Override
@@ -398,18 +410,18 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		btnGridData.widthHint = 120;
 		btnList.setLayoutData(btnGridData);
 		btnList.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 
 				Display.getDefault().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						loadingDialog = new AddRemovePackageLoadingDialog(Display.getDefault().getActiveShell());
+						loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
 						loadingDialog.open();
 					}
 				});
-				
+
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
@@ -448,9 +460,11 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				if (txtPackageName.getText().isEmpty() && txtDescription.getText().isEmpty())
 					isProper = true;
 				if (txtPackageName.getText() != null && !txtPackageName.getText().isEmpty()
+						&& packageInfo.getPackageName() != null && !packageInfo.getPackageName().isEmpty()
 						&& packageInfo.getPackageName().contains(txtPackageName.getText()))
 					isProper = true;
 				if (txtDescription.getText() != null && !txtDescription.getText().isEmpty()
+						&& packageInfo.getDescription() != null && !packageInfo.getDescription().isEmpty()
 						&& packageInfo.getDescription().contains(txtDescription.getText()))
 					isProper = true;
 				if (isProper)
