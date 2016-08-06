@@ -492,12 +492,10 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 								"Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olunuz");
 					}
 				}
-				checkedElements.clear();
 				recreateTable();
-				if(resultSet != null && !resultSet.isEmpty()){
-					viewer.setInput(resultSet);
-					redraw();
-				}
+				viewer.setInput(resultSet);
+				redraw();
+				checkedElements.clear();
 
 				Display.getDefault().asyncExec(new Runnable() {
 					@Override
