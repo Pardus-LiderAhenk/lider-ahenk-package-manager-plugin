@@ -84,6 +84,10 @@ public abstract class RepoSourcesListParser {
 									String[] tokens = line.split(":", 2);
 
 									if (tokens.length > 1) {
+										if(tokens[0].equals("Package") && (tokens[1] == null || tokens[1].isEmpty())) {
+											packages.remove(packages.size()-1);
+											continue;
+										}
 										String propertyMethodName = getPropertyMethodName(tokens[0].trim());
 										String propertyValue = tokens[1].trim();
 										setPropertyValue(info, propertyMethodName, propertyValue);
@@ -98,10 +102,12 @@ public abstract class RepoSourcesListParser {
 				} catch (ClientProtocolException e) {
 				} catch (IOException e) {
 				}
+				if (packages != null && packages.size() > 0 && (packages.get(packages.size()-1).getPackageName() == null || packages.get(packages.size()-1).getPackageName().isEmpty())){
+					packages.remove(packages.get(packages.size() - 1));
+					break;
+				}
 			}
 		}
-		if (packages != null && packages.size() > 0)
-			packages.remove(packages.get(packages.size() - 1));
 		return packages;
 	}
 
