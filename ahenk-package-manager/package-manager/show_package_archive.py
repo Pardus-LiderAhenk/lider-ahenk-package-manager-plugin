@@ -20,7 +20,6 @@ class ShowPackageArchive(AbstractPlugin):
         try:
             package_name = str((self.data)['packageName'])
             self.logger.debug('[PACKAGE MANAGER] Package Installation History query is executing...')
-            print(' cat /var/log/dpkg*.log | grep {} | grep "install \|upgrade"'.format(package_name))
             a, result, b = self.execute(' cat /var/log/dpkg*.log | grep {} | grep "install \|upgrade"'.format(package_name))
             data = {}
             res = []
