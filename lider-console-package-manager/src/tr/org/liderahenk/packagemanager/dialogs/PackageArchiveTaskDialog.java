@@ -18,7 +18,6 @@ import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -53,7 +52,6 @@ import tr.org.liderahenk.packagemanager.model.PackageArchiveItem;
 
 public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
-	private ScrolledComposite sc;
 	private CheckboxTableViewer viewer;
 	private Composite packageComposite;
 	private Label lblPackageName;
@@ -117,7 +115,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 									}
 									recreateTable();
 									viewer.setInput(its);
-									redraw();
+									viewer.refresh();
 								} else if (responseData != null && !responseData.isEmpty()
 										&& responseData.containsKey("ResultMessage")) {
 										Notifier.success(Messages.getString("INSTALL_FROM_ARCHIVE_TITLE"),
@@ -151,20 +149,11 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
 
-		sc = new ScrolledComposite(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		final Composite composite = new Composite(parent, SWT.NONE);
 		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		sc.setLayoutData(gData);
+		composite.setLayoutData(gData);
 		gData.widthHint = 1000;
-		sc.setLayout(new GridLayout(1, false));
-		parent.setBackgroundMode(SWT.INHERIT_FORCE);
-
-		final Composite composite = new Composite(sc, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-		sc.setContent(composite);
-		sc.setExpandHorizontal(true);
-		sc.setExpandVertical(true);
 
 		packageComposite = new Composite(composite, SWT.NONE);
 		packageComposite.setLayout(new GridLayout(2, false));
@@ -225,16 +214,11 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 				if (children[i].equals(thisBtn) && i - 1 > 0) {
 					children[i - 1].dispose();
 					children[i].dispose();
-					redraw();
+					viewer.refresh();
 					break;
 				}
 			}
 		}
-	}
-
-	private void redraw() {
-		sc.layout(true, true);
-		sc.setMinSize(sc.getContent().computeSize(1000, SWT.DEFAULT));
 	}
 
 	private void createTableColumns() {
@@ -307,7 +291,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 	private void emptyTable() {
 		recreateTable();
 		viewer.setInput(new ArrayList<PackageArchiveItem>());
-		redraw();
+		viewer.refresh();
 	}
 
 	private void recreateTable() {

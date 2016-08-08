@@ -16,7 +16,6 @@ import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -51,7 +50,6 @@ import tr.org.liderahenk.packagemanager.model.PackageCheckItem;
 
 public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
-	private ScrolledComposite sc;
 	private CheckboxTableViewer viewer;
 	private Composite packageComposite;
 	private Label lblPackageName;
@@ -98,7 +96,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 									}
 									listItems.add(item);
 									viewer.setInput(listItems);
-									redraw();
+									viewer.refresh();
 								}
 							}
 						});
@@ -126,20 +124,12 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
 
-		sc = new ScrolledComposite(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		sc.setLayoutData(gData);
-		gData.widthHint = 1000;
-		sc.setLayout(new GridLayout(1, false));
-		parent.setBackgroundMode(SWT.INHERIT_FORCE);
-
-		final Composite composite = new Composite(sc, SWT.NONE);
+		final Composite composite = new Composite(parent, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		composite.setLayoutData(gData);
+		gData.widthHint = 1000;
 
-		sc.setContent(composite);
-		sc.setExpandHorizontal(true);
-		sc.setExpandVertical(true);
 
 		composite.setBounds(composite.getBounds().x, composite.getBounds().y, 1000, composite.getBounds().height);
 
@@ -204,17 +194,11 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 				if (children[i].equals(thisBtn) && i - 1 > 0) {
 					children[i - 1].dispose();
 					children[i].dispose();
-					redraw();
+					viewer.refresh();
 					break;
 				}
 			}
 		}
-	}
-
-	private void redraw() {
-		sc.layout(true, true);
-		sc.setMinSize(sc.getContent().computeSize(800, SWT.DEFAULT));
-		viewer.refresh();
 	}
 
 	private void createTableColumns() {
@@ -239,13 +223,13 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 					selectAllColumn.getColumn().setImage(SWTResourceManager
 							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
 
-					redraw();
+					viewer.refresh();
 				} else {
 					viewer.setAllChecked(true);
 					selectAllColumn.getColumn().setImage(SWTResourceManager
 							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-done.png"));
 
-					redraw();
+					viewer.refresh();
 				}
 			}
 
@@ -295,7 +279,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	private void emptyTable() {
 		recreateTable();
 		viewer.setInput(new ArrayList<PackageCheckItem>());
-		redraw();
+		viewer.refresh();
 	}
 
 	private void recreateTable() {
@@ -310,7 +294,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if (txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty()) {
+		if (viewer.getCheckedElements().length > 0) {
 			throw new ValidationException(Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
 		}
 	}
