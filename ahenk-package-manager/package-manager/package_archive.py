@@ -21,12 +21,18 @@ class PackageArchive(AbstractPlugin):
             package_name = str((self.data)['packageName'])
             package_version = str((self.data)['packageVersion'])
             self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(package_name))
-            self.install_with_apt_get(package_name, package_version)
-            resultMessage += 'Paket başarıyla kuruldu - {0}={1}'.format(package_name, package_version)
-
-            self.logger.debug(resultMessage)
-            self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+            result_code, p_result, p_err = self.install_with_apt_get(package_name, package_version)
+            if result_code == 0:
+                resultMessage += 'Paket başarıyla kuruldu - {0}={1}'.format(package_name, package_version)
+                self.logger.debug(resultMessage)
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message=resultMessage)
+            else:
+                self.logger.debug(resultMessage)
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                         message='Önceki paket sürümü kurulumunda beklenmedik hata!',
+                                         content_type=ContentType.APPLICATION_JSON.value)
+
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
