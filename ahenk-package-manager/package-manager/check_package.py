@@ -24,7 +24,7 @@ class CheckPackage(AbstractPlugin):
 
             if dn is None:
                 dn = " "
-            a, result, b = self.execute('dpkg -s {} | grep Version'.format(package_name))
+            result_code, result, p_err = self.execute('dpkg -s {} | grep Version'.format(package_name))
             data = result.split(':')
 
             if data[0] == 'Version':  # Package is installed
