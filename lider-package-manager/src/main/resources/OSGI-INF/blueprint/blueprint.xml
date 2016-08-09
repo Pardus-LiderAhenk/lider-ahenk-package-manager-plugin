@@ -10,7 +10,11 @@
 	<cm:property-placeholder persistent-id="tr.org.liderahenk.packagemanager"
 		update-strategy="reload">
 	</cm:property-placeholder>
-
+                 
+    <service ref="packageOperationsTemplate" interface="tr.org.liderahenk.lider.core.api.persistence.entities.IReportTemplate" />
+	<bean id="packageOperationsTemplate"
+		class="tr.org.liderahenk.packagemanager.report.templates.PackageOperationsReportTemplateImpl" />
+		
   <!-- IPluginInfo implementation is used to register plugin -->
   <service 
       ref="pluginInfoImpl"
