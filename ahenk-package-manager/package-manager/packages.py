@@ -3,7 +3,7 @@
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
 import json
-
+import subprocess
 from base.model.enum.ContentType import ContentType
 from base.plugin.abstract_plugin import AbstractPlugin
 
@@ -21,7 +21,7 @@ class Packages(AbstractPlugin):
         try:
             resultMessage = 'Machine uid    :   {}\r\n'.format(self.Ahenk.uid())
             items = (self.data)['packageInfoList']
-            a = 0
+            return_code = 0
             for item in items:
                 try:
                     if (str(item['tag']) == 'Yükle' or str(item['tag']) == 'Install') and item['source'] is not None:
@@ -30,32 +30,49 @@ class Packages(AbstractPlugin):
                                 self.Ahenk.plugins_path(), item['source'])
                             self.logger.debug(
                                 "[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
-                            a, result, b = self.execute(param)
-                            self.logger.debug("[PACKAGE MANAGER] Repository added, Result Code : {0} , result : {1}".format(a, result))
-                            resultMessage += 'Repository added - {}\r\n'.format(item['source'])
+                            process = subprocess.Popen(param, shell=True)
+                            process.wait()
+                            return_code = process.returncode
+                            self.logger.debug("[PACKAGE MANAGER] Repository added, Result Code : {0} ".format(return_code))
+                            resultMessage += 'Depo eklendi - {}\r\n'.format(item['source'])
                         except Exception as e:
-                            resultMessage += 'Repository could not be added - {}'.format(item['source'])
+                            resultMessage += 'Depo eklenemedi - {}'.format(item['source'])
 
-                    if a == 0 and (item['tag'] == 'Yükle' or item['tag'] == 'Install'):
+                    if return_code == 0 and (item['tag'] == 'Yükle' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
-                        self.install_with_apt_get(item['packageName'], item['version'])
-                        self.logger.debug("[PACKAGE MANAGER] Result is : " + result)
-                        resultMessage += 'Package installed - {0}={1}\r\n'.format(item['packageName'], item['version'])
-                    elif a == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
+                        result_code, p_result, p_err = self.install_with_apt_get(item['packageName'], item['version'])
+                        if result_code == 0:
+                            self.logger.debug("[PACKAGE MANAGER] Package installed : {0}={1}".format(item['packageName'], item['version']))
+                            resultMessage += 'Paket yüklendi - {0}={1}\r\n'.format(item['packageName'], item['version'])
+                        else:
+                            self.logger.debug(
+                                "[PACKAGE MANAGER] Package couldnt be installed : {0}={1}".format(item['packageName'],
+                                                                                       item['version']))
+                            resultMessage += 'Paket yüklenemedi - {0}={1}\r\n'.format(item['packageName'],
+                                                                                               item['version'])
+                    elif return_code == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
                         self.logger.debug("[PACKAGE MANAGER] Removing package... {0}".format(item['packageName']))
                         self.logger.debug(
                             "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'],
                                                                                                     item['version']))
-                        self.uninstall_package(item['packageName'], item['version'])
-                        self.logger.debug('[PACKAGE MANAGER] : Package uninstalled - {0}={1}\r\n'.format(item['packageName'], item['version']))
-                        resultMessage += 'Package uninstalled - {0}={1}\r\n'.format(item['packageName'],
+                        result_code, p_result, p_err = self.uninstall_package(item['packageName'], item['version'])
+                        if result_code == 0:
+                            self.logger.debug('[PACKAGE MANAGER] : Package uninstalled - {0}={1}\r\n'.format(item['packageName'], item['version']))
+                            resultMessage += 'Paket kaldırıldı - {0}={1}\r\n'.format(item['packageName'],
                                                                                     item['version'])
+                        else:
+                            self.logger.debug(
+                                '[PACKAGE MANAGER] : Package couldnt be uninstalled - {0}={1}\r\n'.format(item['packageName'],
+                                                                                               item['version']))
+                            resultMessage += 'Paket kaldırılamadı - {0}={1}\r\n'.format(item['packageName'],
+                                                                                                 item['version'])
+
                 except Exception as e:
                     if item['tag'] == 'Yükle' or item['tag'] == 'Install':
-                        resultMessage += 'Package could not be installed - {0}={1}\r\n'.format(item['packageName'],
+                        resultMessage += 'Paket yüklenemedi - {0}={1}\r\n'.format(item['packageName'],
                                                                                                item['version'])
                     else:
-                        resultMessage += 'Package could not be uninstalled - {0}={1}\r\n'.format(item['packageName'],
+                        resultMessage += 'Paket kaldırılamadı - {0}={1}\r\n'.format(item['packageName'],
                                                                                                  item['version'])
 
                     self.context.create_response(code=self.message_code.TASK_ERROR.value,
