@@ -11,6 +11,10 @@
 		update-strategy="reload">
 	</cm:property-placeholder>
                  
+    <service ref="checkPackageTemplate" interface="tr.org.liderahenk.lider.core.api.persistence.entities.IReportTemplate" />
+	<bean id="checkPackageTemplate"
+		class="tr.org.liderahenk.packagemanager.report.templates.CheckPackageReportTemplateImpl" />
+                 
     <service ref="packageOperationsTemplate" interface="tr.org.liderahenk.lider.core.api.persistence.entities.IReportTemplate" />
 	<bean id="packageOperationsTemplate"
 		class="tr.org.liderahenk.packagemanager.report.templates.PackageOperationsReportTemplateImpl" />

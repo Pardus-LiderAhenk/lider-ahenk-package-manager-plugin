@@ -18,25 +18,24 @@ import tr.org.liderahenk.lider.core.api.plugin.BaseReportTemplate;
  * @author <a href="mailto:emre.akkaya@agem.com.tr">Emre Akkaya</a>
  *
  */
-public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
+public class CheckPackageReportTemplateImpl extends BaseReportTemplate {
 
 	private static final long serialVersionUID = -8026043224671892836L;
-
 	@Override
 	public String getName() {
-		return "Paket İşlemleri Raporu";
+		return "Paket Kontrolü Raporu";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Paket işlemleri hakkında istatistiksel rapor";
+		return "Paket kontrolü hakkında istatistiksel rapor";
 	}
 
 	@Override
 	public String getQuery() {
 		return "SELECT cer.responseMessage, cer.createDate "
 				+ "FROM CommandImpl c LEFT JOIN c.commandExecutions ce INNER JOIN ce.commandExecutionResults cer INNER JOIN c.task t INNER JOIN t.plugin p "
-				+ "WHERE p.name = 'package-manager' AND ce.dn LIKE :dn AND (t.commandClsId = 'PACKAGES') AND t.createDate BETWEEN :startDate AND :endDate AND cer.responseCode <> 8";
+				+ "WHERE p.name = 'package-manager' AND ce.dn LIKE :dn AND (t.commandClsId = 'CHECK_PACKAGE') AND t.createDate BETWEEN :startDate AND :endDate AND cer.responseCode <> 8";
 	}
 
 	@SuppressWarnings("serial")
@@ -94,7 +93,7 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 
 			@Override
 			public boolean isMandatory() {
-				return true;
+				return false;
 			}
 
 			@Override
@@ -141,7 +140,7 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 
 			@Override
 			public boolean isMandatory() {
-				return true;
+				return false;
 			}
 
 			@Override
@@ -237,7 +236,7 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 		return columns;
 	}
 
-	protected PackageOperationsReportTemplateImpl getSelf() {
+	protected CheckPackageReportTemplateImpl getSelf() {
 		return this;
 	}
 
