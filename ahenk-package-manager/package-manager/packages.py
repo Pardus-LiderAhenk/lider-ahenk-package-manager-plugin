@@ -19,7 +19,7 @@ class Packages(AbstractPlugin):
     def handle_task(self):
         self.logger.debug('Handling Packages Task')
         try:
-            resultMessage = 'Machine uid    :   {}\r\n'.format(self.Ahenk.uid())
+            resultMessage = 'Dn    :   {}\r\n'.format(self.Ahenk.dn())
             items = (self.data)['packageInfoList']
             return_code = 0
             for item in items:
