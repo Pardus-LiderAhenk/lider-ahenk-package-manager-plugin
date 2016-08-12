@@ -21,23 +21,30 @@ class CheckPackage(AbstractPlugin):
             package_name = str((self.data)['packageName'])
             package_version = str((self.data)['packageVersion'])
             dn = self.Ahenk.dn()
-
+            res = {}
             if dn is None:
                 dn = " "
             result_code, result, p_err = self.execute('dpkg -s {} | grep Version'.format(package_name))
-            data = result.split(':')
+            data = result.split(': ')
+            self.logger.debug(data)
 
             if data[0] == 'Version':  # Package is installed
                 if package_version is None or len(package_version) == 0:
-                    result = 'Paket yüklü; fakat başka bir versiyonla - {}'.format(data[1])
+                    result = 'Paket yüklü; fakat başka bir versiyonla'
+                    res['version'] = data[1]
                 elif data[1] is not None and (package_version + '\n') in data[
                     1]:  # Package version is the same with wanted version
                     result = 'Paket yüklü'
+                    res['version'] = data[1]
                 else:
-                    result = 'Paket yüklü; fakat başka bir versiyonla - {}'.format(data[1])
+                    result = 'Paket yüklü; fakat başka bir versiyonla'
+                    res['version'] = data[1]
             else:  # Package is not installed
                 result = 'Paket yüklü değil'
-            res = {"dn": dn, "res": result}
+                res['version'] = ''
+
+            res["dn"] = dn
+            res["res"] = result
 
             self.logger.debug("[PACKAGE MANAGER] Result is: - {}".format(result))
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
