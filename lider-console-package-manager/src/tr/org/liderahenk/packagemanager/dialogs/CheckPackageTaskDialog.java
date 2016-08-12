@@ -176,7 +176,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 					String searchingVersion = dialog.getParam();
 					viewer.setAllChecked(false);
 					for (TableItem item : viewer.getTable().getItems()) {
-						if(item.getText(2) != null && !item.getText(2).isEmpty() && (item.getText(2)).startsWith(searchingVersion)){
+						if(searchingVersion != null && !searchingVersion.isEmpty() && item.getText(2) != null && !item.getText(2).isEmpty() && (item.getText(2)).startsWith(searchingVersion)){
 							item.setChecked(true);
 						}
 					}
