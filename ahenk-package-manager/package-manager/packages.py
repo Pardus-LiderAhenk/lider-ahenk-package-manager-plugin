@@ -22,23 +22,37 @@ class Packages(AbstractPlugin):
             resultMessage = 'Dn    :   {}\r\n'.format(self.Ahenk.dn())
             items = (self.data)['packageInfoList']
             return_code = 0
+            give_error = False
             for item in items:
                 try:
                     if (str(item['tag']) == 'Yükle' or str(item['tag']) == 'Install') and item['source'] is not None:
                         try:
+                            array = item['source'].split()
+                            source = ' '
+                            source = source.join(array)
                             param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
-                                self.Ahenk.plugins_path(), item['source'])
+                                self.Ahenk.plugins_path(), source)
                             self.logger.debug(
                                 "[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
                             process = subprocess.Popen(param, shell=True)
                             process.wait()
                             return_code = process.returncode
-                            self.logger.debug("[PACKAGE MANAGER] Repository added, Result Code : {0} ".format(return_code))
-                            resultMessage += 'Depo eklendi - {}\r\n'.format(item['source'])
+                            if return_code == 12:
+                                self.logger.debug("[PACKAGE MANAGER] Repository added, Result Code : {0} ".format(return_code))
+                                resultMessage += 'Depo eklendi - {}\r\n'.format(item['source'])
+                                return_code_update, result_update, error_update = self.execute('apt-get update')
+                                if return_code_update == 0:
+                                    resultMessage += 'Paketler güncellendi\r\n'
+                                else:
+                                    resultMessage += 'Paketler güncellenemedi\r\n'
+                                    give_error = True
+                            elif return_code != 12 and return_code != 13:
+                                resultMessage = 'Depo eklenemedi - Return Code : {}\r\n'.format(return_code)
+                                give_error = True
                         except Exception as e:
-                            resultMessage += 'Depo eklenemedi - {}'.format(item['source'])
+                            resultMessage += 'Depo eklenemedi - {}\r\n'.format(item['source'])
 
-                    if return_code == 0 and (item['tag'] == 'Yükle' or item['tag'] == 'Install'):
+                    if (return_code == 12 or return_code == 13) and (item['tag'] == 'Yükle' or item['tag'] == 'Install'):
                         self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
                         result_code, p_result, p_err = self.install_with_apt_get(item['packageName'], item['version'])
                         if result_code == 0:
@@ -50,7 +64,8 @@ class Packages(AbstractPlugin):
                                                                                        item['version']))
                             resultMessage += 'Paket yüklenemedi - {0}={1}\r\n'.format(item['packageName'],
                                                                                                item['version'])
-                    elif return_code == 0 and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
+                            give_error = True
+                    elif (return_code == 12 or return_code == 13) and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
                         self.logger.debug("[PACKAGE MANAGER] Removing package... {0}".format(item['packageName']))
                         self.logger.debug(
                             "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'],
@@ -66,6 +81,7 @@ class Packages(AbstractPlugin):
                                                                                                item['version']))
                             resultMessage += 'Paket kaldırılamadı - {0}={1}\r\n'.format(item['packageName'],
                                                                                                  item['version'])
+                            give_error = True
 
                 except Exception as e:
                     if item['tag'] == 'Yükle' or item['tag'] == 'Install':
@@ -77,6 +93,12 @@ class Packages(AbstractPlugin):
 
                     self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                  message=resultMessage.format(resultMessage))
+                    return
+            if give_error is True:
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                         message=resultMessage.format(resultMessage))
+                return
+
             data = {'ResultMessage': resultMessage}
 
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
