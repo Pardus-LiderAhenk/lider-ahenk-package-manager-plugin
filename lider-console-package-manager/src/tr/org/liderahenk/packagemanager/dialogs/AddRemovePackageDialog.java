@@ -482,7 +482,8 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
-					List<PackageInfo> items = RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
+					list[i+2] = list[i+2].trim();
+					List<PackageInfo> items = RepoSourcesListParser.parseURL(list[i + 1].trim(), list[i + 2].split(" ")[0],
 							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",
 							list[i]);
 					if (items != null && !items.isEmpty())
