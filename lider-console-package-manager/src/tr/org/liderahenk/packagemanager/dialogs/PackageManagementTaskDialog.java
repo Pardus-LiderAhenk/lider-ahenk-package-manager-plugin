@@ -72,7 +72,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 
 	private PackageInfo selectedPackage;
 	private PackageManagementLoadingDialog loadingDialog;
-	
+
 	public PackageManagementTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
 		subscribeEventHandler(taskStatusNotificationHandler);
@@ -301,7 +301,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 				}
 			});
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "INSTALLED_PACKAGES", null, null, new Date());
+					getPluginVersion(), "INSTALLED_PACKAGES", null, null, null, new Date());
 			TaskRestUtils.execute(task);
 
 		} catch (Exception e) {
@@ -347,29 +347,27 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 										if (tableViewer != null) {
 											tableViewer.setInput(packages);
 											tableViewer.refresh();
-										
+
 										}
 										loadingDialog.close();
 									}
 								});
 							}
-						}
-						else{
+						} else {
 							byte[] data = taskStatus.getResult().getResponseData();
 							final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
 									new TypeReference<HashMap<String, Object>>() {
-							});
-							
+									});
+
 							Display.getDefault().asyncExec(new Runnable() {
 								@Override
 								public void run() {
-									if(responseData != null && responseData.containsKey("Result"))
+									if (responseData != null && responseData.containsKey("Result"))
 										getPackages();
 								}
 							});
 						}
-						
-						
+
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
 					}
@@ -384,8 +382,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			job.schedule();
 		}
 	};
-	
-	
 
 	@Override
 	public String getCommandId() {
