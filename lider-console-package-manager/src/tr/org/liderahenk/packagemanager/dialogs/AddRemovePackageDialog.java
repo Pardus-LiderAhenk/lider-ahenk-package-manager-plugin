@@ -67,8 +67,6 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private CheckboxTableViewer viewer;
 	private Button btnCheckInstall;
 	private Button btnCheckUnInstall;
-	private PackageManagementLoadingDialog loadingDialog;
-	private AddRemovePackageLoadingDialog addRemLoadingDialog;
 	private Label lblUrl;
 	private Label lblComponents;
 	ViewerFilter filter;
@@ -86,13 +84,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		@Override
 		public void handleEvent(final Event event) {
 
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					addRemLoadingDialog = new AddRemovePackageLoadingDialog(Display.getDefault().getActiveShell());
-					addRemLoadingDialog.open();
-				}
-			});
+
 
 			Job job = new Job("TASK") {
 				@Override
@@ -132,12 +124,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 			job.setUser(true);
 			job.schedule();
 
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					addRemLoadingDialog.close();
-				}
-			});
+
 		}
 	};
 
@@ -187,6 +174,8 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		createPackageEntry(packageComposite);
+		txtUrl.setText("http://193.140.98.199/pardus-yenikusak/");
+		txtComponents.setText("yenikusak main contrib non-free");
 
 		btnAddRep = new Button(packageComposite, SWT.NONE);
 		btnAddRep.setImage(
@@ -207,13 +196,17 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		Composite installationComposite = new Composite(composite, SWT.NONE);
 		installationComposite.setLayout(new GridLayout(2, false));
 
-		btnCheckInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckInstall = new Button(installationComposite, SWT.RADIO);
 		btnCheckInstall.setText(Messages.getString("INSTALL"));
 		btnCheckInstall.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if(btnCheckUnInstall.getSelection())
+				if(btnCheckUnInstall.getSelection()){
 					btnCheckUnInstall.setSelection(false);
+					btnCheckInstall.setSelection(true);	
+				}
+				
+					
 			}
 
 			@Override
@@ -222,13 +215,15 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 		btnCheckInstall.setSelection(true);
 
-		btnCheckUnInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckUnInstall = new Button(installationComposite, SWT.RADIO);
 		btnCheckUnInstall.setText(Messages.getString("UNINSTALL"));
 		btnCheckUnInstall.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if(btnCheckInstall.getSelection())
+				if(btnCheckInstall.getSelection()){
 					btnCheckInstall.setSelection(false);
+					btnCheckUnInstall.setSelection(true);
+				}
 			}
 
 			@Override
@@ -471,14 +466,6 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
-						loadingDialog.open();
-					}
-				});
-
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
@@ -498,12 +485,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				redraw();
 				checkedElements.clear();
 
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						loadingDialog.close();
-					}
-				});
+	
 			}
 
 			@Override
