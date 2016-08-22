@@ -86,9 +86,9 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 					loadingDialog.open();
 				}
 			});
-			
+
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "REPOSITORIES", null, null, new Date());
+					getPluginVersion(), "REPOSITORIES", null, null, null, new Date());
 			TaskRestUtils.execute(task);
 		} catch (Exception e1) {
 			logger.error(e1.getMessage(), e1);
@@ -111,7 +111,7 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 						byte[] data = taskStatus.getResult().getResponseData();
 						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
 								new TypeReference<HashMap<String, Object>>() {
-						});
+								});
 						Display.getDefault().asyncExec(new Runnable() {
 
 							@Override
@@ -146,7 +146,6 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 					return Status.OK_STATUS;
 				}
 			};
-
 
 			job.setUser(true);
 			job.schedule();

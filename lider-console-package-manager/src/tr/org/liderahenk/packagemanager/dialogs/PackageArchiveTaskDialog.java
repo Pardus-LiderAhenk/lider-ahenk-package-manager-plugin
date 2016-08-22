@@ -57,8 +57,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 	private Label lblPackageName;
 	private Text txtPackageName;
 	private Button btnList;
-	private Button btnExecuteNow; 
-	
+	private Button btnExecuteNow;
+
 	private static final Logger logger = LoggerFactory.getLogger(PackageArchiveTaskDialog.class);
 
 	public PackageArchiveTaskDialog(Shell parentShell, String dn) {
@@ -72,7 +72,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			Map<String, Object> taskData = new HashMap<String, Object>();
 			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "SHOW_PACKAGE_ARCHIVE", taskData, null, new Date());
+					getPluginVersion(), "SHOW_PACKAGE_ARCHIVE", taskData, null, null, new Date());
 			TaskRestUtils.execute(task);
 		} catch (Exception e1) {
 			logger.error(e1.getMessage(), e1);
@@ -98,7 +98,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 						byte[] data = taskStatus.getResult().getResponseData();
 						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
 								new TypeReference<HashMap<String, Object>>() {
-						});
+								});
 						Display.getDefault().asyncExec(new Runnable() {
 
 							@Override
@@ -110,7 +110,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 									List<LinkedHashMap<String, String>> list = cast(itemms);
 									for (Map<String, String> item : list) {
 										PackageArchiveItem it = new PackageArchiveItem(item.get("version"),
-												item.get("installationDate"),item.get("packageName"), item.get("operation"));
+												item.get("installationDate"), item.get("packageName"),
+												item.get("operation"));
 										its.add(it);
 									}
 									recreateTable();
@@ -118,8 +119,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 									viewer.refresh();
 								} else if (responseData != null && !responseData.isEmpty()
 										&& responseData.containsKey("ResultMessage")) {
-										Notifier.success(Messages.getString("INSTALL_FROM_ARCHIVE_TITLE"),
-												responseData.get("ResultMessage").toString());	
+									Notifier.success(Messages.getString("INSTALL_FROM_ARCHIVE_TITLE"),
+											responseData.get("ResultMessage").toString());
 								} else if (responseData == null || responseData.isEmpty()) {
 									emptyTable();
 								}
@@ -176,7 +177,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty())
-					Notifier.error("",Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
+					Notifier.error("", Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
 				else
 					getData();
 
@@ -193,11 +194,11 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if(viewer != null && viewer.getTable() != null && viewer.getTable().getItemCount() > 0){
+				if (viewer != null && viewer.getTable() != null && viewer.getTable().getItemCount() > 0) {
 					viewer.setAllChecked(false);
 					int df = viewer.getTable().getSelectionIndex();
-					if(df != -1)
-						viewer.getTable().getItem(df).setChecked(true);	
+					if (df != -1)
+						viewer.getTable().getItem(df).setChecked(true);
 				}
 			}
 		});
@@ -223,7 +224,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 	private void createTableColumns() {
 
-		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("VERSION"),  Messages.getString("OPERATION"), Messages.getString("INSTALLATION_DATE") };
+		String[] titles = { Messages.getString("PACKAGE_NAME"), Messages.getString("VERSION"),
+				Messages.getString("OPERATION"), Messages.getString("INSTALLATION_DATE") };
 
 		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
 		selectAllColumn.setLabelProvider(new ColumnLabelProvider() {
@@ -306,7 +308,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if(txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty()){
+		if (txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty()) {
 			Notifier.error("", Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
 		}
 	}
@@ -316,7 +318,8 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		Object[] checkedElements = viewer.getCheckedElements();
 		for (Object checkedElement : checkedElements) {
-			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, ((PackageArchiveItem) checkedElement).getPackageName());
+			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME,
+					((PackageArchiveItem) checkedElement).getPackageName());
 			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_VERSION,
 					((PackageArchiveItem) checkedElement).getVersion());
 		}
@@ -341,10 +344,10 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		
+
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gd.widthHint = 200;
-		
+
 		// Execute task now
 		btnExecuteNow = createButton(parent, 5000, Messages.getString("GO_BACK_OLD_VERSION"), false);
 		btnExecuteNow.setLayoutData(gd);
@@ -354,24 +357,24 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// Validation of task data
-					validateBeforeExecution();
+				validateBeforeExecution();
 
-					if(txtPackageName != null && txtPackageName.getText() != null && !txtPackageName.getText().isEmpty()){
-						if (LiderConfirmBox.open(Display.getDefault().getActiveShell(),
-								Messages.getString("TASK_EXEC_TITLE"), Messages.getString("TASK_EXEC_MESSAGE"))) {
-							try {
-								TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK,
-										getPluginName(), getPluginVersion(), getCommandId(), getParameterMap(), null,
-										new Date());
-								TaskRestUtils.execute(task);
-							} catch (Exception e1) {
-								logger.error(e1.getMessage(), e1);
-								Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
-							}
+				if (txtPackageName != null && txtPackageName.getText() != null && !txtPackageName.getText().isEmpty()) {
+					if (LiderConfirmBox.open(Display.getDefault().getActiveShell(),
+							Messages.getString("TASK_EXEC_TITLE"), Messages.getString("TASK_EXEC_MESSAGE"))) {
+						try {
+							TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK,
+									getPluginName(), getPluginVersion(), getCommandId(), getParameterMap(), null, null,
+									new Date());
+							TaskRestUtils.execute(task);
+						} catch (Exception e1) {
+							logger.error(e1.getMessage(), e1);
+							Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
 						}
-						
 					}
+
 				}
+			}
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {

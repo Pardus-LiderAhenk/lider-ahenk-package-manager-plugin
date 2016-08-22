@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
-import json
-import subprocess
-from base.model.enum.ContentType import ContentType
+import os
+from glob import glob
+
 from base.plugin.abstract_plugin import AbstractPlugin
 
 
@@ -19,97 +19,113 @@ class Packages(AbstractPlugin):
     def handle_task(self):
         self.logger.debug('Handling Packages Task')
         try:
-            resultMessage = 'Dn    :   {}\r\n'.format(self.Ahenk.dn())
+            cn = '{0}\r\n'.format(self.Ahenk.dn().split(',')[0])
+
             items = (self.data)['packageInfoList']
-            return_code = 0
-            give_error = False
             for item in items:
                 try:
-                    if (str(item['tag']) == 'Yükle' or str(item['tag']) == 'Install') and item['source'] is not None:
-                        try:
-                            array = item['source'].split()
-                            source = ' '
-                            source = source.join(array)
-                            param = '/bin/bash {0}package-manager/add_repository_if_not_exists.sh "{1}"'.format(
-                                self.Ahenk.plugins_path(), source)
-                            self.logger.debug(
-                                "[PACKAGE MANAGER] Adding Repository if not exists... {0}".format(item['source']))
-                            process = subprocess.Popen(param, shell=True)
-                            process.wait()
-                            return_code = process.returncode
-                            if return_code == 12:
-                                self.logger.debug("[PACKAGE MANAGER] Repository added, Result Code : {0} ".format(return_code))
-                                resultMessage += 'Depo eklendi - {}\r\n'.format(item['source'])
-                                return_code_update, result_update, error_update = self.execute('apt-get update')
-                                if return_code_update == 0:
-                                    resultMessage += 'Paketler güncellendi\r\n'
-                                else:
-                                    resultMessage += 'Paketler güncellenemedi\r\n'
-                                    give_error = True
-                            elif return_code != 12 and return_code != 13:
-                                resultMessage = 'Depo eklenemedi - Return Code : {}\r\n'.format(return_code)
-                                give_error = True
-                        except Exception as e:
-                            resultMessage += 'Depo eklenemedi - {}\r\n'.format(item['source'])
+                    if self.has_attr_json(item, 'tag') and self.has_attr_json(item, 'source'):
+                        array = item['source'].split()
+                        source = ' '
+                        source = source.join(array)
 
-                    if (return_code == 12 or return_code == 13) and (item['tag'] == 'Yükle' or item['tag'] == 'Install'):
-                        self.logger.debug("[PACKAGE MANAGER] Installing new package... {0}".format(item['packageName']))
-                        result_code, p_result, p_err = self.install_with_apt_get(item['packageName'], item['version'])
-                        if result_code == 0:
-                            self.logger.debug("[PACKAGE MANAGER] Package installed : {0}={1}".format(item['packageName'], item['version']))
-                            resultMessage += 'Paket yüklendi - {0}={1}\r\n'.format(item['packageName'], item['version'])
-                        else:
-                            self.logger.debug(
-                                "[PACKAGE MANAGER] Package couldnt be installed : {0}={1}".format(item['packageName'],
-                                                                                       item['version']))
-                            resultMessage += 'Paket yüklenemedi - {0}={1}\r\n'.format(item['packageName'],
-                                                                                               item['version'])
-                            give_error = True
-                    elif (return_code == 12 or return_code == 13) and (item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall'):
-                        self.logger.debug("[PACKAGE MANAGER] Removing package... {0}".format(item['packageName']))
+                        ## REPO ADD / CHECK
+
                         self.logger.debug(
-                            "[PACKAGE MANAGER] sudo apt-get --yes --force-yes purge {0}={1}".format(item['packageName'],
-                                                                                                    item['version']))
-                        result_code, p_result, p_err = self.uninstall_package(item['packageName'], item['version'])
-                        if result_code == 0:
-                            self.logger.debug('[PACKAGE MANAGER] : Package uninstalled - {0}={1}\r\n'.format(item['packageName'], item['version']))
-                            resultMessage += 'Paket kaldırıldı - {0}={1}\r\n'.format(item['packageName'],
-                                                                                    item['version'])
+                            "[PACKAGES] Checking source {0}".format(item['source']))
+
+                        if self.is_repo_exist(source):
+                            self.logger.debug('[PACKAGES] {0} Source already exists'.format(source))
                         else:
+                            self.logger.debug('[PACKAGES] Source adding...')
+                            try:
+                                self.add_source(source)
+                            except Exception as e:
+                                self.logger.error('[PACKAGES] Source could not added')
+                                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                                             message='{0}\n Kaynaklar eklenmeye çalışırken hata oluştu. Hata Mesajı:{1}'.format(
+                                                                 cn, str(e)))
+                                return
+
+                            self.logger.debug('[PACKAGES] {0} Source added'.format(source))
+
+                            return_code_update, result_update, error_update = self.execute('apt-get update')
+                            if return_code_update == 0:
+                                self.logger.debug('[PACKAGES] Packages were updated')
+                            else:
+                                self.logger.error('[PACKAGES] Packages could not updated')
+                                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                                             message='{0}\n Kaynaklar güncellenmeye çalışırken hata oluştu. Hata Mesajı: {1}'.format(
+                                                                 cn, str(error_update)))
+                                return
+
+                        ## INSTALL/REMOVE PACKAGE
+
+                        if item['tag'] == 'Yükle' or item['tag'] == 'Install':
                             self.logger.debug(
-                                '[PACKAGE MANAGER] : Package couldnt be uninstalled - {0}={1}\r\n'.format(item['packageName'],
-                                                                                               item['version']))
-                            resultMessage += 'Paket kaldırılamadı - {0}={1}\r\n'.format(item['packageName'],
-                                                                                                 item['version'])
-                            give_error = True
+                                "[PACKAGES] Installing new package... {0}".format(item['packageName']))
+                            result_code, p_result, p_err = self.install_with_apt_get(item['packageName'],
+                                                                                     item['version'])
+                            if result_code == 0:
+                                self.logger.debug(
+                                    "[PACKAGES] Package installed : {0}={1}".format(item['packageName'],
+                                                                                    item['version']))
+                            else:
+                                self.logger.error(
+                                    "[PACKAGES] Package could not be installed : {0}={1} "
+                                    ". Error Message:{2}".format(
+                                        item['packageName'], item['version'], str(p_err)))
+                                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                                             message='{0}\n Source eklendi fakat paket kurulurken '
+                                                                     'hata oluştu. Hata Mesajı: {1}'.format(
+                                                                 cn, str(p_err)))
+                                return
+                        elif item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall':
+                            result_code, p_result, p_err = self.uninstall_package(item['packageName'],
+                                                                                  item['version'])
 
+                            if result_code == 0:
+                                self.logger.debug(
+                                    "[PACKAGES] Package installed : {0}={1}".format(item['packageName'],
+                                                                                    item['version']))
+                            else:
+                                self.logger.error(
+                                    "[PACKAGES] Package could not be installed : {0}={1}".format(
+                                        item['packageName'],
+                                        item['version']))
+                                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                                             message='{0}\n Paket kaldırılırken '
+                                                                     'hata oluştu. Hata Mesajı: {1}'.format(
+                                                                 cn, str(p_err)))
                 except Exception as e:
-                    if item['tag'] == 'Yükle' or item['tag'] == 'Install':
-                        resultMessage += 'Paket yüklenemedi - {0}={1}\r\n'.format(item['packageName'],
-                                                                                               item['version'])
-                    else:
-                        resultMessage += 'Paket kaldırılamadı - {0}={1}\r\n'.format(item['packageName'],
-                                                                                                 item['version'])
-
+                    self.logger.error('[PACKAGES] Unpredictable error exists. Error Message: {0}'.format(str(e)))
                     self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                                 message=resultMessage.format(resultMessage))
+                                                 message='{0}.\nÖngörülemeyen bir hata oluştu.Hata mesajı:{1}'.format(
+                                                     cn, str(e)))
                     return
-            if give_error is True:
-                self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message=resultMessage.format(resultMessage))
-                return
 
-            data = {'ResultMessage': resultMessage}
-
+            self.logger.debug('[PACKAGES] Task handled successfully')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Paketler listelendi\r\n {}'.format(resultMessage),
-                                         data=json.dumps(data),
-                                         content_type=ContentType.APPLICATION_JSON.value)
+                                         message='{0}\nTüm paket işlemleri başarıyla çalıştırıldı'.format(cn))
         except Exception as e:
-            self.logger.debug(str(e))
+            self.logger.error('[PACKAGES] Unpredictable error exists. Error Message: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Paketler listelenirken beklenmedik hata!',
-                                         content_type=ContentType.APPLICATION_JSON.value)
+                                         message='{0}\nGörev çalıştırılırken beklenmedik bir hata oluştu. Hata Mesajı: {1}'.format(
+                                             cn,
+                                             str(e)))
+
+    def is_repo_exist(self, source):
+        if source in open('/etc/apt/sources.list').read():
+            return True
+
+        for f_list_path in glob('/etc/apt/sources.list.d/*'):
+            if os.path.isfile(f_list_path):
+                if source in open(f_list_path).read():
+                    return True
+        return False
+
+    def add_source(self, source):
+        self.write_file('/etc/apt/sources.list.d/ahenk.list', source, 'a+')
 
 
 def handle_task(task, context):
