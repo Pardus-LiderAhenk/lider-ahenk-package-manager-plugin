@@ -33,6 +33,11 @@
             id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"            
             name="%command.task">
       </command>
+      <command
+            categoryId="tr.org.liderahenk.liderconsole.commands.category"
+            id="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"            
+            name="%command.getExecutionInfo.task">
+      </command>    
    </extension>
    
 	<extension
@@ -40,6 +45,10 @@
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageArchiveTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask">
+      </handler>
+       <handler
+            class="tr.org.liderahenk.packagemanager.handlers.GetExecutionInfoTaskHandler"
+            commandId="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask">
       </handler>
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageSourcesTaskHandler"
@@ -100,6 +109,35 @@
            		</command>
 		</menuContribution>
 		
+         
+	<!-- Add extension point contribution for "task execution" dialogs -->
+	<menuContribution
+      		allPopups="false"
+            locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
+ 				<command
+                  commandId="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"
+                  id="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"
+                  tooltip="%command.getExecutionInfo.task">
+				  	<visibleWhen>
+		                <iterate operator="or">		
+							<or>
+								<with
+					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+					             	<equals
+						                   value="true">
+						            </equals>
+					          	</with>
+								<with
+					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapOUSelected">
+					             	<equals
+						                   value="true">
+						            </equals>
+					          	</with>
+							</or>
+						</iterate>
+					</visibleWhen>
+           		</command>
+		</menuContribution>
       	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"

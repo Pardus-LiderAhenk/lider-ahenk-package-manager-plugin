@@ -17,4 +17,9 @@ public class PackageManagerConstants {
 	public static final class PACKAGES {
 		public static final String PACKAGE_INFO_LIST = "packageInfoList";
 	}
+	public static final class CHECK_INFO_PARAMETERS {
+		public static final String COMMAND = "command";
+		public static final String USER = "user";
+		public static final String IS_STRICT_MATCH = "isStrictMatch";
+	}
 }

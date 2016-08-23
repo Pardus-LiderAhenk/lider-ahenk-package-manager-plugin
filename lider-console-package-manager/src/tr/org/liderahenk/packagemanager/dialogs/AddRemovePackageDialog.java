@@ -469,23 +469,23 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
-					list[i+2] = list[i+2].trim();
-					List<PackageInfo> items = RepoSourcesListParser.parseURL(list[i + 1].trim(), list[i + 2].split(" ")[0],
-							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",
-							list[i]);
-					if (items != null && !items.isEmpty())
-						resultSet.addAll(items);
-					else {
-						Notifier.error("",
-								"Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olunuz");
+					if(list[i+2] != null && !list[i+2].isEmpty() && list[i+1] != null && !list[i+1].isEmpty()){
+						list[i+2] = list[i+2].trim();
+						List<PackageInfo> items = RepoSourcesListParser.parseURL(list[i + 1].trim(), list[i + 2].split(" ")[0],
+								Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",
+								list[i]);
+						if (items != null && !items.isEmpty())
+							resultSet.addAll(items);
+						else {
+							Notifier.error("",
+									"Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olunuz");
+						}
 					}
 				}
 				recreateTable();
 				viewer.setInput(resultSet);
 				redraw();
 				checkedElements.clear();
-
-	
 			}
 
 			@Override
