@@ -31,8 +31,8 @@ public class CommandExecutionStatistics implements Serializable {
 	@Column(name = "USER", nullable = false)
 	private String user;
 
-	@Column(name = "PROCESS_TIME", nullable = false)
-	private String processTime;
+	@Column(name = "PROCESS_TIME", precision = 9, scale = 2, nullable = false)
+	private Float processTime;
 
 	@Column(name = "PROCESS_START_DATE")
 	private String processStartDate;
@@ -53,7 +53,7 @@ public class CommandExecutionStatistics implements Serializable {
 	public CommandExecutionStatistics() {
 	}
 
-	public CommandExecutionStatistics(Long agentId, String command, String user, String processTime,
+	public CommandExecutionStatistics(Long agentId, String command, String user, Float processTime,
 			String processStartDate, Date createDate, String isActive, Long taskId, Long commandExecutionId) {
 		super();
 		this.agentId = agentId;
@@ -91,11 +91,11 @@ public class CommandExecutionStatistics implements Serializable {
 		this.user = user;
 	}
 
-	public String getProcessTime() {
+	public Float getProcessTime() {
 		return processTime;
 	}
 
-	public void setProcessTime(String processTime) {
+	public void setProcessTime(Float processTime) {
 		this.processTime = processTime;
 	}
 

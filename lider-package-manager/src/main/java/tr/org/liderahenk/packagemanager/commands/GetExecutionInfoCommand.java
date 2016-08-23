@@ -132,25 +132,23 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 					verInfo.setCommand(map.get("commandName").toString());
 					verInfo.setPackageName(map.get("packageName").toString());
 					verInfo.setPackageVersion(map.get("packageVersion").toString());
-					
+
 					pluginDbService.save(verInfo);
 				}
 				for (HashMap<String, Object> map : value) {
 					CommandExecutionStatistics item = new CommandExecutionStatistics();
 					item.setCommand(map.get("commandName").toString());
 					item.setUser(map.get("user").toString());
-					item.setProcessTime(map.get("processTime").toString());
+					Float processTime =Float.parseFloat(map.get("processTime").toString());
+					logger.info(processTime.toString());
+					item.setProcessTime(processTime);
 					item.setProcessStartDate(map.get("startDate").toString());
 					item.setAgentId(agentId);
 					item.setTaskId(taskId);
 					item.setIsActive("1");
 					item.setCreateDate(new Date());
 					item.setCommandExecutionId(command_execution_id);
-
-					if (entityManager != null)
-						logger.info("entittmanager null degil");
-					else
-						logger.info("entity manager null geldi");
+					
 					Query query = entityManager.createQuery(
 							"UPDATE CommandExecutionStatistics ces SET ces.isActive ='0' WHERE ces.agentId = :agentId AND ces.command = :command AND ces.user = :user AND ces.taskId <> :taskId");
 					query.setParameter("agentId", item.getAgentId());
