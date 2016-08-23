@@ -78,7 +78,7 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	private void getData() {
 		try {
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "REPOSITORIES", null, null, new Date());
+					getPluginVersion(), "REPOSITORIES", null, null, null, new Date());
 			TaskRestUtils.execute(task);
 		} catch (Exception e1) {
 			logger.error(e1.getMessage(), e1);

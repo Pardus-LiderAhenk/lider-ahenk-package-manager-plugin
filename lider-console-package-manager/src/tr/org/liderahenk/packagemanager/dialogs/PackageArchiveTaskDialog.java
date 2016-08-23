@@ -71,7 +71,7 @@ public class PackageArchiveTaskDialog extends DefaultTaskDialog {
 			Map<String, Object> taskData = new HashMap<String, Object>();
 			taskData.put(PackageManagerConstants.PACKAGE_PARAMETERS.PACKAGE_NAME, txtPackageName.getText());
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "SHOW_PACKAGE_ARCHIVE", taskData, null, new Date());
+					getPluginVersion(), "SHOW_PACKAGE_ARCHIVE", taskData, null, null, new Date());
 			TaskRestUtils.execute(task);
 		} catch (Exception e1) {
 			logger.error(e1.getMessage(), e1);

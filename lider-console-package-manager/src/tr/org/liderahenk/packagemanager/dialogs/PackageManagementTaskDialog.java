@@ -297,7 +297,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	private void getPackages() {
 		try {
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "INSTALLED_PACKAGES", null, null, new Date());
+					getPluginVersion(), "INSTALLED_PACKAGES", null, null, null, new Date());
 			TaskRestUtils.execute(task);
 
 		} catch (Exception e) {
