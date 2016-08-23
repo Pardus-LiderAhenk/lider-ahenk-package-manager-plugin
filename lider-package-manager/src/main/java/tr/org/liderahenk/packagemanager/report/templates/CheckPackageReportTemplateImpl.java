@@ -240,4 +240,9 @@ public class CheckPackageReportTemplateImpl extends BaseReportTemplate {
 		return this;
 	}
 
+	@Override
+	public String getCode() {
+		return "CHECK-PACKAGE-REPORT";
+	}
+
 }

@@ -241,4 +241,9 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 		return this;
 	}
 
+	@Override
+	public String getCode() {
+		return "PACKAGE-OPERATIONS-REPORT";
+	}
+
 }
