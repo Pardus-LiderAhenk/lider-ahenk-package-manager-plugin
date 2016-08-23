@@ -46,6 +46,7 @@
 		<module>lider-package-manager</module>
 		<module>lider-package-manager-feature</module>
 		<module>lider-console-package-manager</module>
+		<module>lider-package-manager-db</module>
 		<module>ahenk-package-manager</module>
 	</modules>
 

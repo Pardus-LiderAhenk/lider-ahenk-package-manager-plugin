@@ -1,30 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:tx="http://aries.apache.org/xmlns/transactions/v1.0.0"
+	xmlns:jpa="http://aries.apache.org/xmlns/jpa/v1.0.0"
 	xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
                  http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
                  http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://svn.apache.org/repos/asf/aries/trunk/blueprint/blueprint-cm/src/main/resources/org/apache/aries/blueprint/compendium/cm/blueprint-cm-1.1.0.xsd
-         ">
-         
+         "
+	default-activation="eager">
+
 	<cm:property-placeholder persistent-id="tr.org.liderahenk.packagemanager"
 		update-strategy="reload">
 	</cm:property-placeholder>
-                 
-    <service ref="checkPackageTemplate" interface="tr.org.liderahenk.lider.core.api.persistence.entities.IReportTemplate" />
+
+	<service ref="checkPackageTemplate"
+		interface="tr.org.liderahenk.lider.core.api.persistence.entities.IReportTemplate" />
 	<bean id="checkPackageTemplate"
 		class="tr.org.liderahenk.packagemanager.report.templates.CheckPackageReportTemplateImpl" />
-                 
-    <service ref="packageOperationsTemplate" interface="tr.org.liderahenk.lider.core.api.persistence.entities.IReportTemplate" />
+
+	<service ref="packageOperationsTemplate"
+		interface="tr.org.liderahenk.lider.core.api.persistence.entities.IReportTemplate" />
 	<bean id="packageOperationsTemplate"
 		class="tr.org.liderahenk.packagemanager.report.templates.PackageOperationsReportTemplateImpl" />
-		
-  <!-- IPluginInfo implementation is used to register plugin -->
-  <service 
-      ref="pluginInfoImpl"
-      interface="tr.org.liderahenk.lider.core.api.plugin.IPluginInfo" />
-  <bean id="pluginInfoImpl" class="tr.org.liderahenk.packagemanager.plugininfo.PluginInfoImpl"
-  		init-method="refresh">
+
+	<!-- IPluginInfo implementation is used to register plugin -->
+	<service ref="pluginInfoImpl"
+		interface="tr.org.liderahenk.lider.core.api.plugin.IPluginInfo" />
+	<bean id="pluginInfoImpl"
+		class="tr.org.liderahenk.packagemanager.plugininfo.PluginInfoImpl"
+		init-method="refresh">
 		<property name="pluginName" value="${plugin.name}" />
 		<property name="pluginVersion" value="${plugin.version}" />
 		<property name="description" value="${plugin.description}" />
@@ -35,83 +40,92 @@
 		<property name="usesFileTransfer" value="${plugin.uses.file.transfer}" />
 		<property name="xbased" value="${plugin.x.based}" />
 	</bean>
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="ShowPackageArchiveCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="ShowPackageArchiveCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.ShowPackageArchiveCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+
+
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="GetExecutionInfoCommand">
+		<interfaces>
+			<value>tr.org.liderahenk.lider.core.api.plugin.ICommand</value>
+			<value>tr.org.liderahenk.lider.core.api.plugin.ITaskAwareCommand</value>
+		</interfaces>
+	</service>
+	<bean id="GetExecutionInfoCommand"
+		class="tr.org.liderahenk.packagemanager.commands.GetExecutionInfoCommand">
+		<tx:transaction method="*" value="Required" />
+        <jpa:context property="entityManager" unitname="lider" />
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="PackageArchiveCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="PackageArchiveCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.PackageArchiveCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+		<property name="pluginDbService" ref="pluginDbService" />
+		<property name="agentDao" ref="agentDaoImpl" />
+		<property name="taskDao" ref="taskDaoImpl" />
+	</bean>
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="ShowPackageArchiveCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="ShowPackageArchiveCommand"
+		class="tr.org.liderahenk.packagemanager.commands.ShowPackageArchiveCommand">
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="CheckPackageCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="CheckPackageCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.CheckPackageCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+	</bean>
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="PackageArchiveCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="PackageArchiveCommand"
+		class="tr.org.liderahenk.packagemanager.commands.PackageArchiveCommand">
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="PackagesCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="PackagesCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.PackagesCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+	</bean>
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="CheckPackageCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="CheckPackageCommand"
+		class="tr.org.liderahenk.packagemanager.commands.CheckPackageCommand">
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="InstalledPackagesCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="InstalledPackagesCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.InstalledPackagesCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+	</bean>
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="PackagesCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="PackagesCommand"
+		class="tr.org.liderahenk.packagemanager.commands.PackagesCommand">
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="RepositoriesCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="RepositoriesCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.RepositoriesCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+	</bean>
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="InstalledPackagesCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="InstalledPackagesCommand"
+		class="tr.org.liderahenk.packagemanager.commands.InstalledPackagesCommand">
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-	
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="PackageSourcesCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="PackageSourcesCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.PackageSourcesCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+	</bean>
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="RepositoriesCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="RepositoriesCommand"
+		class="tr.org.liderahenk.packagemanager.commands.RepositoriesCommand">
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-	
-	  <!-- ICommand implementation is used to process a task execution -->
-  <service 
-      ref="PackageManagerCommand"
-      interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-  <bean id="PackageManagerCommand" 
-        class="tr.org.liderahenk.packagemanager.commands.PackageManagerCommand">
-        <property name="resultFactory" ref="resultFactory"/>
+	</bean>
+
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="PackageSourcesCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="PackageSourcesCommand"
+		class="tr.org.liderahenk.packagemanager.commands.PackageSourcesCommand">
+		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-  </bean>
-  
-  
-  <reference id="pluginDbService" interface="tr.org.liderahenk.lider.core.api.persistence.IPluginDbService" />
-  <reference id="logService" interface="tr.org.liderahenk.lider.core.api.log.IOperationLogService" />
-  <reference id="resultFactory" interface="tr.org.liderahenk.lider.core.api.service.ICommandResultFactory"/>
+	</bean>
+
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="PackageManagerCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="PackageManagerCommand"
+		class="tr.org.liderahenk.packagemanager.commands.PackageManagerCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+
+	<reference id="pluginDbService"
+		interface="tr.org.liderahenk.lider.core.api.persistence.IPluginDbService" />
+	<reference id="logService"
+		interface="tr.org.liderahenk.lider.core.api.log.IOperationLogService" />
+	<reference id="resultFactory"
+		interface="tr.org.liderahenk.lider.core.api.service.ICommandResultFactory" />
+	<reference id="agentDaoImpl"
+		interface="tr.org.liderahenk.lider.core.api.persistence.dao.IAgentDao" />
+	<reference id="taskDaoImpl"
+		interface="tr.org.liderahenk.lider.core.api.persistence.dao.ITaskDao" />
 </blueprint>
