@@ -21,27 +21,34 @@ class CheckPackage(AbstractPlugin):
             package_name = str((self.data)['packageName'])
             package_version = str((self.data)['packageVersion'])
             dn = self.Ahenk.dn()
-
+            res = {}
             if dn is None:
                 dn = " "
-            a, result, b = self.execute('dpkg -s {} | grep Version'.format(package_name))
-            data = result.split(':')
+            result_code, result, p_err = self.execute('dpkg -s {} | grep Version'.format(package_name))
+            data = result.split(': ')
+            self.logger.debug(data)
 
             if data[0] == 'Version':  # Package is installed
                 if package_version is None or len(package_version) == 0:
-                    result = 'PACKAGE IS INSTALLED BUT WITH DIFFERENT VERSION - {}'.format(data[1])
+                    result = 'Paket yüklü; fakat başka bir versiyonla'
+                    res['version'] = data[1]
                 elif data[1] is not None and (package_version + '\n') in data[
                     1]:  # Package version is the same with wanted version
-                    result = 'PACKAGE IS INSTALLED'
+                    result = 'Paket yüklü'
+                    res['version'] = data[1]
                 else:
-                    result = 'PACKAGE IS INSTALLED BUT WITH DIFFERENT VERSION - {}'.format(data[1])
+                    result = 'Paket yüklü; fakat başka bir versiyonla'
+                    res['version'] = data[1]
             else:  # Package is not installed
-                result = 'PACKAGE IS NOT INSTALLED'
-            res = {"dn": dn, "res": result}
+                result = 'Paket yüklü değil'
+                res['version'] = ''
+
+            res["dn"] = dn
+            res["res"] = result
 
             self.logger.debug("[PACKAGE MANAGER] Result is: - {}".format(result))
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Paket Bilgileri başarıyla getirildi',
+                                         message='{0} - {1}'.format(package_name, result),
                                          data=json.dumps(res), content_type=ContentType.APPLICATION_JSON.value)
             self.logger.debug("[PACKAGE MANAGER] Package Info has sent")
         except Exception as e:

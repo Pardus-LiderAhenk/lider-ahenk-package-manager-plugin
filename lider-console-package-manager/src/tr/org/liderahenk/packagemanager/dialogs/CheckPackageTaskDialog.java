@@ -16,10 +16,10 @@ import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
@@ -50,7 +51,6 @@ import tr.org.liderahenk.packagemanager.model.PackageCheckItem;
 
 public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
-	private ScrolledComposite sc;
 	private CheckboxTableViewer viewer;
 	private Composite packageComposite;
 	private Label lblPackageName;
@@ -58,6 +58,10 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	private Label lblVersion;
 	private Text txtVersion;
 	private Button btnCreateSearchGroup;
+	private Button btnSelectUninstalledPackages;
+	private Button btnSelectDifferentVersions;
+	private Button btnSelectInstalledPackages;
+
 
 	private static final Logger logger = LoggerFactory.getLogger(CheckPackageTaskDialog.class);
 
@@ -86,8 +90,8 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 							@Override
 							public void run() {
 								if (responseData != null && responseData.containsKey("res")
-										&& responseData.containsKey("dn")) {
-									PackageCheckItem item = new PackageCheckItem(responseData.get("res").toString(),
+										&& responseData.containsKey("dn") && responseData.containsKey("version")) {
+									PackageCheckItem item = new PackageCheckItem(responseData.get("res").toString(),responseData.get("version").toString(),
 											responseData.get("dn").toString());
 
 									ArrayList<PackageCheckItem> listItems = (ArrayList<PackageCheckItem>) viewer
@@ -97,7 +101,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 									}
 									listItems.add(item);
 									viewer.setInput(listItems);
-									redraw();
+									viewer.refresh();
 								}
 							}
 						});
@@ -125,20 +129,12 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
 
-		sc = new ScrolledComposite(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		sc.setLayoutData(gData);
-		gData.widthHint = 1000;
-		sc.setLayout(new GridLayout(1, false));
-		parent.setBackgroundMode(SWT.INHERIT_FORCE);
-
-		final Composite composite = new Composite(sc, SWT.NONE);
+		final Composite composite = new Composite(parent, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		composite.setLayoutData(gData);
+		gData.widthHint = 1000;
 
-		sc.setContent(composite);
-		sc.setExpandHorizontal(true);
-		sc.setExpandVertical(true);
 
 		composite.setBounds(composite.getBounds().x, composite.getBounds().y, 1000, composite.getBounds().height);
 
@@ -159,8 +155,83 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		txtVersion.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
+		
+		final Composite searchComposite = new Composite(parent, SWT.NONE);
+		searchComposite.setLayout(new GridLayout(4, false));
 
-		btnCreateSearchGroup = new Button(composite, SWT.PUSH);
+		btnSelectDifferentVersions = new Button(searchComposite, SWT.PUSH);
+		btnSelectDifferentVersions.setImage(
+				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/search.png"));
+		btnSelectDifferentVersions.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
+		btnSelectDifferentVersions.setText(Messages.getString("SELECT_DIFFERENT_VERSIONS"));
+		btnSelectDifferentVersions.addSelectionListener(new SelectionAdapter() {
+
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (viewer != null && viewer.getTable().getItems().length > 0) {
+					SelectVersionDialog dialog = new SelectVersionDialog(Display.getDefault().getActiveShell());
+					dialog.create();
+					dialog.open();
+					String searchingVersion = dialog.getParam();
+					viewer.setAllChecked(false);
+					for (TableItem item : viewer.getTable().getItems()) {
+						if(searchingVersion != null && !searchingVersion.isEmpty() && item.getText(2) != null && !item.getText(2).isEmpty() && (item.getText(2)).startsWith(searchingVersion)){
+							item.setChecked(true);
+						}
+					}
+					viewer.refresh();
+				} else {
+					Notifier.warning("", Messages.getString("TABLE_IS_EMPTY"));
+				}
+			}
+		});
+		
+		btnSelectInstalledPackages = new Button(searchComposite, SWT.PUSH);
+		btnSelectInstalledPackages.setImage(
+				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/search.png"));
+		btnSelectInstalledPackages.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
+		btnSelectInstalledPackages.setText(Messages.getString("SELECT_INSTALLED_PACKAGES"));
+		btnSelectInstalledPackages.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (viewer != null && viewer.getTable().getItems().length > 0) {
+					viewer.setAllChecked(false);
+					for (TableItem item : viewer.getTable().getItems()) {
+						if(item.getText(1).equals("Paket yüklü") || item.getText(1).equals("Paket yüklü; fakat başka bir versiyonla")){
+							item.setChecked(true);
+						}
+					}
+					viewer.refresh();
+				} else {
+					Notifier.warning("", Messages.getString("TABLE_IS_EMPTY"));
+				}
+			}
+		});
+		
+		btnSelectUninstalledPackages = new Button(searchComposite, SWT.PUSH);
+		btnSelectUninstalledPackages.setImage(
+				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/search.png"));
+		btnSelectUninstalledPackages.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
+		btnSelectUninstalledPackages.setText(Messages.getString("SELECT_UNINSTALLED_PACKAGES"));
+		btnSelectUninstalledPackages.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (viewer != null && viewer.getTable().getItems().length > 0) {
+					viewer.setAllChecked(false);
+					for (TableItem item : viewer.getTable().getItems()) {
+						if(item.getText(1).equals("Paket yüklü değil")){
+							item.setChecked(true);
+						}
+					}
+					viewer.refresh();
+				} else {
+					Notifier.warning("", Messages.getString("TABLE_IS_EMPTY"));
+				}
+			}
+		});
+		
+		btnCreateSearchGroup = new Button(searchComposite, SWT.PUSH);
 		btnCreateSearchGroup.setImage(
 				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/list.png"));
 		btnCreateSearchGroup.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
@@ -203,21 +274,16 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 				if (children[i].equals(thisBtn) && i - 1 > 0) {
 					children[i - 1].dispose();
 					children[i].dispose();
-					redraw();
+					viewer.refresh();
 					break;
 				}
 			}
 		}
 	}
 
-	private void redraw() {
-		sc.layout(true, true);
-		sc.setMinSize(sc.getContent().computeSize(800, SWT.DEFAULT));
-	}
-
 	private void createTableColumns() {
 
-		String[] titles = { Messages.getString("PACKAGE_INFO"), Messages.getString("DN") };
+		String[] titles = { Messages.getString("PACKAGE_INFO"), Messages.getString("PACKAGE_VERSION"), Messages.getString("DN") };
 
 		final TableViewerColumn selectAllColumn = SWTResourceManager.createTableViewerColumn(viewer, "", 30);
 		selectAllColumn.getColumn().setImage(
@@ -237,13 +303,13 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 					selectAllColumn.getColumn().setImage(SWTResourceManager
 							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
 
-					redraw();
+					viewer.refresh();
 				} else {
 					viewer.setAllChecked(true);
 					selectAllColumn.getColumn().setImage(SWTResourceManager
 							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-done.png"));
 
-					redraw();
+					viewer.refresh();
 				}
 			}
 
@@ -254,6 +320,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn packageInfoColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 600);
+		packageInfoColumn.getColumn().setAlignment(SWT.LEFT);
 		packageInfoColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -262,9 +329,26 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 				}
 				return Messages.getString("UNTITLED");
 			}
+
+			@Override
+			public Font getFont(Object element) {
+				return super.getFont(element);
+			}
+			
 		});
 
-		TableViewerColumn dnColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 300);
+		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 300);
+		versionColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof PackageCheckItem) {
+					return ((PackageCheckItem) element).getVersion();
+				}
+				return Messages.getString("UNTITLED");
+			}
+		});
+
+		TableViewerColumn dnColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[2], 300);
 		dnColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -286,7 +370,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 	private void emptyTable() {
 		recreateTable();
 		viewer.setInput(new ArrayList<PackageCheckItem>());
-		redraw();
+		viewer.refresh();
 	}
 
 	private void recreateTable() {
@@ -301,7 +385,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if (txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty()) {
+		if (viewer.getCheckedElements().length > 0) {
 			throw new ValidationException(Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
 		}
 	}

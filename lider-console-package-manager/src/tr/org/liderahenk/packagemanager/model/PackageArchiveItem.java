@@ -8,11 +8,14 @@ public class PackageArchiveItem implements Serializable {
 	private String packageName;
 	private String version;
 	private String installationDate;
+	private String operation;
 
-	public PackageArchiveItem(String version, String installationDate) {
+	public PackageArchiveItem(String version, String installationDate, String packageName, String operation) {
 		super();
 		this.version = version;
 		this.installationDate = installationDate;
+		this.packageName = packageName;
+		this.operation = operation;
 	}
 
 	public PackageArchiveItem() {
@@ -42,5 +45,13 @@ public class PackageArchiveItem implements Serializable {
 
 	public void setPackageName(String packageName) {
 		this.packageName = packageName;
+	}
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
 	}
 }

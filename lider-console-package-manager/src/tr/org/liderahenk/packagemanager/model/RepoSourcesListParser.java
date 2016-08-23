@@ -2,12 +2,15 @@ package tr.org.liderahenk.packagemanager.model;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -43,64 +46,85 @@ import org.apache.http.impl.client.HttpClientBuilder;
  * 
  */
 public abstract class RepoSourcesListParser {
-	@SuppressWarnings("restriction")
+
+	private static final String[] filenames = new String[] { "Packages.gz", "Packages.bz2", "Packages.xz", "Packages" };
+
 	public static List<PackageInfo> parseURL(String url, String distribution, String[] components, String architecture,
 			String deb) {
 		List<PackageInfo> packages = new ArrayList<PackageInfo>();
 		for (String component : components) {
-			try {
-				// Find URL pointing to the package file
-				String packageURL = findPackageURL(url, distribution, component, architecture);
-				
-				// GET package file
-				HttpClient client = HttpClientBuilder.create().build();
-				HttpGet request = new HttpGet(packageURL);
-				HttpResponse response = client.execute(request);
-				
-				HttpEntity entity = response.getEntity();
-				if (entity != null) {
-					// Extract package file
-					BZip2CompressorInputStream inputStream = new BZip2CompressorInputStream(entity.getContent());
-					if (inputStream != null) {
-						BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-						if (reader != null) {
-							String line = "";
-							PackageInfo info = null;
-							while ((line = reader.readLine()) != null) {
-								// Empty line means new package!
-								if (info == null || line.trim().isEmpty()) {
-									info = new PackageInfo();
-									packages.add(info);
-								}
-								if (line.trim().isEmpty()) {
-									continue;
-								}
-								String[] tokens = line.split(":", 2);
-								
-								if(tokens.length > 1) {
-									String propertyMethodName = getPropertyMethodName(tokens[0].trim());
-									String propertyValue = tokens[1].trim();
-									setPropertyValue(info, propertyMethodName, propertyValue);
-									info.setSource(
-											deb + " " + url + " " + distribution + " " + StringUtils.join(components, " "));
+			for (int i = 0; i < filenames.length; i++) {
+				String filename = filenames[i];
+				try {
+					// Find URL pointing to the package file
+					String packageURL = findPackageURL(url, distribution, component, architecture, filename);
+					// GET package file
+					HttpClient client = HttpClientBuilder.create().build();
+					HttpGet request = new HttpGet(packageURL);
+					HttpResponse response = client.execute(request);
+
+					HttpEntity entity = response.getEntity();
+					if (entity != null) {
+						// Extract package file
+						InputStream inputStream = getInputStream(filename, entity.getContent());
+						if (inputStream != null) {
+							BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+							if (reader != null) {
+								String line = "";
+								PackageInfo info = null;
+								while ((line = reader.readLine()) != null) {
+									// Empty line means new package!
+									if (info == null || line.trim().isEmpty()) {
+										info = new PackageInfo();
+										packages.add(info);
+									}
+									if (line.trim().isEmpty()) {
+										continue;
+									}
+									String[] tokens = line.split(":", 2);
+
+									if (tokens.length > 1) {
+										if(tokens[0].equals("Package") && (tokens[1] == null || tokens[1].isEmpty())) {
+											packages.remove(packages.size()-1);
+											continue;
+										}
+										String propertyMethodName = getPropertyMethodName(tokens[0].trim());
+										String propertyValue = tokens[1].trim();
+										setPropertyValue(info, propertyMethodName, propertyValue);
+										info.setSource(deb + " " + url + " " + distribution + " "
+												+ StringUtils.join(components, " "));
+									}
 								}
 							}
+							reader.close();
 						}
-						reader.close();
 					}
+				} catch (ClientProtocolException e) {
+				} catch (IOException e) {
 				}
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+				if (packages != null && packages.size() > 0 && (packages.get(packages.size()-1).getPackageName() == null || packages.get(packages.size()-1).getPackageName().isEmpty())){
+					packages.remove(packages.get(packages.size() - 1));
+					break;
+				}
 			}
 		}
-		if (packages != null && packages.size() > 0)
-			packages.remove(packages.get(packages.size() - 1));
 		return packages;
 	}
 
-	private static String findPackageURL(String url, String distribution, String component, String architecture) {
+	private static InputStream getInputStream(String filename, InputStream content) throws IOException {
+		String extension = filename.substring(filename.lastIndexOf(".") + 1);
+		if ("gz".equalsIgnoreCase(extension)) {
+			return new GzipCompressorInputStream(content);
+		} else if ("bz2".equalsIgnoreCase(extension)) {
+			return new BZip2CompressorInputStream(content);
+		} else if ("xz".equalsIgnoreCase(extension)) {
+			return new XZCompressorInputStream(content);
+		}
+		return content;
+	}
+
+	private static String findPackageURL(String url, String distribution, String component, String architecture,
+			String filename) {
 		String packageURL = url;
 		if (!url.endsWith("/")) {
 			packageURL += "/";
@@ -108,7 +132,7 @@ public abstract class RepoSourcesListParser {
 		packageURL += "dists/";
 		packageURL += distribution + "/";
 		packageURL += component + "/";
-		packageURL += "binary-" + architecture + "/Packages.bz2";
+		packageURL += "binary-" + architecture + "/" + filename;
 		return packageURL;
 	}
 
@@ -149,4 +173,5 @@ public abstract class RepoSourcesListParser {
 			// ignore NoSuchMethodException here
 		}
 	}
+
 }

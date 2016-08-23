@@ -7,11 +7,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -20,16 +32,22 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
 
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.PackageInfo;
@@ -49,13 +67,66 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private CheckboxTableViewer viewer;
 	private Button btnCheckInstall;
 	private Button btnCheckUnInstall;
+	private Label lblUrl;
+	private Label lblComponents;
+	ViewerFilter filter;
+	List<Object> checkedElements = new ArrayList<>();
 
 	private final String[] debArray = new String[] { "deb", "deb-src" };
 	private PackageInfo item;
 
 	public AddRemovePackageDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet);
+		subscribeEventHandler(eventHandler);
 	}
+
+	private EventHandler eventHandler = new EventHandler() {
+		@Override
+		public void handleEvent(final Event event) {
+
+
+
+			Job job = new Job("TASK") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("PACKAGES", 100);
+					try {
+
+						TaskStatusNotification taskStatus = (TaskStatusNotification) event
+								.getProperty("org.eclipse.e4.data");
+						byte[] data = taskStatus.getResult().getResponseData();
+						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+								new TypeReference<HashMap<String, Object>>() {
+						});
+						Display.getDefault().asyncExec(new Runnable() {
+
+							@Override
+							public void run() {
+								if (responseData != null && responseData.containsKey("ResultMessage")) {
+									if (viewer.getCheckedElements() != null) {
+										viewer.setAllChecked(false);
+										checkedElements.clear();
+										redraw();
+									}
+								}
+							}
+						});
+					} catch (Exception e) {
+						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_WHILE_INSTALL_UNINSTALL_PACKAGE"));
+					}
+					monitor.worked(100);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				}
+			};
+
+			job.setUser(true);
+			job.schedule();
+
+
+		}
+	};
 
 	@Override
 	public String createTitle() {
@@ -80,11 +151,31 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		sc.setExpandHorizontal(true);
 		sc.setExpandVertical(true);
 
+		Composite packageLabelComposite = new Composite(composite, SWT.NONE);
+		packageLabelComposite.setLayout(new GridLayout(3, false));
+		packageLabelComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+		Label tmpLbl = new Label(packageLabelComposite, SWT.NONE);
+		GridData gdUrl = new GridData(SWT.CENTER, SWT.FILL, false, true);
+		gdUrl.widthHint = 350;
+		tmpLbl.setLayoutData(gdUrl);
+		lblUrl = new Label(packageLabelComposite, SWT.NONE);
+		lblUrl.setText(Messages.getString("URL"));
+		lblUrl.setLayoutData(gdUrl);
+
+		lblComponents = new Label(packageLabelComposite, SWT.NONE);
+		lblComponents.setText(Messages.getString("COMPONENTS"));
+		GridData gdComponents = new GridData(SWT.LEFT, SWT.FILL, false, true);
+		gdComponents.widthHint = 300;
+		lblComponents.setLayoutData(gdComponents);
+
 		packageComposite = new Composite(composite, SWT.NONE);
 		packageComposite.setLayout(new GridLayout(2, false));
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		createPackageEntry(packageComposite);
+		txtUrl.setText("http://193.140.98.199/pardus-yenikusak/");
+		txtComponents.setText("yenikusak main contrib non-free");
 
 		btnAddRep = new Button(packageComposite, SWT.NONE);
 		btnAddRep.setImage(
@@ -92,11 +183,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		btnAddRep.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (txtUrl != null && !txtUrl.getText().isEmpty() && txtComponents != null
-						&& !txtComponents.getText().isEmpty())
-					handleAddGroupButton(e);
-				else
-					Notifier.error("", Messages.getString("FILL_ALL_FIELDS"));
+				handleAddGroupButton(e);
 			}
 
 			@Override
@@ -109,12 +196,17 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		Composite installationComposite = new Composite(composite, SWT.NONE);
 		installationComposite.setLayout(new GridLayout(2, false));
 
-		btnCheckInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckInstall = new Button(installationComposite, SWT.RADIO);
 		btnCheckInstall.setText(Messages.getString("INSTALL"));
 		btnCheckInstall.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				btnCheckUnInstall.setSelection(false);
+				if(btnCheckUnInstall.getSelection()){
+					btnCheckUnInstall.setSelection(false);
+					btnCheckInstall.setSelection(true);	
+				}
+				
+					
 			}
 
 			@Override
@@ -123,12 +215,15 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 		btnCheckInstall.setSelection(true);
 
-		btnCheckUnInstall = new Button(installationComposite, SWT.CHECK);
+		btnCheckUnInstall = new Button(installationComposite, SWT.RADIO);
 		btnCheckUnInstall.setText(Messages.getString("UNINSTALL"));
 		btnCheckUnInstall.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				btnCheckInstall.setSelection(false);
+				if(btnCheckInstall.getSelection()){
+					btnCheckInstall.setSelection(false);
+					btnCheckUnInstall.setSelection(true);
+				}
 			}
 
 			@Override
@@ -138,7 +233,47 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 		viewer = SWTResourceManager.createCheckboxTableViewer(composite);
 
+		filter = new PackageFilter();
+		viewer.addFilter(filter);
+		viewer.refresh();
+		viewer.addCheckStateListener(new ICheckStateListener() {
+			
+			@Override
+			public void checkStateChanged(CheckStateChangedEvent event) {
+				if(event.getChecked())
+					checkedElements.add(event.getElement());
+				else
+					checkedElements.remove(event.getElement());
+				System.out.println(checkedElements);
+			}
+		});
 		return null;
+	}
+
+	public class PackageFilter extends ViewerFilter {
+
+		private String searchString;
+		private int columnNumber;
+
+		public void setSearchText(String s) {
+			this.searchString = ".*" + s + ".*";
+		}
+
+		public void setColumnNumber(int columnNumber) {
+			this.columnNumber = columnNumber;
+		}
+
+		@Override
+		public boolean select(Viewer viewer, Object parentElement, Object element) {
+			if (searchString == null || searchString.length() == 0) {
+				return true;
+			}
+			PackageInfo packageInfo = (PackageInfo) element;
+			return (packageInfo.getPackageName() != null && columnNumber == 0
+					&& packageInfo.getPackageName().matches(searchString))
+					|| (columnNumber == 2 && packageInfo.getDescription() != null
+							&& packageInfo.getDescription().matches(searchString));
+		}
 	}
 
 	protected void handleRemoveGroupButton(SelectionEvent e) {
@@ -160,6 +295,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	private void redraw() {
 		sc.layout(true, true);
 		sc.setMinSize(sc.getContent().computeSize(600, SWT.DEFAULT));
+		viewer.refresh();
 	}
 
 	protected void handleAddGroupButton(SelectionEvent e) {
@@ -206,11 +342,13 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 		txtUrl = new Text(grpPackageEntry, SWT.BORDER);
 		GridData txtGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		txtUrl.setMessage(Messages.getString("URL_EXAMPLE"));
 		txtGridData.widthHint = 400;
 		txtUrl.setLayoutData(txtGridData);
 
 		txtComponents = new Text(grpPackageEntry, SWT.BORDER);
 		GridData componentsGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		txtComponents.setMessage(Messages.getString("COMPONENT_EXAMPLE"));
 		componentsGridData.widthHint = 300;
 		txtComponents.setLayoutData(componentsGridData);
 	}
@@ -235,12 +373,20 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 				/* If all list selected deselect all */
 				if (viewer.getCheckedElements().length == viewer.getTable().getItemCount()) {
 					viewer.setAllChecked(false);
+					for (TableItem item : viewer.getTable().getItems()) {
+						if(checkedElements.contains(item.getData()))
+							checkedElements.remove(item.getData());
+					}
 					selectAllColumn.getColumn().setImage(SWTResourceManager
 							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-cancel.png"));
 
 					redraw();
 				} else {
 					viewer.setAllChecked(true);
+					for (TableItem item : viewer.getTable().getItems()) {
+						if(!checkedElements.contains(item.getData()))
+							checkedElements.add(item.getData());
+					}
 					selectAllColumn.getColumn().setImage(SWTResourceManager
 							.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/check-done.png"));
 
@@ -255,6 +401,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 150);
+		packageNameColumn.getColumn().setAlignment(SWT.LEFT);
 		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -266,6 +413,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 150);
+		versionColumn.getColumn().setAlignment(SWT.LEFT);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -288,6 +436,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn descriptionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[3], 150);
+		descriptionColumn.getColumn().setAlignment(SWT.LEFT);
 		descriptionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -300,71 +449,86 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 	}
 
 	private void createSearchingPart(final Composite parent) {
-		Composite tableButtonComposite = new Composite(parent, SWT.NONE);
-		tableButtonComposite.setLayout(new GridLayout(3, false));
 
-		txtPackageName = new Text(tableButtonComposite, SWT.BORDER);
-		GridData txtGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-		txtGridData.widthHint = 200;
-		txtPackageName.setLayoutData(txtGridData);
-		txtPackageName.setMessage(Messages.getString("PACKAGE_NAME"));
+		Composite packageSearchComposite = new Composite(parent, SWT.NONE);
+		packageSearchComposite.setLayout(new GridLayout(3, true));
 
-		txtDescription = new Text(tableButtonComposite, SWT.BORDER);
-		txtDescription.setLayoutData(txtGridData);
-		txtDescription.setMessage(Messages.getString("DESCRIPTION"));
+		new Label(packageSearchComposite, SWT.NONE);
 
-		Composite packageSearchComposite = new Composite(tableButtonComposite, SWT.RIGHT);
-		packageSearchComposite.setLayout(new GridLayout(1, false));
-
-		btnList = new Button(packageSearchComposite, SWT.NONE);
+		btnList = new Button(packageSearchComposite, SWT.CENTER);
 		btnList.setText(Messages.getString("LIST_PACKAGES"));
-		GridData btnGridData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
-		btnGridData.widthHint = 120;
+		GridData btnGridData = new GridData(SWT.CENTER, SWT.CENTER, false, false);
+		btnGridData.widthHint = 300;
+		btnGridData.heightHint = 30;
 		btnList.setLayoutData(btnGridData);
 		btnList.addSelectionListener(new SelectionListener() {
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+
 				String[] list = list();
 				List<PackageInfo> resultSet = new ArrayList<PackageInfo>();
 				for (int i = 0; i < list.length; i = i + 3) {
-					resultSet.addAll(RepoSourcesListParser.parseURL(list[i + 1], list[i + 2].split(" ")[0],
-							Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",
-							list[i]));
-					if (checkSearchingCriteria(resultSet) != null && checkSearchingCriteria(resultSet).size() > 0) {
-						recreateTable();
-						viewer.setInput(checkSearchingCriteria(resultSet));
-						redraw();
-					} else {
-						emptyTable();
+					if(list[i+2] != null && !list[i+2].isEmpty() && list[i+1] != null && !list[i+1].isEmpty()){
+						list[i+2] = list[i+2].trim();
+						List<PackageInfo> items = RepoSourcesListParser.parseURL(list[i + 1].trim(), list[i + 2].split(" ")[0],
+								Arrays.copyOfRange(list[i + 2].split(" "), 1, list[i + 2].split(" ").length), "amd64",
+								list[i]);
+						if (items != null && !items.isEmpty())
+							resultSet.addAll(items);
+						else {
+							Notifier.error("",
+									"Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olunuz");
+						}
 					}
 				}
+				recreateTable();
+				viewer.setInput(resultSet);
+				redraw();
+				checkedElements.clear();
 			}
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-	}
+		new Label(packageSearchComposite, SWT.NONE);
 
-	private List<PackageInfo> checkSearchingCriteria(List<PackageInfo> resultSet) {
-		List<PackageInfo> result = new ArrayList<>();
-		boolean isProper;
-		if (resultSet != null && resultSet.size() > 0) {
-			for (PackageInfo packageInfo : resultSet) {
-				isProper = false;
-				if (txtPackageName.getText().isEmpty() && txtDescription.getText().isEmpty())
-					isProper = true;
-				if (txtPackageName.getText() != null && !txtPackageName.getText().isEmpty()
-						&& packageInfo.getPackageName().contains(txtPackageName.getText()))
-					isProper = true;
-				if (txtDescription.getText() != null && !txtDescription.getText().isEmpty()
-						&& packageInfo.getDescription().contains(txtDescription.getText()))
-					isProper = true;
-				if (isProper)
-					result.add(packageInfo);
+		Composite tableButtonComposite = new Composite(parent, SWT.NONE);
+		tableButtonComposite.setLayout(new GridLayout(4, true));
+
+		new Label(tableButtonComposite, SWT.NONE);
+
+		txtPackageName = new Text(tableButtonComposite, SWT.BORDER);
+		GridData txtGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		txtGridData.widthHint = 200;
+		txtPackageName.setLayoutData(txtGridData);
+		txtPackageName.setMessage(Messages.getString("PACKAGE_NAME"));
+		txtPackageName.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				((PackageFilter) filter).setSearchText(txtPackageName.getText());
+				((PackageFilter) filter).setColumnNumber(0);
+				viewer.refresh();
+				viewer.setCheckedElements(checkedElements.toArray());
 			}
-		}
-		return result;
+		});
+
+		txtDescription = new Text(tableButtonComposite, SWT.BORDER);
+		txtDescription.setLayoutData(txtGridData);
+		txtDescription.setMessage(Messages.getString("DESCRIPTION"));
+		txtDescription.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				((PackageFilter) filter).setSearchText(txtDescription.getText());
+				((PackageFilter) filter).setColumnNumber(2);
+				 viewer.refresh();
+				 viewer.setCheckedElements(checkedElements.toArray());
+			}
+		});
+
+		new Label(tableButtonComposite, SWT.NONE);
+
 	}
 
 	private void disposeTableColumns() {
@@ -372,12 +536,6 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		while (table.getColumnCount() > 0) {
 			table.getColumns()[0].dispose();
 		}
-	}
-
-	private void emptyTable() {
-		recreateTable();
-		viewer.setInput(new ArrayList<PackageInfo>());
-		redraw();
 	}
 
 	private void recreateTable() {
@@ -415,7 +573,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if (viewer.getCheckedElements().length == 0) {
+		if (checkedElements.size() == 0) {
 			throw new ValidationException(Messages.getString("PLEASE_SELECT_AT_LEAST_AN_ITEM"));
 		}
 	}
@@ -455,6 +613,22 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 
 	public void setItem(PackageInfo item) {
 		this.item = item;
+	}
+
+	public Label getLblUrl() {
+		return lblUrl;
+	}
+
+	public void setLblUrl(Label lblUrl) {
+		this.lblUrl = lblUrl;
+	}
+
+	public Label getLblComponents() {
+		return lblComponents;
+	}
+
+	public void setLblComponents(Label lblComponents) {
+		this.lblComponents = lblComponents;
 	}
 
 }

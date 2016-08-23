@@ -1,0 +1,5 @@
+#!/bin/sh
+# prerm script for ahenk-package-manager
+#
+
+find /opt/ahenk/plugins/package-manager | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf

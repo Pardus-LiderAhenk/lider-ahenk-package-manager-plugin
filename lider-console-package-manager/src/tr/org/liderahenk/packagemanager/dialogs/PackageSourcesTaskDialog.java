@@ -62,6 +62,7 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	private TableViewer tableViewer;
 	private Button btnAdd;
 	private Button btnDelete;
+	PackageSourcesLoadingDialog loadingDialog;
 
 	private PackageSourceItem item;
 	protected static ArrayList<String> addedSources = new ArrayList<>();
@@ -77,6 +78,15 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 
 	private void getData() {
 		try {
+
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					loadingDialog = new PackageSourcesLoadingDialog(Display.getDefault().getActiveShell());
+					loadingDialog.open();
+				}
+			});
+
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
 					getPluginVersion(), "REPOSITORIES", null, null, null, new Date());
 			TaskRestUtils.execute(task);
@@ -101,7 +111,7 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 						byte[] data = taskStatus.getResult().getResponseData();
 						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
 								new TypeReference<HashMap<String, Object>>() {
-						});
+								});
 						Display.getDefault().asyncExec(new Runnable() {
 
 							@Override
@@ -125,6 +135,13 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 					}
 					monitor.worked(100);
 					monitor.done();
+
+					Display.getDefault().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							loadingDialog.close();
+						}
+					});
 
 					return Status.OK_STATUS;
 				}
@@ -281,6 +298,7 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 		});
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
 		if (tableViewer.getInput() == null || ((List<PackageSourceItem>) tableViewer.getInput()).isEmpty()) {
@@ -293,6 +311,13 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		taskData.put(PackageManagerConstants.PARAMETERS.ADDED_ITEMS, addedSources);
 		taskData.put(PackageManagerConstants.PARAMETERS.DELETED_ITEMS, deletedSources);
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				loadingDialog = new PackageSourcesLoadingDialog(Display.getDefault().getActiveShell());
+				loadingDialog.open();
+			}
+		});
 		return taskData;
 	}
 

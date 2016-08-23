@@ -72,7 +72,7 @@
 		</menuContribution>
          
 	<!-- Add extension point contribution for "task execution" dialogs -->
-		<menuContribution
+	<menuContribution
       		allPopups="false"
             locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
  				<command
@@ -80,12 +80,22 @@
                   id="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   tooltip="%command.addremovepackage.task">
 				  	<visibleWhen>
-						<with
-			                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-			             	<equals
-				                   value="true">
-				            </equals>
-			          	</with>
+		                <iterate operator="or">		
+							<or>
+								<with
+					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+					             	<equals
+						                   value="true">
+						            </equals>
+					          	</with>
+								<with
+					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapOUSelected">
+					             	<equals
+						                   value="true">
+						            </equals>
+					          	</with>
+							</or>
+						</iterate>
 					</visibleWhen>
            		</command>
 		</menuContribution>
@@ -180,12 +190,22 @@
                   id="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
                   tooltip="%command.task">
 				  	<visibleWhen>
-						<with
-			                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-			             	<equals
-				                   value="true">
-				            </equals>
-			          	</with>
+		                <iterate operator="or">		
+							<or>
+								<with
+					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+					             	<equals
+						                   value="true">
+						            </equals>
+					          	</with>
+								<with
+					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapOUSelected">
+					             	<equals
+						                   value="true">
+						            </equals>
+					          	</with>
+							</or>
+						</iterate>
 					</visibleWhen>
            		</command>
 		</menuContribution>
