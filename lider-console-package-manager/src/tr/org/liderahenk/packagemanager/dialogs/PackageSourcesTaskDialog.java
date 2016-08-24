@@ -57,12 +57,10 @@ import tr.org.liderahenk.packagemanager.model.PackageSourceItem;
  */
 public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 
-	String upperCase = "";
 	private Composite tableComposite;
 	private TableViewer tableViewer;
 	private Button btnAdd;
 	private Button btnDelete;
-	PackageSourcesLoadingDialog loadingDialog;
 
 	private PackageSourceItem item;
 	protected static ArrayList<String> addedSources = new ArrayList<>();
@@ -73,84 +71,7 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 	public PackageSourcesTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
 		subscribeEventHandler(eventHandler);
-		getData();
 	}
-
-	private void getData() {
-		try {
-
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					loadingDialog = new PackageSourcesLoadingDialog(Display.getDefault().getActiveShell());
-					loadingDialog.open();
-				}
-			});
-
-			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
-					getPluginVersion(), "REPOSITORIES", null, null, null, new Date());
-			TaskRestUtils.execute(task);
-		} catch (Exception e1) {
-			logger.error(e1.getMessage(), e1);
-			Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
-		}
-	}
-
-	private EventHandler eventHandler = new EventHandler() {
-		@Override
-		public void handleEvent(final Event event) {
-			Job job = new Job("TASK") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("PACKAGE_SOURCES", 100);
-					try {
-						addedSources.clear();
-						deletedSources.clear();
-						TaskStatusNotification taskStatus = (TaskStatusNotification) event
-								.getProperty("org.eclipse.e4.data");
-						byte[] data = taskStatus.getResult().getResponseData();
-						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
-								new TypeReference<HashMap<String, Object>>() {
-								});
-						Display.getDefault().asyncExec(new Runnable() {
-
-							@Override
-							public void run() {
-								String[] result = responseData.containsKey("packageSource")
-										? responseData.get("packageSource").toString().split("\\r?\\n") : null;
-								if (result != null && result.length > 0) {
-									ArrayList<PackageSourceItem> items = new ArrayList<>();
-									for (String data : result) {
-										PackageSourceItem item = new PackageSourceItem(data);
-										items.add(item);
-									}
-									if (items != null)
-										tableViewer.setInput(items);
-								}
-							}
-						});
-					} catch (Exception e) {
-						logger.error(e.getMessage(), e);
-						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_ACCESSING_PACKAGE_SOURCES"));
-					}
-					monitor.worked(100);
-					monitor.done();
-
-					Display.getDefault().asyncExec(new Runnable() {
-						@Override
-						public void run() {
-							loadingDialog.close();
-						}
-					});
-
-					return Status.OK_STATUS;
-				}
-			};
-
-			job.setUser(true);
-			job.schedule();
-		}
-	};
 
 	@Override
 	public String createTitle() {
@@ -159,17 +80,13 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
-
-		createTableArea(parent);
-
-		return null;
-	}
-
-	private void createTableArea(Composite parent) {
-		tableComposite = new Composite(parent, SWT.BORDER);
+		tableComposite = new Composite(parent, SWT.NONE);
 		tableComposite.setLayout(new GridLayout(1, false));
+		tableComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		createButtons(tableComposite);
 		createTable(tableComposite);
+		getRepositories();
+		return tableComposite;
 	}
 
 	private void createTable(final Composite parent) {
@@ -311,15 +228,83 @@ public class PackageSourcesTaskDialog extends DefaultTaskDialog {
 		Map<String, Object> taskData = new HashMap<String, Object>();
 		taskData.put(PackageManagerConstants.PARAMETERS.ADDED_ITEMS, addedSources);
 		taskData.put(PackageManagerConstants.PARAMETERS.DELETED_ITEMS, deletedSources);
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				loadingDialog = new PackageSourcesLoadingDialog(Display.getDefault().getActiveShell());
-				loadingDialog.open();
-			}
-		});
 		return taskData;
 	}
+
+	private void getRepositories() {
+		try {
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					if (getProgressBar() != null) {
+						getProgressBar().setVisible(true);
+					}
+				}
+			});
+			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
+					getPluginVersion(), "REPOSITORIES", null, null, null, new Date());
+			TaskRestUtils.execute(task);
+		} catch (Exception e1) {
+			logger.error(e1.getMessage(), e1);
+			Notifier.error(null, Messages.getString("ERROR_ON_EXECUTE"));
+		}
+	}
+
+	private EventHandler eventHandler = new EventHandler() {
+		@Override
+		public void handleEvent(final Event event) {
+			Job job = new Job("TASK") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("PACKAGE_SOURCES", 100);
+					try {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								if (getProgressBar() != null) {
+									getProgressBar().setVisible(false);
+								}
+							}
+						});
+						addedSources.clear();
+						deletedSources.clear();
+						TaskStatusNotification taskStatus = (TaskStatusNotification) event
+								.getProperty("org.eclipse.e4.data");
+						byte[] data = taskStatus.getResult().getResponseData();
+						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+								new TypeReference<HashMap<String, Object>>() {
+								});
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								String[] result = responseData.containsKey("packageSource")
+										? responseData.get("packageSource").toString().split("\\r?\\n") : null;
+								if (result != null && result.length > 0) {
+									ArrayList<PackageSourceItem> items = new ArrayList<>();
+									for (String data : result) {
+										PackageSourceItem item = new PackageSourceItem(data);
+										items.add(item);
+									}
+									if (items != null)
+										tableViewer.setInput(items);
+								}
+							}
+						});
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_ACCESSING_PACKAGE_SOURCES"));
+					}
+					monitor.worked(100);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				}
+			};
+
+			job.setUser(true);
+			job.schedule();
+		}
+	};
 
 	@Override
 	public String getCommandId() {
