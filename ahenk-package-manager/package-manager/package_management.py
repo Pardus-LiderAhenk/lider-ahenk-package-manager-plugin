@@ -4,7 +4,6 @@
 
 import json
 
-from base.model.enum.ContentType import ContentType
 from base.plugin.abstract_plugin import AbstractPlugin
 
 
@@ -68,19 +67,19 @@ class PackageManagement(AbstractPlugin):
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='Paket işlemleri sırasında hata oluştu: ' + result_message,
                                              data=json.dumps({'Result': result_message}),
-                                             content_type=ContentType.APPLICATION_JSON.value)
+                                             content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                              message='Paket işlemleri başarıyla gerçekleştirildi: ' + result_message,
                                              data=json.dumps({'Result': result_message}),
-                                             content_type=ContentType.APPLICATION_JSON.value)
+                                             content_type=self.get_content_type().APPLICATION_JSON.value)
                 # TODO return package list!
 
         except Exception as e:
             self.logger.error(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='Paket kur/kaldır işlemleri gerçekleştirilirken hata oluştu:' + str(e),
-                                         content_type=ContentType.APPLICATION_JSON.value)
+                                         content_type=self.get_content_type().APPLICATION_JSON.value)
 
 
 def handle_task(task, context):

@@ -4,7 +4,6 @@
 
 import json
 
-from base.model.enum.ContentType import ContentType
 from base.plugin.abstract_plugin import AbstractPlugin
 
 
@@ -61,17 +60,17 @@ class PackageSources(AbstractPlugin):
             if not error_message:
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                              message='Paket depoları başarıyla güncellendi.',
-                                             data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+                                             data=json.dumps(data), content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message=error_message,
-                                             content_type=ContentType.APPLICATION_JSON.value)
+                                             content_type=self.get_content_type().APPLICATION_JSON.value)
 
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message="Paket depoları güncellenirken hata oluştu: " + str(e),
-                                         content_type=ContentType.APPLICATION_JSON.value)
+                                         content_type=self.get_content_type().APPLICATION_JSON.value)
 
 
 def handle_task(task, context):

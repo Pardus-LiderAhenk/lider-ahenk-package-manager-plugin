@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
-from base.model.enum.ContentType import ContentType
 from base.plugin.abstract_plugin import AbstractPlugin
 
 
@@ -31,13 +30,13 @@ class PackageArchive(AbstractPlugin):
                 self.logger.debug(resultMessage)
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='Önceki paket sürümü kurulumunda beklenmedik hata!',
-                                         content_type=ContentType.APPLICATION_JSON.value)
+                                         content_type=self.get_content_type().APPLICATION_JSON.value)
 
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='Önceki paket sürümü kurulumunda beklenmedik hata!',
-                                         content_type=ContentType.APPLICATION_JSON.value)
+                                         content_type=self.get_content_type().APPLICATION_JSON.value)
 
 
 def handle_task(task, context):

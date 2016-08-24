@@ -4,7 +4,6 @@
 
 import json
 
-from base.model.enum.ContentType import ContentType
 from base.plugin.abstract_plugin import AbstractPlugin
 
 
@@ -40,22 +39,22 @@ class ShowPackageArchive(AbstractPlugin):
 
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message=message,
-                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+                                         data=json.dumps(data), content_type=self.get_content_type().APPLICATION_JSON.value)
             elif a != 0:
                 message = 'Paket bulunamadı'
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message=message,
-                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+                                         data=json.dumps(data), content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message=message,
-                                         data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+                                         data=json.dumps(data), content_type=self.get_content_type().APPLICATION_JSON.value)
             self.logger.debug('[PACKAGE MANAGER] Getting Package Archive task is handled successfully')
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='Paket arşivi getirilirken beklenmedik hata!',
-                                         content_type=ContentType.APPLICATION_JSON.value)
+                                         content_type=self.get_content_type().APPLICATION_JSON.value)
 
 
 def handle_task(task, context):

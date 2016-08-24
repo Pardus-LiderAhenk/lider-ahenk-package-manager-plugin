@@ -4,7 +4,6 @@
 
 import json
 
-from base.model.enum.ContentType import ContentType
 from base.plugin.abstract_plugin import AbstractPlugin
 
 
@@ -136,7 +135,7 @@ class GetExecutionInfo(AbstractPlugin):
             self.logger.debug("[PACKAGE MANAGER] Execution Info fetched succesfully. ")
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Uygulama çalıştırma bilgileri başarıyla sisteme geçirildi.',
-                                         data=json.dumps(res), content_type=ContentType.APPLICATION_JSON.value)
+                                         data=json.dumps(res), content_type=self.get_content_type().APPLICATION_JSON.value)
             self.logger.debug("[PACKAGE MANAGER] Execution Info has sent")
         except Exception as e:
             self.logger.debug(str(e))
