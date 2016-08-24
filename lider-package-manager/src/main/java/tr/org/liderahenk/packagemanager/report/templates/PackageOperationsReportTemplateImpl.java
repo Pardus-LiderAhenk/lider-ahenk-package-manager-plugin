@@ -15,7 +15,7 @@ import tr.org.liderahenk.lider.core.api.plugin.BaseReportTemplate;
 /**
  * Default report template for executed tasks.
  * 
- * @author <a href="mailto:emre.akkaya@agem.com.tr">Emre Akkaya</a>
+ * @author <a href="mailto:cemre.alpsoy@agem.com.tr">Cemre Alpsoy</a>
  *
  */
 public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
