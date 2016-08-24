@@ -35,7 +35,7 @@ public class CommandExecutionStatistics implements Serializable {
 	private Float processTime;
 
 	@Column(name = "PROCESS_START_DATE")
-	private String processStartDate;
+	private Date processStartDate;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "CREATE_DATE", nullable = false)
@@ -54,7 +54,7 @@ public class CommandExecutionStatistics implements Serializable {
 	}
 
 	public CommandExecutionStatistics(Long agentId, String command, String user, Float processTime,
-			String processStartDate, Date createDate, String isActive, Long taskId, Long commandExecutionId) {
+			Date processStartDate, Date createDate, String isActive, Long taskId, Long commandExecutionId) {
 		super();
 		this.agentId = agentId;
 		this.command = command;
@@ -99,11 +99,11 @@ public class CommandExecutionStatistics implements Serializable {
 		this.processTime = processTime;
 	}
 
-	public String getProcessStartDate() {
+	public Date getProcessStartDate() {
 		return processStartDate;
 	}
 
-	public void setProcessStartDate(String processStartDate) {
+	public void setProcessStartDate(Date processStartDate) {
 		this.processStartDate = processStartDate;
 	}
 
