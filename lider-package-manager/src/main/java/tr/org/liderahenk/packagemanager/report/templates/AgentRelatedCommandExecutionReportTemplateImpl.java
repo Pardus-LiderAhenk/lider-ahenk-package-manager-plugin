@@ -18,33 +18,48 @@ import tr.org.liderahenk.lider.core.api.plugin.BaseReportTemplate;
  * @author <a href="mailto:cemre.alpsoy@agem.com.tr">Cemre Alpsoy</a>
  *
  */
-public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
+public class AgentRelatedCommandExecutionReportTemplateImpl extends BaseReportTemplate {
 
 	private static final long serialVersionUID = -8026043224671892836L;
-
 	@Override
 	public String getName() {
-		return "Paket İşlemleri Raporu";
+		return "Kişi Bazlı İşletilmiş Komut Raporu";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Paket işlemleri hakkında istatistiksel rapor";
+		return "İşletilmiş olan komutların kişi bazlı detaylı raporu";
 	}
 
 	@Override
 	public String getQuery() {
-		return "SELECT cer.responseMessage, cer.createDate "
-				+ "FROM CommandImpl c LEFT JOIN c.commandExecutions ce INNER JOIN ce.commandExecutionResults cer INNER JOIN c.task t INNER JOIN t.plugin p "
-				+ "WHERE p.name = 'package-manager' AND ce.dn LIKE :dn AND (t.commandClsId = 'PACKAGES') AND t.createDate BETWEEN :startDate AND :endDate AND cer.responseCode <> 8";
+		return "SELECT DISTINCT c.agentId, c.command, SUM(c.processTime), COUNT(c.command) "
+				+ "FROM CommandExecutionStatistics c "
+				+ "WHERE c.isActive = '0' AND c.command = :command GROUP BY c.agentId, c.command ORDER BY c.agentId, c.command";
 	}
 
 	@SuppressWarnings("serial")
 	@Override
 	public Set<? extends IReportTemplateParameter> getTemplateParams() {
 		Set<IReportTemplateParameter> params = new HashSet<IReportTemplateParameter>();
-		// Plugin name
+		
 		params.add(new IReportTemplateParameter() {
+
+			@Override
+			public Date getCreateDate() {
+				return new Date();
+			}
+
+			@Override
+			public boolean isMandatory() {
+				return false;
+			}
+
+			@Override
+			public String getDefaultValue() {
+				return null;
+			}
+
 			@Override
 			public ParameterType getType() {
 				return ParameterType.STRING;
@@ -57,122 +72,17 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 
 			@Override
 			public String getLabel() {
-				return "Dn";
+				return "Komut";
 			}
 
 			@Override
 			public String getKey() {
-				return "dn";
+				return "command";
 			}
 
 			@Override
 			public Long getId() {
 				return null;
-			}
-
-			@Override
-			public String getDefaultValue() {
-				return null;
-			}
-
-			@Override
-			public boolean isMandatory() {
-				return true;
-			}
-
-			@Override
-			public Date getCreateDate() {
-				return new Date();
-			}
-		});// Start date
-		params.add(new IReportTemplateParameter() {
-
-			@Override
-			public Date getCreateDate() {
-				return new Date();
-			}
-
-			@Override
-			public boolean isMandatory() {
-				return true;
-			}
-
-			@Override
-			public ParameterType getType() {
-				return ParameterType.DATE;
-			}
-
-			@Override
-			public IReportTemplate getTemplate() {
-				return getSelf();
-			}
-
-			@Override
-			public String getLabel() {
-				return "Başlangıç tarih";
-			}
-
-			@Override
-			public String getKey() {
-				return "startDate";
-			}
-
-			@Override
-			public Long getId() {
-				return null;
-			}
-
-			@Override
-			public String getDefaultValue() {
-				Calendar prevYear = Calendar.getInstance();
-				prevYear.setTime(new Date());
-				prevYear.add(Calendar.DAY_OF_YEAR, -1);
-				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				return format.format(prevYear.getTime());
-			}
-		});
-		// End year
-		params.add(new IReportTemplateParameter() {
-
-			@Override
-			public Date getCreateDate() {
-				return new Date();
-			}
-
-			@Override
-			public boolean isMandatory() {
-				return true;
-			}
-
-			@Override
-			public ParameterType getType() {
-				return ParameterType.DATE;
-			}
-
-			@Override
-			public IReportTemplate getTemplate() {
-				return getSelf();
-			}
-
-			@Override
-			public String getLabel() {
-				return "Bitiş tarihi";
-			}
-
-			@Override
-			public String getKey() {
-				return "endDate";
-			}
-
-			@Override
-			public Long getId() {
-				return null;
-			}
-
-			@Override
-			public String getDefaultValue() {
-				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				return format.format(new Date());
 			}
 		});
 		return params;
@@ -195,7 +105,33 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 
 			@Override
 			public String getName() {
-				return "Değişiklik Tarihi";
+				return "Ajan Id";
+			}
+
+			@Override
+			public Long getId() {
+				return null;
+			}
+
+			@Override
+			public Integer getColumnOrder() {
+				return 1;
+			}
+		});
+		columns.add(new IReportTemplateColumn() {
+			@Override
+			public Date getCreateDate() {
+				return new Date();
+			}
+
+			@Override
+			public IReportTemplate getTemplate() {
+				return getSelf();
+			}
+
+			@Override
+			public String getName() {
+				return "Komut";
 			}
 
 			@Override
@@ -221,7 +157,7 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 
 			@Override
 			public String getName() {
-				return "Yanıt Mesajı";
+				return "Toplam İşletme Zamanı";
 			}
 
 			@Override
@@ -231,19 +167,45 @@ public class PackageOperationsReportTemplateImpl extends BaseReportTemplate {
 
 			@Override
 			public Integer getColumnOrder() {
-				return 1;
+				return 3;
+			}
+		});
+		columns.add(new IReportTemplateColumn() {
+			@Override
+			public Date getCreateDate() {
+				return new Date();
+			}
+
+			@Override
+			public IReportTemplate getTemplate() {
+				return getSelf();
+			}
+
+			@Override
+			public String getName() {
+				return "İşletilme Sayısı";
+			}
+
+			@Override
+			public Long getId() {
+				return null;
+			}
+
+			@Override
+			public Integer getColumnOrder() {
+				return 4;
 			}
 		});
 		return columns;
 	}
 
-	protected PackageOperationsReportTemplateImpl getSelf() {
+	protected AgentRelatedCommandExecutionReportTemplateImpl getSelf() {
 		return this;
 	}
 
 	@Override
 	public String getCode() {
-		return "PACKAGE-OPERATIONS-REPORT";
+		return "AGENT-RELATED-COMMAND-EXECUTION-REPORT";
 	}
 
 }

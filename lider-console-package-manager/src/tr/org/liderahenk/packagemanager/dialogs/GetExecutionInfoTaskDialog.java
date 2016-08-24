@@ -61,6 +61,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 							@Override
 							public void run() {
+								
 							}
 						});
 					} catch (Exception e) {

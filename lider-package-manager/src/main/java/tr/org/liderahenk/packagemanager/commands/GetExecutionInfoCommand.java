@@ -1,7 +1,11 @@
 package tr.org.liderahenk.packagemanager.commands;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -136,28 +140,38 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 					pluginDbService.save(verInfo);
 				}
 				for (HashMap<String, Object> map : value) {
-					CommandExecutionStatistics item = new CommandExecutionStatistics();
-					item.setCommand(map.get("commandName").toString());
-					item.setUser(map.get("user").toString());
-					Float processTime =Float.parseFloat(map.get("processTime").toString());
-					logger.info(processTime.toString());
-					item.setProcessTime(processTime);
-					item.setProcessStartDate(map.get("startDate").toString());
-					item.setAgentId(agentId);
-					item.setTaskId(taskId);
-					item.setIsActive("1");
-					item.setCreateDate(new Date());
-					item.setCommandExecutionId(command_execution_id);
-					
-					Query query = entityManager.createQuery(
-							"UPDATE CommandExecutionStatistics ces SET ces.isActive ='0' WHERE ces.agentId = :agentId AND ces.command = :command AND ces.user = :user AND ces.taskId <> :taskId");
-					query.setParameter("agentId", item.getAgentId());
-					query.setParameter("taskId", item.getTaskId());
-					query.setParameter("command", item.getCommand());
-					query.setParameter("user", item.getUser());
-					query.executeUpdate();
+					try {
 
-					pluginDbService.save(item);
+						CommandExecutionStatistics item = new CommandExecutionStatistics();
+						item.setCommand(map.get("commandName").toString());
+						item.setUser(map.get("user").toString());
+						Float processTime =Float.parseFloat(map.get("processTime").toString());
+						logger.info(processTime.toString());
+						item.setProcessTime(processTime);
+						DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss yyyy");
+						String currentYearString = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+						item.setProcessStartDate((Date)formatter.parse(map.get("startDate").toString() + ":00 " + currentYearString));
+
+						item.setAgentId(agentId);
+						item.setTaskId(taskId);
+						item.setIsActive("1");
+						item.setCreateDate(new Date());
+						item.setCommandExecutionId(command_execution_id);
+
+						
+						Query query = entityManager.createQuery(
+								"UPDATE CommandExecutionStatistics ces SET ces.isActive ='0' WHERE ces.agentId = :agentId AND ces.command = :command AND ces.user = :user AND ces.taskId <> :taskId");
+						query.setParameter("agentId", item.getAgentId());
+						query.setParameter("taskId", item.getTaskId());
+						query.setParameter("command", item.getCommand());
+						query.setParameter("user", item.getUser());
+						query.executeUpdate();
+						pluginDbService.save(item);
+
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 
