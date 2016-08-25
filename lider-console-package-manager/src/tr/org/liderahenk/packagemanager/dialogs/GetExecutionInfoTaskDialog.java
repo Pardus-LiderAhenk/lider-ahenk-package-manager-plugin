@@ -123,6 +123,9 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		if ((txtCommand == null || txtCommand.getText() == null || txtCommand.getText().isEmpty()) && (txtUser == null || txtUser.getText() == null || txtUser.getText().isEmpty()) ) {
 			throw new ValidationException(Messages.getString("PLEASE_ENTER_AT_LEAST_COMMAND_OR_USER"));
 		}
+		if (btnIsStrictMatch.getSelection() && ((txtCommand == null || txtCommand.getText() == null || txtCommand.getText().isEmpty()) || (txtUser == null || txtUser.getText() == null || txtUser.getText().isEmpty()))){
+			throw new ValidationException(Messages.getString("STRICT_MATCH_USAGE_WARNING"));
+		}
 	}
 
 	@Override
