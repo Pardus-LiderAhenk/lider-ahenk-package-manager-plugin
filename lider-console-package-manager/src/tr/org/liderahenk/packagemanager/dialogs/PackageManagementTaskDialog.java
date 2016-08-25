@@ -71,7 +71,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	private Button btnRefreshPackage;
 
 	private PackageInfo selectedPackage;
-	private PackageManagementLoadingDialog loadingDialog;
 
 	public PackageManagementTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
@@ -91,6 +90,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 	public Control createTaskDialogArea(Composite parent) {
 		Composite composite = new Composite(parent, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		createButtonsArea(composite);
 		createTableArea(composite);
 		getPackages();
@@ -296,14 +296,14 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			Display.getDefault().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					loadingDialog = new PackageManagementLoadingDialog(Display.getDefault().getActiveShell());
-					loadingDialog.open();
+					if (getProgressBar() != null) {
+						getProgressBar().setVisible(true);
+					}
 				}
 			});
 			TaskRequest task = new TaskRequest(new ArrayList<String>(getDnSet()), DNType.AHENK, getPluginName(),
 					getPluginVersion(), "INSTALLED_PACKAGES", null, null, null, new Date());
 			TaskRestUtils.execute(task);
-
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
@@ -318,6 +318,14 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("PACKAGE_MANAGEMENT", 100);
 					try {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								if (getProgressBar() != null) {
+									getProgressBar().setVisible(false);
+								}
+							}
+						});
 						TaskStatusNotification taskStatus = (TaskStatusNotification) event
 								.getProperty("org.eclipse.e4.data");
 						if (ContentType.getFileContentTypes().contains(taskStatus.getResult().getContentType())) {
@@ -347,9 +355,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 										if (tableViewer != null) {
 											tableViewer.setInput(packages);
 											tableViewer.refresh();
-
 										}
-										loadingDialog.close();
 									}
 								});
 							}
@@ -367,7 +373,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 								}
 							});
 						}
-
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
 					}

@@ -18,24 +18,24 @@ import tr.org.liderahenk.lider.core.api.plugin.BaseReportTemplate;
  * @author <a href="mailto:cemre.alpsoy@agem.com.tr">Cemre Alpsoy</a>
  *
  */
-public class AgentRelatedCommandExecutionReportTemplateImpl extends BaseReportTemplate {
+public class AgentRelatedCommandExecutionReportWithoutCommandParameterTemplateImpl extends BaseReportTemplate {
 
 	private static final long serialVersionUID = -8026043224671892836L;
 	@Override
 	public String getName() {
-		return "İşletilmiş Bir Komut İçin İstatiksel Rapor";
+		return "İşletilmiş Tüm Komutların İstatiksel Raporu";
 	}
 
 	@Override
 	public String getDescription() {
-		return "İşletilmiş olan bir komutun ajan bazlı detaylı raporu";
+		return "İşletilmiş olan komutların kişi bazlı detaylı raporu";
 	}
 
 	@Override
 	public String getQuery() {
 		return "SELECT DISTINCT c.agentId, c.user, c.command, SUM(c.processTime), COUNT(c.command), MAX(c.processStartDate) "
 				+ "FROM CommandExecutionStatistics c "
-				+ "WHERE c.isActive = '1' AND c.command = :command AND c.processStartDate BETWEEN :startDate AND :endDate GROUP BY c.agentId, c.user, c.command ORDER BY c.agentId, c.user, c.command";
+				+ "WHERE c.isActive = '1' AND c.processStartDate BETWEEN :startDate AND :endDate GROUP BY c.agentId, c.user, c.command ORDER BY c.agentId, c.user, c.command";
 	}
 
 	@SuppressWarnings("serial")
@@ -43,48 +43,6 @@ public class AgentRelatedCommandExecutionReportTemplateImpl extends BaseReportTe
 	public Set<? extends IReportTemplateParameter> getTemplateParams() {
 		Set<IReportTemplateParameter> params = new HashSet<IReportTemplateParameter>();
 		
-		params.add(new IReportTemplateParameter() {
-
-			@Override
-			public Date getCreateDate() {
-				return new Date();
-			}
-
-			@Override
-			public boolean isMandatory() {
-				return true;
-			}
-
-			@Override
-			public String getDefaultValue() {
-				return null;
-			}
-
-			@Override
-			public ParameterType getType() {
-				return ParameterType.STRING;
-			}
-
-			@Override
-			public IReportTemplate getTemplate() {
-				return getSelf();
-			}
-
-			@Override
-			public String getLabel() {
-				return "Komut";
-			}
-
-			@Override
-			public String getKey() {
-				return "command";
-			}
-
-			@Override
-			public Long getId() {
-				return null;
-			}
-		});// Start date
 		params.add(new IReportTemplateParameter() {
 
 			@Override
@@ -341,13 +299,13 @@ public class AgentRelatedCommandExecutionReportTemplateImpl extends BaseReportTe
 		return columns;
 	}
 
-	protected AgentRelatedCommandExecutionReportTemplateImpl getSelf() {
+	protected AgentRelatedCommandExecutionReportWithoutCommandParameterTemplateImpl getSelf() {
 		return this;
 	}
 
 	@Override
 	public String getCode() {
-		return "AGENT-RELATED-COMMAND-EXECUTION-REPORT-FOR-ONE-COMMAND";
+		return "AGENT-RELATED-COMMAND-EXECUTION-REPORT-WITHOUT-COMMAND-PARAMETER";
 	}
 
 }
