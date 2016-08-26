@@ -250,7 +250,6 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 				}
 			}
 		});
-
 		return null;
 	}
 
@@ -385,7 +384,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		if (viewer.getCheckedElements().length > 0) {
+		if (txtPackageName == null || txtPackageName.getText() == null || txtPackageName.getText().isEmpty()) {
 			throw new ValidationException(Messages.getString("PLEASE_ENTER_AT_LEAST_PACKAGE_NAME"));
 		}
 	}
