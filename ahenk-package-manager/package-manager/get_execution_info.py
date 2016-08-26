@@ -18,6 +18,8 @@ class GetExecutionInfo(AbstractPlugin):
         self.version_list = []
         self.result_message = ''
         self.logger.debug('[PACKAGE MANAGER] Execution info initialized')
+        self.temp_file_name = str(self.generate_uuid())
+        self.file_path = '{0}{1}'.format(str(self.Ahenk.received_dir_path()), self.temp_file_name)
 
     def handle_task(self):
 
@@ -26,12 +28,7 @@ class GetExecutionInfo(AbstractPlugin):
             commands = self.data['command']
             user = self.data['user']
             is_strict_match = self.data['isStrictMatch']
-            dn = self.Ahenk.dn()
             res = {}
-            if dn is None:
-                self.logger.debug('[PACKAGE MANAGER] Dn not found')
-                dn = " "
-            res['dn'] = dn
             if commands:
                 self.get_version_list(commands)
                 if is_strict_match is False:
@@ -101,16 +98,27 @@ class GetExecutionInfo(AbstractPlugin):
             self.logger.debug(
                 '[ PACKAGE MANAGER ]' + 'Command Execution Info list: ' + str(result_command_execution_info_list))
             if self.command_execution_statistic_list is not None and len(self.command_execution_statistic_list) > 0:
-                res["commandExecutionInfoList"] = result_command_execution_info_list
+                res["\"commandExecutionInfoList\""] = result_command_execution_info_list
             if self.version_list is not None and len(self.version_list) > 0:
-                res["versionList"] = result_version_list
+                res["\"versionList\""] = result_version_list
 
-            self.logger.debug("[PACKAGE MANAGER] Execution Info fetched succesfully. ")
-            self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+            self.execute('echo {0} > {1}'.format(res, self.file_path))
+            if self.is_exist(self.file_path):
+                data = {}
+                md5sum = self.get_md5_file(str(self.file_path))
+                self.logger.debug('[PACKAGE MANAGER] {0} renaming to {1}'.format(self.temp_file_name, md5sum))
+                self.rename_file(self.file_path, self.Ahenk.received_dir_path() + '/' + md5sum)
+                self.logger.debug('[PACKAGE MANAGER] Renamed.')
+                data['md5'] = md5sum
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Uygulama çalıştırma bilgileri başarıyla sisteme geçirildi.',
-                                         data=json.dumps(res),
-                                         content_type=self.get_content_type().APPLICATION_JSON.value)
-            self.logger.debug("[PACKAGE MANAGER] Execution Info has sent")
+                                         data=json.dumps(data),
+                                         content_type=self.get_content_type().TEXT_PLAIN.value)
+                self.logger.debug("[PACKAGE MANAGER] Execution Info fetched succesfully. ")
+                self.logger.debug("[PACKAGE MANAGER] Execution Info has sent")
+            else:
+                raise Exception('File not found on this path: {}'.format(self.file_path))
+
         except Exception as e:
             self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Unexpected error in get_execution.py. Error message : {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
