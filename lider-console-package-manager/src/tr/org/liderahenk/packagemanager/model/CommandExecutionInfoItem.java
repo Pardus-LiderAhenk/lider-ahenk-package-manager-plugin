@@ -1,8 +1,8 @@
 package tr.org.liderahenk.packagemanager.model;
 
-import java.io.Serializable;
+import java.util.Date;
 
-public class CommandExecutionInfoItem{
+public class CommandExecutionInfoItem {
 
 	private static final long serialVersionUID = -7315132498427095052L;
 
@@ -12,13 +12,17 @@ public class CommandExecutionInfoItem{
 	private String createDate;
 	private Float processTime;
 	private String startDate;
+	private Integer processCount;
+	private String packageName;
+	private String packageversion;
+	private String lastExecutionDate;
 
 	public CommandExecutionInfoItem() {
 		super();
 	}
 
 	public CommandExecutionInfoItem(String agentId, String command, String user, String createDate, Float processTime,
-			String startDate) {
+			String startDate, String packageName, String packageVersion, String lastExecutionDate) {
 		super();
 		this.agentId = agentId;
 		this.command = command;
@@ -26,6 +30,10 @@ public class CommandExecutionInfoItem{
 		this.createDate = createDate;
 		this.processTime = processTime;
 		this.startDate = startDate;
+		this.processCount = 1;
+		this.packageName = packageName;
+		this.packageversion = packageVersion;
+		this.setLastExecutionDate(lastExecutionDate);
 	}
 
 	public String getAgentId() {
@@ -74,6 +82,38 @@ public class CommandExecutionInfoItem{
 
 	public void setStartDate(String startDate) {
 		this.startDate = startDate;
+	}
+
+	public Integer getProcessCount() {
+		return processCount;
+	}
+
+	public void setProcessCount(Integer processCount) {
+		this.processCount = processCount;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
+	}
+
+	public String getPackageversion() {
+		return packageversion;
+	}
+
+	public void setPackageversion(String packageversion) {
+		this.packageversion = packageversion;
+	}
+
+	public String getLastExecutionDate() {
+		return lastExecutionDate;
+	}
+
+	public void setLastExecutionDate(String lastExecutionDate) {
+		this.lastExecutionDate = lastExecutionDate;
 	}
 
 }

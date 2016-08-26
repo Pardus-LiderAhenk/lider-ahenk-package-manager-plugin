@@ -45,6 +45,10 @@ class GetExecutionInfo(AbstractPlugin):
                         self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] lastcomm result list will be added to main result list')
                         self.command_execution_statistic_list.extend(result_list)
                         self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] lastcomm result list is added to main result list ')
+                    elif len(result_list) == 0:
+                        self.logger.debug(
+                            '[ PACKAGE MANAGER - GET_EXECUTION_INFO] {0} komutları içim herhangi bir sonuç bulunamadı'.format(
+                                commands))
                 else:
                     for command in commands.split():
                         lastcomm_command = 'lastcomm --command {0} '.format(command)
@@ -63,6 +67,8 @@ class GetExecutionInfo(AbstractPlugin):
                             self.command_execution_statistic_list.extend(result_list)
                             self.logger.debug(
                                 '[ PACKAGE MANAGER - GET_EXECUTION_INFO] lastcomm result list is added to main result list ')
+                        elif len(result_list) == 0:
+                            self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] {0} komutu içim herhangi bir sonuç bulunamadı'.format(command))
             elif user:
                 lastcomm_command = 'lastcomm --user {0} '.format(user)
                 if is_strict_match is True:
@@ -81,6 +87,8 @@ class GetExecutionInfo(AbstractPlugin):
                     self.command_execution_statistic_list.extend(result_list)
                     self.logger.debug(
                         '[ PACKAGE MANAGER - GET_EXECUTION_INFO] lastcomm result list is added to main result list ')
+                elif len(result_list) == 0:
+                    self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] {0} kullanıcısı içim herhangi bir sonuç bulunamadı'.format(user))
             elif user is None and commands is None:
                 result_code, result, error = self.execute('lastcomm')
                 result_list = self.check_output(result_code, result)
@@ -92,6 +100,8 @@ class GetExecutionInfo(AbstractPlugin):
                     self.command_execution_statistic_list.extend(result_list)
                     self.logger.debug(
                         '[ PACKAGE MANAGER - GET_EXECUTION_INFO] lastcomm result list is added to main result list ')
+                elif len(result_list) == 0:
+                    self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Herhangi bir sonuç bulunamadı')
             result_command_execution_info_list = json.dumps(
                 [ob.__dict__ for ob in self.command_execution_statistic_list])
             result_version_list = json.dumps([ob.__dict__ for ob in self.version_list])
@@ -101,23 +111,26 @@ class GetExecutionInfo(AbstractPlugin):
                 res["\"commandExecutionInfoList\""] = result_command_execution_info_list
             if self.version_list is not None and len(self.version_list) > 0:
                 res["\"versionList\""] = result_version_list
-
-            self.execute('echo {0} > {1}'.format(res, self.file_path))
-            if self.is_exist(self.file_path):
-                data = {}
-                md5sum = self.get_md5_file(str(self.file_path))
-                self.logger.debug('[PACKAGE MANAGER] {0} renaming to {1}'.format(self.temp_file_name, md5sum))
-                self.rename_file(self.file_path, self.Ahenk.received_dir_path() + '/' + md5sum)
-                self.logger.debug('[PACKAGE MANAGER] Renamed.')
-                data['md5'] = md5sum
+            if len(self.command_execution_statistic_list) == 0:
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='Uygulama çalıştırma bilgileri başarıyla sisteme geçirildi.',
-                                         data=json.dumps(data),
-                                         content_type=self.get_content_type().TEXT_PLAIN.value)
-                self.logger.debug("[PACKAGE MANAGER] Execution Info fetched succesfully. ")
-                self.logger.debug("[PACKAGE MANAGER] Execution Info has sent")
+                                         message='Herhangi bir kayıt bulunmamaktadır!')
             else:
-                raise Exception('File not found on this path: {}'.format(self.file_path))
+                self.execute('echo {0} > {1}'.format(res, self.file_path))
+                if self.is_exist(self.file_path):
+                    data = {}
+                    md5sum = self.get_md5_file(str(self.file_path))
+                    self.logger.debug('[PACKAGE MANAGER] {0} renaming to {1}'.format(self.temp_file_name, md5sum))
+                    self.rename_file(self.file_path, self.Ahenk.received_dir_path() + '/' + md5sum)
+                    self.logger.debug('[PACKAGE MANAGER] Renamed.')
+                    data['md5'] = md5sum
+                    self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                                             message='Uygulama çalıştırma bilgileri başarıyla sisteme geçirildi.',
+                                             data=json.dumps(data),
+                                             content_type=self.get_content_type().TEXT_PLAIN.value)
+                    self.logger.debug("[PACKAGE MANAGER] Execution Info fetched succesfully. ")
+                    self.logger.debug("[PACKAGE MANAGER] Execution Info has sent")
+                else:
+                    raise Exception('File not found on this path: {}'.format(self.file_path))
 
         except Exception as e:
             self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Unexpected error in get_execution.py. Error message : {0}'.format(str(e)))
@@ -128,28 +141,33 @@ class GetExecutionInfo(AbstractPlugin):
         for command in commands.split(' '):
             self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Version searching is started for command : {0}'.format(command))
             result_code, result, p_err = self.execute('whereis {0}'.format(command))
-            if result_code == 0:
-                self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command installed place is found')
+            self.logger.debug('result:{}'.format(result))
+            if result_code == 0 and "komut yok" not in result and len(result.split(':')) >= 2:
                 result = result.split(':')[1]
-                result = result.split()[0]
-                result_code, result, p_err = self.execute('dpkg-query -S {0}'.format(result))
-                if result_code == 0:  # Command exists
-                    self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is found')
-                    result = result.split(': ')[0]
-                    result_code, p_result, p_err = self.execute('dpkg -s {0} | grep Version'.format(result))
-                    if result_code == 0:
-                        self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is found')
-                        self.version_list.append(VersionInfoItem(command, result, p_result.split(': ')[1]))
-                    else:
-                        self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is not found')
-                        self.result_message += 'Command\'s related package version could not be parsed(Deb : {0}).'.format(
+                if result.split() is None or len(result.split()) == 0:
+                    self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command installed place is not found')
+                    self.result_message += 'Command {0} could not found'.format(command)
+                else:
+                    self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command installed place is found')
+                    result = result.split()[0]
+                    result_code, result, p_err = self.execute('dpkg-query -S {0}'.format(result))
+                    if result_code == 0:  # Command exists
+                        self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is found')
+                        result = result.split(': ')[0]
+                        result_code, p_result, p_err = self.execute('dpkg -s {0} | grep Version'.format(result))
+                        if result_code == 0:
+                            self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is found')
+                            self.version_list.append(VersionInfoItem(command, result, p_result.split(': ')[1]))
+                        else:
+                            self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is not found')
+                            self.result_message += 'Command\'s related package version could not be parsed(Deb : {0}).'.format(
+                                result)
+                            self.version_list.append(VersionInfoItem(command, result, '-'))
+                    else:  # command not exists
+                        self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is not found')
+                        self.result_message += 'Command\'s related package could not be found(Command : {0})'.format(
                             result)
-                        self.version_list.append(VersionInfoItem(command, result, '-'))
-                else:  # command not exists
-                    self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is not found')
-                    self.result_message += 'Command\'s related package could not be found(Command : {0})'.format(
-                        result)
-                    self.version_list.append(VersionInfoItem(command, '-', '-'))
+                        self.version_list.append(VersionInfoItem(command, '-', '-'))
             else:  # command not exists
                 self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command installed place is not found')
                 self.result_message += 'Command {0} could not found'.format(command)
@@ -175,8 +193,6 @@ class GetExecutionInfo(AbstractPlugin):
                     self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] CommandExecutionInfoItem attributes are ready for adding to result list')
                     list.append(CommandExecutionInfoItem(command_name, user, process_time, start_date))
                     self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] CommandExecutionInfoItem is created and added to result list')
-                self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                             message='Uygulama çalıştırma bilgilerini getirirken beklenmedik hata!')
                 return list
             else:
                 self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] lastcomm command has not return with a result')

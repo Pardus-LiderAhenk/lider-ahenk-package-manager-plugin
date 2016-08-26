@@ -1,7 +1,10 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +45,7 @@ import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.CommandExecutionInfoItem;
 import tr.org.liderahenk.packagemanager.model.PackageCheckItem;
+import tr.org.liderahenk.packagemanager.model.PackageInfo;
 
 public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
@@ -86,9 +90,18 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 											&& responseData.containsKey("versionList")) {
 										Object object = responseData.get("commandExecutionInfoList");
 										ArrayList<Object> list = (ArrayList<Object>) object;
+										Object versionObject = responseData.get("versionList");
+										ArrayList<Object> versionList = (ArrayList<Object>) versionObject;
+										ArrayList<PackageInfo> commandPackageInfo = new ArrayList<>();
+										for (Object oldMap : versionList) {
+											Map<String, String> map = (Map) oldMap;
+											PackageInfo packageInfo = new PackageInfo();
+											packageInfo.setPackageName(map.get("packageName"));
+											packageInfo.setVersion(map.get("packageVersion"));
+											packageInfo.setTag(map.get("commandName"));
+											commandPackageInfo.add(packageInfo);
+										}
 										ArrayList<CommandExecutionInfoItem> items = new ArrayList<>();
-										String prevCommandName = "";
-										
 										for (Object oldMap : list) {
 											Map<String, String> map = (Map) oldMap;
 											CommandExecutionInfoItem item = new CommandExecutionInfoItem();
@@ -98,19 +111,17 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 											item.setProcessTime(processTime);
 											String currentYearString = Integer
 													.toString(Calendar.getInstance().get(Calendar.YEAR));
-											item.setStartDate(
-													map.get("startDate").toString() + ":00 " + currentYearString);
+											item.setStartDate(map.get("startDate").toString() + ":00 " + currentYearString);
 											item.setAgentId(dn);
-											items.add(item);
-											
+											item.setProcessCount(1);
+											organizeResultList(items, item, commandPackageInfo);
 										}
-										CommandExecutionInfoItem resultRow = new CommandExecutionInfoItem();
 										ArrayList<CommandExecutionInfoItem> listItems = (ArrayList<CommandExecutionInfoItem>) tableViewer
 												.getInput();
 										if (listItems == null) {
 											listItems = new ArrayList<>();
 										}
-										listItems.add(resultRow);
+										listItems.addAll(items);
 										tableViewer.setInput(listItems);
 										tableViewer.refresh();
 									}
@@ -138,6 +149,35 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		}
 	};
 
+	private void organizeResultList(ArrayList<CommandExecutionInfoItem> items, CommandExecutionInfoItem item,
+			ArrayList<PackageInfo> commandPackageInfo) {
+		boolean isExist = false;
+		for (int i = 0; i < items.size(); i++) {
+			if (items.get(i).getAgentId().equals(item.getAgentId())
+					&& items.get(i).getCommand().equals(item.getCommand())
+					&& items.get(i).getUser().equals(item.getUser())) {
+				items.get(i).setProcessTime(items.get(i).getProcessTime() + item.getProcessTime());
+				items.get(i).setProcessCount(items.get(i).getProcessCount() + 1);
+				setPackageInfo(items.get(i), commandPackageInfo);
+				isExist = true;
+			}
+		}
+		if (!isExist) {
+			setPackageInfo(item, commandPackageInfo);
+			item.setLastExecutionDate(item.getStartDate());
+			items.add(item);
+		}
+	}
+
+	private void setPackageInfo(CommandExecutionInfoItem item, ArrayList<PackageInfo> commandPackageInfo) {
+		for (PackageInfo packageInfo : commandPackageInfo) {
+			if (packageInfo.getTag().equals(item.getCommand())) {
+				item.setPackageName(packageInfo.getPackageName());
+				item.setPackageversion(packageInfo.getVersion());
+			}
+		}
+	}
+
 	@Override
 	public String createTitle() {
 		return Messages.getString("GetExecutionInfo");
@@ -149,7 +189,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		final Composite composite = new Composite(parent, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
 		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gData.widthHint = 650;
+		gData.widthHint = 1500;
 		composite.setLayoutData(gData);
 
 		Composite infoComposite = new Composite(composite, SWT.NONE);
@@ -200,6 +240,8 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		taskData.put(PackageManagerConstants.CHECK_INFO_PARAMETERS.USER,
 				(txtUser.getText() == null || txtUser.getText().isEmpty()) ? null : txtUser.getText());
 		taskData.put(PackageManagerConstants.CHECK_INFO_PARAMETERS.IS_STRICT_MATCH, btnIsStrictMatch.getSelection());
+		tableViewer.setInput(null);
+		tableViewer.refresh();
 		return taskData;
 	}
 
@@ -237,13 +279,13 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 		// Status
 		TableViewerColumn agentIdColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
-				Messages.getString("DN"), 120);
+				Messages.getString("DN"), 550);
 		agentIdColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof CommandExecutionInfoItem) {
 					return ((CommandExecutionInfoItem) element).getAgentId() != null
-							? ((CommandExecutionInfoItem) element).getAgentId() : Messages.getString("UNINSTALLED");
+							? ((CommandExecutionInfoItem) element).getAgentId() : Messages.getString("UNTITLED");
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -257,7 +299,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			public String getText(Object element) {
 				if (element instanceof CommandExecutionInfoItem) {
 					return ((CommandExecutionInfoItem) element).getCommand() != null
-							? ((CommandExecutionInfoItem) element).getCommand() : Messages.getString("UNINSTALLED");
+							? ((CommandExecutionInfoItem) element).getCommand() : Messages.getString("UNTITLED");
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -271,7 +313,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			public String getText(Object element) {
 				if (element instanceof CommandExecutionInfoItem) {
 					return ((CommandExecutionInfoItem) element).getUser() != null
-							? ((CommandExecutionInfoItem) element).getUser() : Messages.getString("UNINSTALLED");
+							? ((CommandExecutionInfoItem) element).getUser() : Messages.getString("UNTITLED");
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -279,13 +321,14 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 		// Status
 		TableViewerColumn processTimeColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
-				Messages.getString("PROCESS_TIME"), 120);
+				Messages.getString("TOTAL_PROCESS_TIME"), 160);
 		processTimeColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof CommandExecutionInfoItem) {
 					return ((CommandExecutionInfoItem) element).getProcessTime() != null
-							? ((CommandExecutionInfoItem) element).getProcessTime().toString() : Messages.getString("UNINSTALLED");
+							? ((CommandExecutionInfoItem) element).getProcessTime().toString()
+							: Messages.getString("UNTITLED");
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -293,13 +336,56 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 		// Status
 		TableViewerColumn processStartDateColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
-				Messages.getString("PROCESS_START_DATE"), 120);
+				Messages.getString("PROCESS_COUNT"), 120);
 		processStartDateColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof CommandExecutionInfoItem) {
-					return ((CommandExecutionInfoItem) element).getStartDate() != null
-							? ((CommandExecutionInfoItem) element).getStartDate() : Messages.getString("UNINSTALLED");
+					return ((CommandExecutionInfoItem) element).getProcessCount() != null
+							? ((CommandExecutionInfoItem) element).getProcessCount().toString()
+							: Messages.getString("UNTITLED");
+				}
+				return Messages.getString("UNTITLED");
+			}
+		});
+
+		// Status
+		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
+				Messages.getString("PACKAGE_NAME"), 120);
+		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof CommandExecutionInfoItem) {
+					return ((CommandExecutionInfoItem) element).getPackageName() != null
+							? ((CommandExecutionInfoItem) element).getPackageName() : Messages.getString("UNTITLED");
+				}
+				return Messages.getString("UNTITLED");
+			}
+		});
+
+		// Status
+		TableViewerColumn packageVersionColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
+				Messages.getString("PACKAGE_VERSION"), 120);
+		packageVersionColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof CommandExecutionInfoItem) {
+					return ((CommandExecutionInfoItem) element).getPackageversion() != null
+							? ((CommandExecutionInfoItem) element).getPackageversion() : Messages.getString("UNTITLED");
+				}
+				return Messages.getString("UNTITLED");
+			}
+		});
+
+		// Status
+		TableViewerColumn lastExecutionTimeColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
+				Messages.getString("LAST_EXECUTION_TIME"), 160);
+		lastExecutionTimeColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof CommandExecutionInfoItem) {
+					return ((CommandExecutionInfoItem) element).getLastExecutionDate() != null
+							? ((CommandExecutionInfoItem) element).getLastExecutionDate() : Messages.getString("UNTITLED");
 				}
 				return Messages.getString("UNTITLED");
 			}
