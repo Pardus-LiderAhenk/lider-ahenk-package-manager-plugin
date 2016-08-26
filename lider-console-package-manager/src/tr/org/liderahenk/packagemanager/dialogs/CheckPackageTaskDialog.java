@@ -133,7 +133,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		composite.setLayout(new GridLayout(1, false));
 		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		composite.setLayoutData(gData);
-		gData.widthHint = 1000;
+		gData.widthHint = 1200;
 
 
 		composite.setBounds(composite.getBounds().x, composite.getBounds().y, 1000, composite.getBounds().height);
@@ -319,7 +319,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn packageInfoColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 600);
+		TableViewerColumn packageInfoColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[0], 280);
 		packageInfoColumn.getColumn().setAlignment(SWT.LEFT);
 		packageInfoColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -337,7 +337,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 			
 		});
 
-		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 300);
+		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 200);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -348,7 +348,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 			}
 		});
 
-		TableViewerColumn dnColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[2], 300);
+		TableViewerColumn dnColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[2], 720);
 		dnColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
