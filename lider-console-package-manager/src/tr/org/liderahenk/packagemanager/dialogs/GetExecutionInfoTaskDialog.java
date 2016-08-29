@@ -1,10 +1,7 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +41,6 @@ import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotifica
 import tr.org.liderahenk.packagemanager.constants.PackageManagerConstants;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 import tr.org.liderahenk.packagemanager.model.CommandExecutionInfoItem;
-import tr.org.liderahenk.packagemanager.model.PackageCheckItem;
 import tr.org.liderahenk.packagemanager.model.PackageInfo;
 
 public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
@@ -189,7 +185,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		final Composite composite = new Composite(parent, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
 		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gData.widthHint = 1500;
+		gData.widthHint = 1650;
 		composite.setLayoutData(gData);
 
 		Composite infoComposite = new Composite(composite, SWT.NONE);
@@ -279,7 +275,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 		// Status
 		TableViewerColumn agentIdColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
-				Messages.getString("DN"), 550);
+				Messages.getString("DN"), 600);
 		agentIdColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -379,7 +375,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 		// Status
 		TableViewerColumn lastExecutionTimeColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
-				Messages.getString("LAST_EXECUTION_TIME"), 160);
+				Messages.getString("LAST_EXECUTION_TIME"), 200);
 		lastExecutionTimeColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
