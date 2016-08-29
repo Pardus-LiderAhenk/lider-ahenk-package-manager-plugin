@@ -82,20 +82,22 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 											data.length, new TypeReference<HashMap<String, Object>>() {
 									});
 									if (responseData != null && !responseData.isEmpty()
-											&& responseData.containsKey("commandExecutionInfoList")
-											&& responseData.containsKey("versionList")) {
+											&& responseData.containsKey("commandExecutionInfoList")) {
 										Object object = responseData.get("commandExecutionInfoList");
 										ArrayList<Object> list = (ArrayList<Object>) object;
-										Object versionObject = responseData.get("versionList");
-										ArrayList<Object> versionList = (ArrayList<Object>) versionObject;
 										ArrayList<PackageInfo> commandPackageInfo = new ArrayList<>();
-										for (Object oldMap : versionList) {
-											Map<String, String> map = (Map) oldMap;
-											PackageInfo packageInfo = new PackageInfo();
-											packageInfo.setPackageName(map.get("packageName"));
-											packageInfo.setVersion(map.get("packageVersion"));
-											packageInfo.setTag(map.get("commandName"));
-											commandPackageInfo.add(packageInfo);
+										if( responseData.containsKey("versionList")){
+											Object versionObject = responseData.get("versionList");
+											ArrayList<Object> versionList = (ArrayList<Object>) versionObject;
+											for (Object oldMap : versionList) {
+												Map<String, String> map = (Map) oldMap;
+												PackageInfo packageInfo = new PackageInfo();
+												packageInfo.setPackageName(map.get("packageName"));
+												packageInfo.setVersion(map.get("packageVersion"));
+												packageInfo.setTag(map.get("commandName"));
+												commandPackageInfo.add(packageInfo);
+											}
+											
 										}
 										ArrayList<CommandExecutionInfoItem> items = new ArrayList<>();
 										for (Object oldMap : list) {

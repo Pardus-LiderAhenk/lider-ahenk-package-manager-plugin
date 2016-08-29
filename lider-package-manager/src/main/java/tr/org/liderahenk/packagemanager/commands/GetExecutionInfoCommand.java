@@ -107,69 +107,71 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void onTaskUpdate(ICommandExecutionResult result) {
-		final byte[] data = result.getResponseData();
+		if ("PACKAGE-MANAGER".equals(result.getCommandExecution().getCommand().getTask().getPlugin().getName().toUpperCase())) {
 
-		Map<String, Object> responseData;
-		try {
-			responseData = new ObjectMapper().readValue(data, 0,
-					data.length, new TypeReference<HashMap<String, Object>>() {
-			});
-			if (responseData != null && !responseData.isEmpty()
-					&& responseData.containsKey("commandExecutionInfoList")
-					&& responseData.containsKey("versionList")) {
-				Object object = responseData.get("commandExecutionInfoList");
-				Object versionObject = responseData.get("versionList");
-				ArrayList<Object> list = (ArrayList<Object>) object;
-				ArrayList<Object> versionInfoList = (ArrayList<Object>) versionObject;
-				for (Object oldMap : versionInfoList) {
-					Map<String, String> map = (Map) oldMap;
-				CommandPackageVersion verInfo = new CommandPackageVersion();
-				verInfo.setAgentId(result.getAgentId());
-				verInfo.setTaskId(result.getCommandExecution().getCommand().getTask().getId());
-				verInfo.setCreateDate(new Date());
-				verInfo.setCommand(map.get("commandName").toString());
-				verInfo.setPackageName(map.get("packageName").toString());
-				verInfo.setPackageVersion(map.get("packageVersion").toString());
+			final byte[] data = result.getResponseData();
 
-				pluginDbService.save(verInfo);
-			}
-				for (Object oldMap : list) {
-					Map<String, String> map = (Map) oldMap;
-					CommandExecutionStatistics item = new CommandExecutionStatistics();	
-					item.setCommand(map.get("commandName").toString());
-					item.setUser(map.get("user").toString());
-					Float processTime = Float.parseFloat(map.get("processTime").toString());
-					item.setProcessTime(processTime);
-					String currentYearString = Integer
-							.toString(Calendar.getInstance().get(Calendar.YEAR));
-					DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss yyyy");
-					item.setProcessStartDate((Date)formatter.parse(map.get("startDate").toString() + ":00 " + currentYearString));
-					item.setAgentId(result.getAgentId());
-					item.setTaskId(result.getCommandExecution().getCommand().getTask().getId());
-					item.setIsActive("1");
-					item.setCreateDate(new Date());
-					item.setCommandExecutionId(result.getCommandExecution().getId());
+			Map<String, Object> responseData;
+			try {
+				responseData = new ObjectMapper().readValue(data, 0, data.length,
+						new TypeReference<HashMap<String, Object>>() {
+						});
+				if (responseData != null && !responseData.isEmpty()
+						&& responseData.containsKey("commandExecutionInfoList")
+						&& responseData.containsKey("versionList")) {
+					Object object = responseData.get("commandExecutionInfoList");
+					Object versionObject = responseData.get("versionList");
+					ArrayList<Object> list = (ArrayList<Object>) object;
+					ArrayList<Object> versionInfoList = (ArrayList<Object>) versionObject;
+					for (Object oldMap : versionInfoList) {
+						Map<String, String> map = (Map) oldMap;
+						CommandPackageVersion verInfo = new CommandPackageVersion();
+						verInfo.setAgentId(result.getAgentId());
+						verInfo.setTaskId(result.getCommandExecution().getCommand().getTask().getId());
+						verInfo.setCreateDate(new Date());
+						verInfo.setCommand(map.get("commandName").toString());
+						verInfo.setPackageName(map.get("packageName").toString());
+						verInfo.setPackageVersion(map.get("packageVersion").toString());
 
-					
-					Query query = entityManager.createQuery(
-							"UPDATE CommandExecutionStatistics ces SET ces.isActive ='0' WHERE ces.agentId = :agentId AND ces.command = :command AND ces.user = :user AND ces.taskId <> :taskId");
-					query.setParameter("agentId", item.getAgentId());
-					query.setParameter("taskId", item.getTaskId());
-					query.setParameter("command", item.getCommand());
-					query.setParameter("user", item.getUser());
-					query.executeUpdate();
-					pluginDbService.save(item);
+						pluginDbService.save(verInfo);
+					}
+					for (Object oldMap : list) {
+						Map<String, String> map = (Map) oldMap;
+						CommandExecutionStatistics item = new CommandExecutionStatistics();
+						item.setCommand(map.get("commandName").toString());
+						item.setUser(map.get("user").toString());
+						Float processTime = Float.parseFloat(map.get("processTime").toString());
+						item.setProcessTime(processTime);
+						String currentYearString = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+						DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss yyyy");
+						item.setProcessStartDate(
+								(Date) formatter.parse(map.get("startDate").toString() + ":00 " + currentYearString));
+						item.setAgentId(result.getAgentId());
+						item.setTaskId(result.getCommandExecution().getCommand().getTask().getId());
+						item.setIsActive("1");
+						item.setCreateDate(new Date());
+						item.setCommandExecutionId(result.getCommandExecution().getId());
+
+						Query query = entityManager.createQuery(
+								"UPDATE CommandExecutionStatistics ces SET ces.isActive ='0' WHERE ces.agentId = :agentId AND ces.command = :command AND ces.user = :user AND ces.taskId <> :taskId");
+						query.setParameter("agentId", item.getAgentId());
+						query.setParameter("taskId", item.getTaskId());
+						query.setParameter("command", item.getCommand());
+						query.setParameter("user", item.getUser());
+						query.executeUpdate();
+						pluginDbService.save(item);
+					}
 				}
+			} catch (JsonParseException e) {
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ParseException e) {
+				e.printStackTrace();
 			}
-		} catch (JsonParseException e) {
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
- catch (ParseException e) {
-			e.printStackTrace();
+
 		}
 	}
 
