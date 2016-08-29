@@ -17,6 +17,8 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.lider.core.api.persistence.IPluginDbService;
 import tr.org.liderahenk.lider.core.api.persistence.dao.IAgentDao;
@@ -33,7 +35,7 @@ import tr.org.liderahenk.packagemanager.entities.CommandExecutionStatistics;
 import tr.org.liderahenk.packagemanager.entities.CommandPackageVersion;
 
 public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
-
+	private Logger logger = LoggerFactory.getLogger(GetExecutionInfoCommand.class);
 	private ICommandResultFactory resultFactory;
 	private IPluginInfo pluginInfo;
 	private IPluginDbService pluginDbService;
@@ -107,8 +109,8 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void onTaskUpdate(ICommandExecutionResult result) {
-		if ("PACKAGE-MANAGER".equals(result.getCommandExecution().getCommand().getTask().getPlugin().getName().toUpperCase())) {
-
+		if (result.getCommandExecution().getCommand().getTask().getCommandClsId().toUpperCase().equals("GET_EXECUTION_INFO") && "PACKAGE-MANAGER".equals(result.getCommandExecution().getCommand().getTask().getPlugin().getName().toUpperCase())) {
+			
 			final byte[] data = result.getResponseData();
 
 			Map<String, Object> responseData;
