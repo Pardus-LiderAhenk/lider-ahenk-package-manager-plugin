@@ -139,7 +139,17 @@ class GetExecutionInfo(AbstractPlugin):
 
     def get_version_list(self, commands):
         for command in commands.split(' '):
-            self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Version searching is started for command : {0}'.format(command))
+            self.check_version_list(command)
+
+    def check_version_list(self, command):
+        is_exist = False
+        for version in self.version_list:
+            if version.commandName == command:
+                is_exist = True
+        if not is_exist:
+            self.logger.debug(
+                '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Version searching is started for command : {0}'.format(
+                    command))
             result_code, result, p_err = self.execute('whereis {0}'.format(command))
             self.logger.debug('result:{}'.format(result))
             if result_code == 0 and "komut yok" not in result and len(result.split(':')) >= 2:
@@ -152,19 +162,23 @@ class GetExecutionInfo(AbstractPlugin):
                     result = result.split()[0]
                     result_code, result, p_err = self.execute('dpkg-query -S {0}'.format(result))
                     if result_code == 0:  # Command exists
-                        self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is found')
+                        self.logger.debug(
+                            '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is found')
                         result = result.split(': ')[0]
                         result_code, p_result, p_err = self.execute('dpkg -s {0} | grep Version'.format(result))
                         if result_code == 0:
-                            self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is found')
+                            self.logger.debug(
+                                '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is found')
                             self.version_list.append(VersionInfoItem(command, result, p_result.split(': ')[1]))
                         else:
-                            self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is not found')
+                            self.logger.debug(
+                                '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is not found')
                             self.result_message += 'Command\'s related package version could not be parsed(Deb : {0}).'.format(
                                 result)
                             self.version_list.append(VersionInfoItem(command, result, '-'))
                     else:  # command not exists
-                        self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is not found')
+                        self.logger.debug(
+                            '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is not found')
                         self.result_message += 'Command\'s related package could not be found(Command : {0})'.format(
                             result)
                         self.version_list.append(VersionInfoItem(command, '-', '-'))
@@ -172,7 +186,9 @@ class GetExecutionInfo(AbstractPlugin):
                 self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command installed place is not found')
                 self.result_message += 'Command {0} could not found'.format(command)
 
-            self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Version searching is finished for command : {}'.format(command))
+            self.logger.debug(
+                '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Version searching is finished for command : {}'.format(
+                    command))
 
 
     def check_output(self, result_code, result):
@@ -192,6 +208,7 @@ class GetExecutionInfo(AbstractPlugin):
                                      len(output_columns) - 1]
                     self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] CommandExecutionInfoItem attributes are ready for adding to result list')
                     list.append(CommandExecutionInfoItem(command_name, user, process_time, start_date))
+                    self.check_version_list(command_name)
                     self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] CommandExecutionInfoItem is created and added to result list')
                 return list
             else:
