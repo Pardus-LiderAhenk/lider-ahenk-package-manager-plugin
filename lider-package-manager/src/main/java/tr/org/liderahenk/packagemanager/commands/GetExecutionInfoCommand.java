@@ -17,11 +17,10 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.lider.core.api.persistence.IPluginDbService;
 import tr.org.liderahenk.lider.core.api.persistence.dao.IAgentDao;
+import tr.org.liderahenk.lider.core.api.persistence.dao.ICommandDao;
 import tr.org.liderahenk.lider.core.api.persistence.dao.ITaskDao;
 import tr.org.liderahenk.lider.core.api.persistence.entities.ICommandExecutionResult;
 import tr.org.liderahenk.lider.core.api.plugin.ICommand;
@@ -35,11 +34,11 @@ import tr.org.liderahenk.packagemanager.entities.CommandExecutionStatistics;
 import tr.org.liderahenk.packagemanager.entities.CommandPackageVersion;
 
 public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
-	private Logger logger = LoggerFactory.getLogger(GetExecutionInfoCommand.class);
 	private ICommandResultFactory resultFactory;
 	private IPluginInfo pluginInfo;
 	private IPluginDbService pluginDbService;
 	private IAgentDao agentDao;
+	private ICommandDao commandDao;
 	private ITaskDao taskDao;
 	private EntityManager entityManager;
 
@@ -119,8 +118,10 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 				&& "PACKAGE-MANAGER".equals(
 						result.getCommandExecution().getCommand().getTask().getPlugin().getName().toUpperCase())) {
 
-			final byte[] data = result.getResponseData();
-
+			ICommandExecutionResult res = getCommandDao().findExecutionResult(result.getId());
+			byte[] data  = null;
+			if(res != null)
+				data = res.getResponseData();
 			Map<String, Object> responseData;
 			try {
 				responseData = new ObjectMapper().readValue(data, 0, data.length,
@@ -145,6 +146,7 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 
 						pluginDbService.save(verInfo);
 					}
+
 					for (Object oldMap : list) {
 						Map<String, String> map = (Map) oldMap;
 						CommandExecutionStatistics item = new CommandExecutionStatistics();
@@ -191,6 +193,14 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 
 	public void setEntityManager(EntityManager entityManager) {
 		this.entityManager = entityManager;
+	}
+
+	public ICommandDao getCommandDao() {
+		return commandDao;
+	}
+
+	public void setCommandDao(ICommandDao commandDao) {
+		this.commandDao = commandDao;
 	}
 
 }

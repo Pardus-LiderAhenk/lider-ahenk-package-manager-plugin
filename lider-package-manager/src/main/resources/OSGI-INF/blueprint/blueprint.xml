@@ -73,6 +73,7 @@
 		<property name="pluginDbService" ref="pluginDbService" />
 		<property name="agentDao" ref="agentDaoImpl" />
 		<property name="taskDao" ref="taskDaoImpl" />
+		<property name="commandDao" ref="commandDaoImpl" />
 	</bean>
 	<!-- ICommand implementation is used to process a task execution -->
 	<service ref="ShowPackageArchiveCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
@@ -143,4 +144,6 @@
 		interface="tr.org.liderahenk.lider.core.api.persistence.dao.IAgentDao" />
 	<reference id="taskDaoImpl"
 		interface="tr.org.liderahenk.lider.core.api.persistence.dao.ITaskDao" />
+	<reference id="commandDaoImpl"
+		interface="tr.org.liderahenk.lider.core.api.persistence.dao.ICommandDao" />
 </blueprint>
