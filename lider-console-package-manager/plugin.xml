@@ -89,12 +89,20 @@
                   id="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   tooltip="%command.addremovepackage.task">
                   	<visibleWhen>
+                  	<and>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
 							<with
 				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapUserSelected">
 				             	<equals
 					                   value="false">
 					            </equals>
 				          	</with>
+			          	</and>
 					</visibleWhen>
            		</command>
 		</menuContribution>
@@ -109,12 +117,20 @@
                   id="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"
                   tooltip="%command.getExecutionInfo.task">
                   	<visibleWhen>
+                  	<and>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
 							<with
 				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapUserSelected">
 				             	<equals
 					                   value="false">
 					            </equals>
 				          	</with>
+			          	</and>
 					</visibleWhen>
            		</command>
 		</menuContribution>
@@ -208,12 +224,20 @@
                   id="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
                   tooltip="%command.task"> 
                   	<visibleWhen>
+                  	<and>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
 							<with
 				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapUserSelected">
 				             	<equals
 					                   value="false">
 					            </equals>
 				          	</with>
+			          	</and>
 					</visibleWhen>
            		</command>
 		</menuContribution>
