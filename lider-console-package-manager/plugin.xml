@@ -88,24 +88,6 @@
                   commandId="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   id="tr.org.liderahenk.liderconsole.commands.PackagesTask"
                   tooltip="%command.addremovepackage.task">
-				  	<visibleWhen>
-		                <iterate operator="or">		
-							<or>
-								<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-					             	<equals
-						                   value="true">
-						            </equals>
-					          	</with>
-								<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapOUSelected">
-					             	<equals
-						                   value="true">
-						            </equals>
-					          	</with>
-							</or>
-						</iterate>
-					</visibleWhen>
            		</command>
 		</menuContribution>
 		
@@ -118,24 +100,6 @@
                   commandId="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"
                   id="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"
                   tooltip="%command.getExecutionInfo.task">
-				  	<visibleWhen>
-		                <iterate operator="or">		
-							<or>
-								<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-					             	<equals
-						                   value="true">
-						            </equals>
-					          	</with>
-								<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapOUSelected">
-					             	<equals
-						                   value="true">
-						            </equals>
-					          	</with>
-							</or>
-						</iterate>
-					</visibleWhen>
            		</command>
 		</menuContribution>
       	<!-- Add extension point contribution for "task execution" dialogs -->
@@ -226,25 +190,7 @@
  				<command
                   commandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
                   id="tr.org.liderahenk.liderconsole.commands.CheckPackageTask"
-                  tooltip="%command.task">
-				  	<visibleWhen>
-		                <iterate operator="or">		
-							<or>
-								<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-					             	<equals
-						                   value="true">
-						            </equals>
-					          	</with>
-								<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapOUSelected">
-					             	<equals
-						                   value="true">
-						            </equals>
-					          	</with>
-							</or>
-						</iterate>
-					</visibleWhen>
+                  tooltip="%command.task"> 
            		</command>
 		</menuContribution>
   </extension>
