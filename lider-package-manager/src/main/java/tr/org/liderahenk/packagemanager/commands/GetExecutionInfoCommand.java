@@ -109,8 +109,16 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void onTaskUpdate(ICommandExecutionResult result) {
-		if (result.getCommandExecution().getCommand().getTask().getCommandClsId().toUpperCase().equals("GET_EXECUTION_INFO") && "PACKAGE-MANAGER".equals(result.getCommandExecution().getCommand().getTask().getPlugin().getName().toUpperCase())) {
-			
+		if (result != null && result.getCommandExecution() != null && result.getCommandExecution().getCommand() != null
+				&& result.getCommandExecution().getCommand().getTask() != null
+				&& result.getCommandExecution().getCommand().getTask().getCommandClsId() != null
+				&& result.getCommandExecution().getCommand().getTask().getPlugin() != null
+				&& result.getCommandExecution().getCommand().getTask().getPlugin().getName() != null
+				&& result.getCommandExecution().getCommand().getTask().getCommandClsId().toUpperCase()
+						.equals("GET_EXECUTION_INFO")
+				&& "PACKAGE-MANAGER".equals(
+						result.getCommandExecution().getCommand().getTask().getPlugin().getName().toUpperCase())) {
+
 			final byte[] data = result.getResponseData();
 
 			Map<String, Object> responseData;
