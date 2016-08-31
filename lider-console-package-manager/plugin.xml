@@ -102,6 +102,12 @@
 					                   value="false">
 					            </equals>
 				          	</with>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapGroupSelected">
+				             	<equals
+					                   value="false">
+					            </equals>
+				          	</with>
 			          	</and>
 					</visibleWhen>
            		</command>
@@ -130,6 +136,12 @@
 					                   value="false">
 					            </equals>
 				          	</with>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapGroupSelected">
+				             	<equals
+					                   value="false">
+					            </equals>
+				          	</with>
 			          	</and>
 					</visibleWhen>
            		</command>
@@ -144,6 +156,12 @@
                   tooltip="%command.package.task">
 				  	<visibleWhen>
 				  		<and>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
 							<with
 				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSingleEntrySelected">
 				             	<equals
@@ -172,6 +190,12 @@
 				  	<visibleWhen>
 				  		<and>
 							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
+							<with
 				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSingleEntrySelected">
 				             	<equals
 					                   value="true">
@@ -198,6 +222,12 @@
                   tooltip="%command.packagearchive.task">
 				  	<visibleWhen>
 				  		<and>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
+				             	<equals
+					                   value="true">
+					            </equals>
+				          	</with>
 							<with
 				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSingleEntrySelected">
 				             	<equals
@@ -233,6 +263,12 @@
 				          	</with>
 							<with
 				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapUserSelected">
+				             	<equals
+					                   value="false">
+					            </equals>
+				          	</with>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapGroupSelected">
 				             	<equals
 					                   value="false">
 					            </equals>
