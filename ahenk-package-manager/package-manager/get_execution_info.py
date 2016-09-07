@@ -46,11 +46,7 @@ class GetExecutionInfo(AbstractPlugin):
                     result_code, result, error = self.execute(lastcomm_command + ' > /tmp/result.txt')
                     self.logger.debug(
                         '[ PACKAGE MANAGER - GET_EXECUTION_INFO] {0} command is executed'.format(lastcomm_command))
-                    if command == commands.split().pop():
-                        isLastElem = 1
-                    else:
-                        isLastElem = 0
-                    result_record_number = self.check_output(result_code, isLastElem)
+                    result_record_number = self.check_output(result_code)
                 else:
                     for command in commands.split():
                         self.logger.debug(command)
@@ -63,11 +59,7 @@ class GetExecutionInfo(AbstractPlugin):
                         result_code, result, error = self.execute(lastcomm_command + ' > /tmp/result.txt')
                         self.logger.debug(
                             '[ PACKAGE MANAGER - GET_EXECUTION_INFO] {0} command is executed'.format(lastcomm_command))
-                        if command == commands.split().pop():
-                            isLastElem = 1
-                        else:
-                            isLastElem = 0
-                        result_record_number = self.check_output(result_code, isLastElem)
+                        result_record_number = self.check_output(result_code)
             #if command does not exist and user is exist
             elif user:
                 lastcomm_command = 'lastcomm --user {0} '.format(user)
@@ -79,13 +71,14 @@ class GetExecutionInfo(AbstractPlugin):
                 self.logger.debug(
                     '[ PACKAGE MANAGER - GET_EXECUTION_INFO] {0} command is executed + result_code = {1}'.format(
                         lastcomm_command, result_code) + ' > /tmp/result.txt')
-                result_record_number = self.check_output(result_code,1)
+                result_record_number = self.check_output(result_code)
 
             #Record not found
             if result_record_number is None:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='İstenilene uygun veri bulunamadı')
             elif self.is_exist(self.file_path):
+                self.execute("sed -i '$ d' " + self.file_path)
                 self.execute('echo "]," >> ' + self.file_path)
                 self.execute('echo \\"versionList\\" :[ >> ' + self.file_path)
                 for command_name in self.commands:
@@ -192,7 +185,7 @@ class GetExecutionInfo(AbstractPlugin):
                 '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Version searching is finished for command : {}'.format(
                     command))
 
-    def check_output(self, result_code,is_last_elem):
+    def check_output(self, result_code):
         try:
             if result_code == 0:
                 self.logger.debug(
@@ -220,16 +213,14 @@ class GetExecutionInfo(AbstractPlugin):
                         '[ PACKAGE MANAGER - GET_EXECUTION_INFO] CommandExecutionInfoItem is created and added to result list')
                     self.commands.append(command_name)
                     self.logger.debug(str(len(lines)) + '------------' + str(i))
+                    self.execute('echo "," >> ' + self.file_path)
                     if self.isRecordExist == 2000:
                         break
                     self.isRecordExist += 1
-                    if 1 == is_last_elem:
-                        if i < len(lines)-1:
-                            self.execute('echo "," >> ' + self.file_path)
-                    elif i <= len(lines)-1:
-                        self.execute('echo "," >> ' + self.file_path)
                     i += 1
                 if i >= 1:
+                    return 'Basarili'
+                if self.isRecordExist > 0:
                     return 'Basarili'
                 return None
             else:

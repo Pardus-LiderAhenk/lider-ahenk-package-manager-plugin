@@ -1,5 +1,6 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -159,7 +160,8 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			if (items.get(i).getAgentId().equals(item.getAgentId())
 					&& items.get(i).getCommand().equals(item.getCommand())
 					&& items.get(i).getUser().equals(item.getUser())) {
-				items.get(i).setProcessTime(items.get(i).getProcessTime() + item.getProcessTime());
+				Float processTime = (float) (Math.round((items.get(i).getProcessTime() + item.getProcessTime())* 100.0) / 100.0);
+				items.get(i).setProcessTime(processTime);
 				items.get(i).setProcessCount(items.get(i).getProcessCount() + 1);
 				setPackageInfo(items.get(i), commandPackageInfo);
 				isExist = true;
@@ -283,6 +285,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		// Status
 		TableViewerColumn agentIdColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("DN"), 600);
+		agentIdColumn.getColumn().setAlignment(SWT.LEFT);
 		agentIdColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -297,6 +300,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		// Status
 		TableViewerColumn commandColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("COMMAND"), 120);
+		commandColumn.getColumn().setAlignment(SWT.LEFT);
 		commandColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -311,6 +315,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		// Status
 		TableViewerColumn userColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("USER"), 120);
+		userColumn.getColumn().setAlignment(SWT.LEFT);
 		userColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -325,6 +330,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		// Status
 		TableViewerColumn processTimeColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("TOTAL_PROCESS_TIME"), 160);
+		processTimeColumn.getColumn().setAlignment(SWT.RIGHT);
 		processTimeColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -340,6 +346,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		// Status
 		TableViewerColumn processStartDateColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("PROCESS_COUNT"), 120);
+		processStartDateColumn.getColumn().setAlignment(SWT.RIGHT);
 		processStartDateColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -355,6 +362,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		// Status
 		TableViewerColumn packageNameColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("PACKAGE_NAME"), 120);
+		packageNameColumn.getColumn().setAlignment(SWT.LEFT);
 		packageNameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -369,6 +377,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		// Status
 		TableViewerColumn packageVersionColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
 				Messages.getString("PACKAGE_VERSION"), 120);
+		packageVersionColumn.getColumn().setAlignment(SWT.LEFT);
 		packageVersionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
