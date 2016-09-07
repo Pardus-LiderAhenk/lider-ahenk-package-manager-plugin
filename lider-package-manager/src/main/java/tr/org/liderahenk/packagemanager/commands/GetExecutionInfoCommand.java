@@ -140,9 +140,9 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 						verInfo.setAgentId(result.getAgentId());
 						verInfo.setTaskId(result.getCommandExecution().getCommand().getTask().getId());
 						verInfo.setCreateDate(new Date());
-						verInfo.setCommand(map.get("commandName").toString());
-						verInfo.setPackageName(map.get("packageName").toString());
-						verInfo.setPackageVersion(map.get("packageVersion").toString());
+						verInfo.setCommand(map.get("c").toString());
+						verInfo.setPackageName(map.get("p").toString());
+						verInfo.setPackageVersion(map.get("v").toString());
 
 						pluginDbService.save(verInfo);
 					}
@@ -150,14 +150,14 @@ public class GetExecutionInfoCommand implements ICommand, ITaskAwareCommand {
 					for (Object oldMap : list) {
 						Map<String, String> map = (Map) oldMap;
 						CommandExecutionStatistics item = new CommandExecutionStatistics();
-						item.setCommand(map.get("commandName").toString());
-						item.setUser(map.get("user").toString());
-						Float processTime = Float.parseFloat(map.get("processTime").toString());
+						item.setCommand(map.get("c").toString());
+						item.setUser(map.get("u").toString());
+						Float processTime = Float.parseFloat(map.get("p").toString());
 						item.setProcessTime(processTime);
 						String currentYearString = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
 						DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss yyyy");
 						item.setProcessStartDate(
-								(Date) formatter.parse(map.get("startDate").toString() + ":00 " + currentYearString));
+								(Date) formatter.parse(map.get("s").toString() + ":00 " + currentYearString));
 						item.setAgentId(result.getAgentId());
 						item.setTaskId(result.getCommandExecution().getCommand().getTask().getId());
 						item.setIsActive("1");

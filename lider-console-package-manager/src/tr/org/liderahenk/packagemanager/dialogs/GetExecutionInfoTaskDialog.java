@@ -45,12 +45,14 @@ import tr.org.liderahenk.packagemanager.model.PackageInfo;
 
 public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
+	private Composite composite;
 	private TableViewer tableViewer;
 	private Label lblCommand;
 	private Text txtCommand;
 	private Label lblUser;
 	private Text txtUser;
 	private Button btnIsStrictMatch;
+	ArrayList<CommandExecutionInfoItem> listItems;
 
 	private static final Logger logger = LoggerFactory.getLogger(GetExecutionInfoTaskDialog.class);
 
@@ -77,50 +79,54 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 									// Agent DN
 									final String dn = taskStatus.getCommandExecution().getDn();
 									final byte[] data = TaskRestUtils.getResponseData(taskStatus.getResult().getId());
-
-									final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0,
-											data.length, new TypeReference<HashMap<String, Object>>() {
-									});
-									if (responseData != null && !responseData.isEmpty()
-											&& responseData.containsKey("commandExecutionInfoList")) {
-										Object object = responseData.get("commandExecutionInfoList");
-										ArrayList<Object> list = (ArrayList<Object>) object;
-										ArrayList<PackageInfo> commandPackageInfo = new ArrayList<>();
-										if( responseData.containsKey("versionList")){
-											Object versionObject = responseData.get("versionList");
-											ArrayList<Object> versionList = (ArrayList<Object>) versionObject;
-											for (Object oldMap : versionList) {
-												Map<String, String> map = (Map) oldMap;
-												PackageInfo packageInfo = new PackageInfo();
-												packageInfo.setPackageName(map.get("packageName"));
-												packageInfo.setVersion(map.get("packageVersion"));
-												packageInfo.setTag(map.get("commandName"));
-												commandPackageInfo.add(packageInfo);
+									if(data != null){
+										final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0,
+												data.length, new TypeReference<HashMap<String, Object>>() {
+										});
+										if (responseData != null && !responseData.isEmpty()
+												&& responseData.containsKey("commandExecutionInfoList")) {
+											Object object = responseData.get("commandExecutionInfoList");
+											ArrayList<Object> list = (ArrayList<Object>) object;
+											ArrayList<PackageInfo> commandPackageInfo = new ArrayList<>();
+											if( responseData.containsKey("versionList")){
+												Object versionObject = responseData.get("versionList");
+												ArrayList<Object> versionList = (ArrayList<Object>) versionObject;
+												for (Object oldMap : versionList) {
+													Map<String, String> map = (Map) oldMap;
+													PackageInfo packageInfo = new PackageInfo();
+													packageInfo.setPackageName(map.get("p"));
+													packageInfo.setVersion(map.get("v"));
+													packageInfo.setTag(map.get("c"));
+													commandPackageInfo.add(packageInfo);
+												}
 											}
 											
+											ArrayList<CommandExecutionInfoItem> items = new ArrayList<>();
+											for (Object oldMap : list) {
+												Map<String, String> map = (Map) oldMap;
+												CommandExecutionInfoItem item = new CommandExecutionInfoItem();
+												item.setCommand(map.get("c").toString());
+												item.setUser(map.get("u").toString());
+												Float processTime = Float.parseFloat(map.get("p").toString());
+												item.setProcessTime(processTime);
+												String currentYearString = Integer
+														.toString(Calendar.getInstance().get(Calendar.YEAR));
+												item.setStartDate(map.get("s").toString() + ":00 " + currentYearString);
+												item.setAgentId(dn);
+												item.setProcessCount(1);
+												organizeResultList(items, item, commandPackageInfo);
+											}
+											listItems = (ArrayList<CommandExecutionInfoItem>) tableViewer
+													.getInput();
+											if (listItems == null) {
+												listItems = new ArrayList<>();
+											}
+											listItems.addAll(items);
+											tableViewer.setInput(listItems);
+											tableViewer.refresh();
 										}
-										ArrayList<CommandExecutionInfoItem> items = new ArrayList<>();
-										for (Object oldMap : list) {
-											Map<String, String> map = (Map) oldMap;
-											CommandExecutionInfoItem item = new CommandExecutionInfoItem();
-											item.setCommand(map.get("commandName").toString());
-											item.setUser(map.get("user").toString());
-											Float processTime = Float.parseFloat(map.get("processTime").toString());
-											item.setProcessTime(processTime);
-											String currentYearString = Integer
-													.toString(Calendar.getInstance().get(Calendar.YEAR));
-											item.setStartDate(map.get("startDate").toString() + ":00 " + currentYearString);
-											item.setAgentId(dn);
-											item.setProcessCount(1);
-											organizeResultList(items, item, commandPackageInfo);
-										}
-										ArrayList<CommandExecutionInfoItem> listItems = (ArrayList<CommandExecutionInfoItem>) tableViewer
-												.getInput();
-										if (listItems == null) {
-											listItems = new ArrayList<>();
-										}
-										listItems.addAll(items);
-										tableViewer.setInput(listItems);
+									}else{
+										tableViewer.setInput(null);
 										tableViewer.refresh();
 									}
 
@@ -146,7 +152,6 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			job.schedule();
 		}
 	};
-
 	private void organizeResultList(ArrayList<CommandExecutionInfoItem> items, CommandExecutionInfoItem item,
 			ArrayList<PackageInfo> commandPackageInfo) {
 		boolean isExist = false;
@@ -184,7 +189,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
 
-		final Composite composite = new Composite(parent, SWT.NONE);
+		composite = new Composite(parent, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
 		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gData.widthHint = 1650;
