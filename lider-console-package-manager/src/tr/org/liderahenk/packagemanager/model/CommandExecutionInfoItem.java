@@ -1,6 +1,5 @@
 package tr.org.liderahenk.packagemanager.model;
 
-import java.util.Date;
 
 public class CommandExecutionInfoItem {
 

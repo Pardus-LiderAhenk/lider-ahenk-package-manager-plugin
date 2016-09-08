@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Widget;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
@@ -125,6 +124,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 											if (listItems == null) {
 												listItems = new ArrayList<>();
 											}
+											listItems.addAll(items);
 											
 											if(listItems.size() > 50){
 												createPageButtons(listItems.size());
@@ -163,7 +163,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			job.schedule();
 		}
 	};
-
+	
 	private ArrayList<CommandExecutionInfoItem> getElements(int pageNumber,ArrayList<CommandExecutionInfoItem> listItems){
 		ArrayList<CommandExecutionInfoItem> list = new ArrayList<>();
 		for(int i = (50*pageNumber)-50;i<(50*pageNumber);i++){
