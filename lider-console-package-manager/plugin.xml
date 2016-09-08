@@ -278,5 +278,15 @@
            		</command>
 		</menuContribution>
   </extension>
-  	
+  <!-- Add extension point contribution for i18n messages -->
+  	<extension
+         point="tr.org.liderahenk.liderconsole.core.i18n">
+         <task code="PACKAGE_SOURCES" label="%command.task" />
+         <task code="PACKAGE_MANAGEMENT" label="%command.package.task" />
+         <task code="GET_EXECUTION_INFO" label="%command.getExecutionInfo.task" />
+         <task code="PACKAGES" label="%command.addremovepackage.task" />
+         <task code="PACKAGE_ARCHIVE" label="%command.packagearchive.task" />
+         <task code="CHECK_PACKAGE" label="%command.checkpackage.task" />
+        <plugin name="package-manager" label="%plugin.label" />
+     </extension>
 </plugin>

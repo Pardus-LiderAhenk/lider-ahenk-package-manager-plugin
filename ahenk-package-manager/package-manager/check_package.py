@@ -29,7 +29,7 @@ class CheckPackage(AbstractPlugin):
 
             if data[0] == 'Version':  # Package is installed
                 if package_version is None or len(package_version) == 0:
-                    result = 'Paket yüklü; fakat başka bir versiyonla'
+                    result = 'Paket yüklü'
                     res['version'] = data[1]
                 elif data[1] is not None and (package_version + '\n') in data[
                     1]:  # Package version is the same with wanted version
