@@ -1,6 +1,5 @@
 package tr.org.liderahenk.packagemanager.dialogs;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -19,6 +18,8 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -28,6 +29,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Widget;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
@@ -47,6 +49,7 @@ import tr.org.liderahenk.packagemanager.model.PackageInfo;
 public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 	private Composite composite;
+	private Composite buttonsComposite;
 	private TableViewer tableViewer;
 	private Label lblCommand;
 	private Text txtCommand;
@@ -122,9 +125,16 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 											if (listItems == null) {
 												listItems = new ArrayList<>();
 											}
-											listItems.addAll(items);
-											tableViewer.setInput(listItems);
-											tableViewer.refresh();
+											
+											if(listItems.size() > 50){
+												createPageButtons(listItems.size());
+												tableViewer.setInput(getElements(1,listItems));
+												tableViewer.refresh();
+											}
+											else{
+												tableViewer.setInput(listItems);
+												tableViewer.refresh();
+											}
 										}
 									}else{
 										tableViewer.setInput(null);
@@ -153,6 +163,44 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			job.schedule();
 		}
 	};
+
+	private ArrayList<CommandExecutionInfoItem> getElements(int pageNumber,ArrayList<CommandExecutionInfoItem> listItems){
+		ArrayList<CommandExecutionInfoItem> list = new ArrayList<>();
+		for(int i = (50*pageNumber)-50;i<(50*pageNumber);i++){
+			if(listItems.size() > i)
+				list.add(listItems.get(i));
+		}
+		return list;
+	}
+	
+	private void createPageButtons(int size){
+		int buttonNumber = size/50;
+		Control[] children = buttonsComposite.getChildren();
+		for (Control control : children) {
+			control.dispose();
+		}
+		
+		for (int i=0; i <= buttonNumber; i++) {
+			Button btnPage = createButton(buttonsComposite, i+100, String.valueOf(i+1), false);
+			btnPage.addSelectionListener(new SelectionListener() {
+				
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					Button button =(Button) e.widget;
+					tableViewer.setInput(getElements(Integer.parseInt(button.getText()), listItems));
+					tableViewer.refresh();
+				}
+				
+				@Override
+				public void widgetDefaultSelected(SelectionEvent e) {
+				}
+			});
+		}
+		buttonsComposite.setLayout(new GridLayout(buttonNumber+1, false));
+		buttonsComposite.redraw();
+		buttonsComposite.pack(true);
+	}
+	
 	private void organizeResultList(ArrayList<CommandExecutionInfoItem> items, CommandExecutionInfoItem item,
 			ArrayList<PackageInfo> commandPackageInfo) {
 		boolean isExist = false;
@@ -160,8 +208,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			if (items.get(i).getAgentId().equals(item.getAgentId())
 					&& items.get(i).getCommand().equals(item.getCommand())
 					&& items.get(i).getUser().equals(item.getUser())) {
-				Float processTime = (float) (Math.round((items.get(i).getProcessTime() + item.getProcessTime())* 100.0) / 100.0);
-				items.get(i).setProcessTime(processTime);
+				items.get(i).setProcessTime(items.get(i).getProcessTime() + item.getProcessTime());
 				items.get(i).setProcessCount(items.get(i).getProcessCount() + 1);
 				setPackageInfo(items.get(i), commandPackageInfo);
 				isExist = true;
@@ -191,10 +238,13 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 	@Override
 	public Control createTaskDialogArea(Composite parent) {
 
-		composite = new Composite(parent, SWT.NONE);
-		composite.setLayout(new GridLayout(1, false));
 		GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gData.widthHint = 1650;
+		gData.heightHint = 800;
+		parent.setLayoutData(gData);
+		
+		composite = new Composite(parent, SWT.NONE);
+		composite.setLayout(new GridLayout(1, false));
 		composite.setLayoutData(gData);
 
 		Composite infoComposite = new Composite(composite, SWT.NONE);
@@ -218,9 +268,19 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 
 		Label commandUsageDescription = new Label(composite, SWT.NONE);
 		commandUsageDescription.setText(Messages.getString("COMMAND_USAGE_DESCRIPTION"));
+		
+		GridData tableGData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		tableGData.widthHint = 1650;
+		tableGData.heightHint = 540;
+		Composite tableComposite = new Composite(composite, SWT.NONE);
+		tableComposite.setLayout(new GridLayout(1, false));
+		tableComposite.setLayoutData(tableGData);
+		createTableArea(tableComposite);
 
-		createTableArea(composite);
-
+		buttonsComposite = new Composite(composite, SWT.NONE);
+		buttonsComposite.setLayout(new GridLayout(10, false));
+		buttonsComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
 		return null;
 	}
 
@@ -276,7 +336,6 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 			public void selectionChanged(SelectionChangedEvent event) {
 			}
 		});
-
 		tableViewer.refresh();
 	}
 
