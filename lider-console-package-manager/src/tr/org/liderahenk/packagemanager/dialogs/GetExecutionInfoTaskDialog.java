@@ -278,7 +278,7 @@ public class GetExecutionInfoTaskDialog extends DefaultTaskDialog {
 		createTableArea(tableComposite);
 
 		buttonsComposite = new Composite(composite, SWT.NONE);
-		buttonsComposite.setLayout(new GridLayout(10, false));
+		buttonsComposite.setLayout(new GridLayout(30, false));
 		buttonsComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		return null;
