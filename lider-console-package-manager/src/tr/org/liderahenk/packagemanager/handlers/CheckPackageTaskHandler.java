@@ -11,7 +11,7 @@ public class CheckPackageTaskHandler extends MultipleSelectionHandler {
 
 	@Override
 	public void executeWithDNSet(Set<String> dnSet) {
-		CheckPackageTaskDialog dialog = new CheckPackageTaskDialog(Display.getDefault().getActiveShell(), dnSet);
+		CheckPackageTaskDialog dialog = new CheckPackageTaskDialog(Display.getDefault().getActiveShell(), dnSet, true);
 		dialog.create();
 		dialog.openWithEventBroker();
 	}

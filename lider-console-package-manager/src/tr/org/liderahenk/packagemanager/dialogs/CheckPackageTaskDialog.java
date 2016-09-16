@@ -65,8 +65,8 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(CheckPackageTaskDialog.class);
 
-	public CheckPackageTaskDialog(Shell parentShell, Set<String> dnSet) {
-		super(parentShell, dnSet);
+	public CheckPackageTaskDialog(Shell parentShell, Set<String> dnSet,boolean activationDate) {
+		super(parentShell, dnSet, activationDate);
 		subscribeEventHandler(eventHandler);
 	}
 
@@ -337,6 +337,7 @@ public class CheckPackageTaskDialog extends DefaultTaskDialog {
 		});
 
 		TableViewerColumn versionColumn = SWTResourceManager.createTableViewerColumn(viewer, titles[1], 200);
+		versionColumn.getColumn().setAlignment(SWT.LEFT);
 		versionColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
