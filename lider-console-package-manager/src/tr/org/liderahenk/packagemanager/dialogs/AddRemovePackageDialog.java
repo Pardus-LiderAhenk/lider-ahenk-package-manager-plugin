@@ -478,7 +478,7 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 							resultSet.addAll(items);
 						else {
 							Notifier.error("",
-									"Depo ayrıştırılırken hata ile karşılaşıldı.Depo alanının doğruluğundan emin olunuz");
+									Messages.getString("ERROR_WHILE_PARSING_REPO_WARNNG"));
 						}
 					}
 				}
