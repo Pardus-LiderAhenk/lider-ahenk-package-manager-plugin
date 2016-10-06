@@ -15,30 +15,30 @@ class Init(AbstractPlugin):
             if self.is_installed('chkconfig') is False:
                 result_code, result, error = self.install_with_apt_get('chkconfig')
                 if result_code != 0:
-                    self.logger.error('[PACKAGE MANAGER - INIT] Package chkconfig can not be installed')
+                    self.logger.error('Package chkconfig can not be installed')
                 else:
                     self.logger.debug("[PACKAGE MANAGER -INIT] Package chkconfig installed successfully")
             if self.is_installed('acct') is False:
                 result_code, result, error = self.install_with_apt_get('acct')
                 if result_code != 0:
-                    self.logger.error("[PACKAGE MANAGER - INIT] Package acct can not be installed")
+                    self.logger.error("Package acct can not be installed")
                 else:
-                    self.logger.debug("[PACKAGE MANAGER - INIT] Package acct installed successfully")
+                    self.logger.debug("Package acct installed successfully")
         except Exception as e:
-            self.logger.error('[PACKAGE MANAGER - INIT] Error while installing chkconfig and acct packages. Error message : {0}'.format(str(e)))
+            self.logger.error('Error while installing chkconfig and acct packages. Error message : {0}'.format(str(e)))
         result_code, result, error = self.execute('chkconfig acct on')
         try:
             if result_code == 0:
                 result_code, result, error = self.execute('/etc/init.d/acct start')
                 if result_code == 0:
-                    self.logger.debug('[PACKAGE MANAGER - INIT] acct service started successfully')
+                    self.logger.debug('acct service started successfully')
                 else:
                     self.logger.error(
-                        '[PACKAGE MANAGER - INIT] acct service could not be started - Error while executing /etc/init.d/acct start command')
+                        'acct service could not be started - Error while executing /etc/init.d/acct start command')
             else:
-                self.logger.error('[PACKAGE MANAGER - INIT] chkconfig acct on command could not executed')
+                self.logger.error('chkconfig acct on command could not executed')
         except Exception as e:
-            self.logger.error('[PACKAGE MANAGER - INIT] Error while starting acct service. Error message : {0}'.format(str(e)))
+            self.logger.error('Error while starting acct service. Error message : {0}'.format(str(e)))
 
 
 def handle_mode(context):

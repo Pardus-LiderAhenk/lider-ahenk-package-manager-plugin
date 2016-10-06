@@ -32,28 +32,28 @@ class Packages(AbstractPlugin):
                         ## REPO ADD / CHECK
 
                         self.logger.debug(
-                            "[PACKAGES] Checking source {0}".format(item['source']))
+                            "Checking source {0}".format(item['source']))
 
                         if self.is_repo_exist(source):
-                            self.logger.debug('[PACKAGES] {0} Source already exists'.format(source))
+                            self.logger.debug('{0} Source already exists'.format(source))
                         else:
-                            self.logger.debug('[PACKAGES] Source adding...')
+                            self.logger.debug('Source adding...')
                             try:
                                 self.add_source(source)
                             except Exception as e:
-                                self.logger.error('[PACKAGES] Source could not added')
+                                self.logger.error('Source could not added')
                                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                              message='{0}\n Kaynaklar eklenmeye çalışırken hata oluştu. Hata Mesajı:{1}'.format(
                                                                  cn, str(e)))
                                 return
 
-                            self.logger.debug('[PACKAGES] {0} Source added'.format(source))
+                            self.logger.debug('{0} Source added'.format(source))
 
                             return_code_update, result_update, error_update = self.execute('apt-get update')
                             if return_code_update == 0:
-                                self.logger.debug('[PACKAGES] Packages were updated')
+                                self.logger.debug('Packages were updated')
                             else:
-                                self.logger.error('[PACKAGES] Packages could not updated')
+                                self.logger.error('Packages could not updated')
                                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                              message='{0}\n Kaynaklar güncellenmeye çalışırken hata oluştu. Hata Mesajı: {1}'.format(
                                                                  cn, str(error_update)))
@@ -63,16 +63,16 @@ class Packages(AbstractPlugin):
 
                         if item['tag'] == 'Yükle' or item['tag'] == 'Install':
                             self.logger.debug(
-                                "[PACKAGES] Installing new package... {0}".format(item['packageName']))
+                                "Installing new package... {0}".format(item['packageName']))
                             result_code, p_result, p_err = self.install_with_apt_get(item['packageName'],
                                                                                      item['version'])
                             if result_code == 0:
                                 self.logger.debug(
-                                    "[PACKAGES] Package installed : {0}={1}".format(item['packageName'],
-                                                                                    item['version']))
+                                    "Package installed : {0}={1}".format(item['packageName'],
+                                                                         item['version']))
                             else:
                                 self.logger.error(
-                                    "[PACKAGES] Package could not be installed : {0}={1} "
+                                    "Package could not be installed : {0}={1} "
                                     ". Error Message:{2}".format(
                                         item['packageName'], item['version'], str(p_err)))
                                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
@@ -86,11 +86,11 @@ class Packages(AbstractPlugin):
 
                             if result_code == 0:
                                 self.logger.debug(
-                                    "[PACKAGES] Package installed : {0}={1}".format(item['packageName'],
-                                                                                    item['version']))
+                                    "Package installed : {0}={1}".format(item['packageName'],
+                                                                         item['version']))
                             else:
                                 self.logger.error(
-                                    "[PACKAGES] Package could not be installed : {0}={1}".format(
+                                    "Package could not be installed : {0}={1}".format(
                                         item['packageName'],
                                         item['version']))
                                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
@@ -98,17 +98,17 @@ class Packages(AbstractPlugin):
                                                                      'hata oluştu. Hata Mesajı: {1}'.format(
                                                                  cn, str(p_err)))
                 except Exception as e:
-                    self.logger.error('[PACKAGES] Unpredictable error exists. Error Message: {0}'.format(str(e)))
+                    self.logger.error('Unpredictable error exists. Error Message: {0}'.format(str(e)))
                     self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                  message='{0}.\nÖngörülemeyen bir hata oluştu.Hata mesajı:{1}'.format(
                                                      cn, str(e)))
                     return
 
-            self.logger.debug('[PACKAGES] Task handled successfully')
+            self.logger.debug('Task handled successfully')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='{0}\nTüm paket işlemleri başarıyla çalıştırıldı'.format(cn))
         except Exception as e:
-            self.logger.error('[PACKAGES] Unpredictable error exists. Error Message: {0}'.format(str(e)))
+            self.logger.error('Unpredictable error exists. Error Message: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='{0}\nGörev çalıştırılırken beklenmedik bir hata oluştu. Hata Mesajı: {1}'.format(
                                              cn,

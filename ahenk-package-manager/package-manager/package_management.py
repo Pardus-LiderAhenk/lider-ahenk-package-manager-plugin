@@ -27,14 +27,14 @@ class PackageManagement(AbstractPlugin):
 
                 # Install package
                 if item['tag'] == 'i':
-                    self.logger.debug("[PACKAGE MANAGER] Installing package: {0}".format(item['packageName']))
+                    self.logger.debug("Installing package: {0}".format(item['packageName']))
                     try:
                         result_code, p_result, p_err = self.install_with_apt_get(item['packageName'], item['version'])
                         if result_code == 0:
-                            self.logger.debug("[PACKAGE MANAGER] Installed package: {0}".format(item['packageName']))
+                            self.logger.debug("Installed package: {0}".format(item['packageName']))
                             installed_packages += ' ' + item['packageName']
                         else:
-                            self.logger.debug("[PACKAGE MANAGER] Couldnt Installed package: {0}".format(item['packageName']))
+                            self.logger.debug("Couldnt Installed package: {0}".format(item['packageName']))
                             failed_packages += ' ' + item['packageName']
 
                     except Exception as e1:
@@ -43,15 +43,15 @@ class PackageManagement(AbstractPlugin):
 
                 # Uninstall package
                 elif item['tag'] == 'u':
-                    self.logger.debug("[PACKAGE MANAGER] Uninstalling package: {0}".format(item['packageName']))
+                    self.logger.debug("Uninstalling package: {0}".format(item['packageName']))
                     try:
                         result_code, p_result, p_err = self.uninstall_package(item['packageName'], item['version'])
                         if result_code == 0:
-                            self.logger.debug("[PACKAGE MANAGER] Uninstalled package: {0}".format(item['packageName']))
+                            self.logger.debug("Uninstalled package: {0}".format(item['packageName']))
                             uninstalled_packages += ' ' + item['packageName']
                         else:
                             self.logger.debug(
-                                "[PACKAGE MANAGER] Couldnt Uninstalled package: {0}".format(item['packageName']))
+                                "Couldnt Uninstalled package: {0}".format(item['packageName']))
                             failed_packages += ' ' + item['packageName']
                     except Exception as e2:
                         self.logger.error(str(e2))

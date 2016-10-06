@@ -45,11 +45,12 @@ class CheckPackage(AbstractPlugin):
             res["dn"] = dn
             res["res"] = result
 
-            self.logger.debug("[PACKAGE MANAGER] Result is: - {}".format(result))
+            self.logger.debug("Result is: - {}".format(result))
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='{0} - {1}'.format(package_name, result),
-                                         data=json.dumps(res), content_type=self.get_content_type().APPLICATION_JSON.value)
-            self.logger.debug("[PACKAGE MANAGER] Package Info has sent")
+                                         data=json.dumps(res),
+                                         content_type=self.get_content_type().APPLICATION_JSON.value)
+            self.logger.debug("Package Info has sent")
         except Exception as e:
             self.logger.debug(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,

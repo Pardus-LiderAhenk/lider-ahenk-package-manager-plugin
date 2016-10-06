@@ -19,21 +19,21 @@ class GetExecutionInfo(AbstractPlugin):
         self.version_list = []
         self.result_message = ''
         self.commands = []
-        self.logger.debug('[PACKAGE MANAGER] Execution info initialized')
+        self.logger.debug('Execution info initialized')
         self.temp_file_name = str(self.generate_uuid())
         self.file_path = '{0}{1}'.format(str(self.Ahenk.received_dir_path()), self.temp_file_name)
         self.isRecordExist = 1
 
     def handle_task(self):
 
-        self.logger.debug('[PACKAGE MANAGER] Task handling')
+        self.logger.debug('Task handling')
         try:
             result_record_number = None
             commands = self.data['command']
             user = self.data['user']
             is_strict_match = self.data['isStrictMatch']
             self.create_file(self.file_path)
-            #if commands fields is not empty
+            # if commands fields is not empty
             if commands:
                 if is_strict_match is False:
                     lastcomm_command = 'lastcomm '
@@ -60,7 +60,7 @@ class GetExecutionInfo(AbstractPlugin):
                         self.logger.debug(
                             '[ PACKAGE MANAGER - GET_EXECUTION_INFO] {0} command is executed'.format(lastcomm_command))
                         result_record_number = self.check_output(result_code)
-            #if command does not exist and user is exist
+            # if command does not exist and user is exist
             elif user:
                 lastcomm_command = 'lastcomm --user {0} '.format(user)
                 if is_strict_match is True:
@@ -73,7 +73,7 @@ class GetExecutionInfo(AbstractPlugin):
                         lastcomm_command, result_code) + ' > /tmp/result.txt')
                 result_record_number = self.check_output(result_code)
 
-            #Record not found
+            # Record not found
             if result_record_number is None:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='İstenilene uygun veri bulunamadı')
@@ -87,16 +87,16 @@ class GetExecutionInfo(AbstractPlugin):
                 self.execute('echo "}" >> ' + self.file_path)
                 data = {}
                 md5sum = self.get_md5_file(str(self.file_path))
-                self.logger.debug('[PACKAGE MANAGER] {0} renaming to {1}'.format(self.temp_file_name, md5sum))
+                self.logger.debug('{0} renaming to {1}'.format(self.temp_file_name, md5sum))
                 self.rename_file(self.file_path, self.Ahenk.received_dir_path() + '/' + md5sum)
-                self.logger.debug('[PACKAGE MANAGER] Renamed.')
+                self.logger.debug('Renamed.')
                 data['md5'] = md5sum
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                              message='Uygulama çalıştırma bilgileri başarıyla sisteme geçirildi.',
                                              data=json.dumps(data),
                                              content_type=self.get_content_type().TEXT_PLAIN.value)
-                self.logger.debug("[PACKAGE MANAGER] Execution Info fetched succesfully. ")
-                self.logger.debug("[PACKAGE MANAGER] Execution Info has sent")
+                self.logger.debug("Execution Info fetched succesfully. ")
+                self.logger.debug("Execution Info has sent")
             else:
                 raise Exception('File not found on this path: {}'.format(self.file_path))
 
@@ -118,7 +118,8 @@ class GetExecutionInfo(AbstractPlugin):
                     command))
             result_code, result, p_err = self.execute('whereis {0}'.format(command))
             self.logger.debug('result:{}'.format(result))
-            if result_code == 0 and "komut yok" not in result and len(result.split(':')) >= 2 and result[len(result) - 2] != ':':
+            if result_code == 0 and "komut yok" not in result and len(result.split(':')) >= 2 and result[
+                        len(result) - 2] != ':':
                 self.logger.debug('SON HARF' + str(result[len(result) - 2]))
                 result = result.split(':')[1]
                 if result.split() is None or len(result.split()) == 0:
@@ -129,12 +130,12 @@ class GetExecutionInfo(AbstractPlugin):
                         self.execute('echo , >> ' + self.file_path)
                     self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command installed place is found')
 
-
                     self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Result = {0}'.format(str(result)))
                     result = result.split()
                     self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Result split= {0}'.format(str(result)))
-                    result=result[0]
-                    self.logger.debug('[ PACKAGE MANAGER - GET_EXECUTION_INFO] Result split 0 = {0}'.format(str(result)))
+                    result = result[0]
+                    self.logger.debug(
+                        '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Result split 0 = {0}'.format(str(result)))
 
                     result_code, result, p_err = self.execute('dpkg-query -S {0}'.format(result))
                     if result_code == 0:  # Command exists
@@ -142,11 +143,12 @@ class GetExecutionInfo(AbstractPlugin):
                             '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is found')
                         result = result.split(': ')[0]
                         result_code, p_result, p_err = self.execute('dpkg -s {0} | grep Version'.format(result))
-                        if result_code == 0 :
+                        if result_code == 0:
                             res = p_result.splitlines()
                             self.logger.debug(
                                 '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is found')
-                            t_command='echo "{ \\"c\\": \\"' + command + '\\", \\"p\\": \\"' + result + '\\", \\"v\\":\\"' + res[0].split(': ')[1] + '\\"}" >> ' + self.file_path
+                            t_command = 'echo "{ \\"c\\": \\"' + command + '\\", \\"p\\": \\"' + result + '\\", \\"v\\":\\"' + \
+                                        res[0].split(': ')[1] + '\\"}" >> ' + self.file_path
                             self.logger.debug(
                                 '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command is : {0}'.format(t_command))
                             self.execute(t_command)
@@ -158,7 +160,7 @@ class GetExecutionInfo(AbstractPlugin):
                                 '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package version is not found')
                             self.result_message += 'Command\'s related package version could not be parsed(Deb : {0}).'.format(
                                 result)
-                            t_command='echo "{ \\"c\\": \\"' + command + '\\", \\"p\\": \\"' + result + '\\", \\"v\\":\\" - \\"}" >> ' + self.file_path
+                            t_command = 'echo "{ \\"c\\": \\"' + command + '\\", \\"p\\": \\"' + result + '\\", \\"v\\":\\" - \\"}" >> ' + self.file_path
                             self.logger.debug(
                                 '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command is : {0}'.format(t_command))
                             self.execute(t_command)
@@ -170,7 +172,7 @@ class GetExecutionInfo(AbstractPlugin):
                             '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command related package name is not found')
                         self.result_message += 'Command\'s related package could not be found(Command : {0})'.format(
                             result)
-                        t_command='echo "{ \\"c\\": \\"' + command + '\\", \\"p\\": \\" - \\", \\"v\\":\\" - \\"}" >> ' + self.file_path
+                        t_command = 'echo "{ \\"c\\": \\"' + command + '\\", \\"p\\": \\" - \\", \\"v\\":\\" - \\"}" >> ' + self.file_path
                         self.logger.debug(
                             '[ PACKAGE MANAGER - GET_EXECUTION_INFO] Command is : {0}'.format(t_command))
                         self.execute(t_command)
