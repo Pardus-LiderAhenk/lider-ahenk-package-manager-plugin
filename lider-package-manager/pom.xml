@@ -100,7 +100,7 @@
 					<instructions>
 						<_removeheaders>Import-Service,Export-Service</_removeheaders>
 						<Bundle-SymbolicName>lider-package-manager</Bundle-SymbolicName>
-						<Bundle-Version>1.0.0</Bundle-Version>
+						<Bundle-Version>1.0.0-alfa</Bundle-Version>
 					</instructions>
 				</configuration>
 			</plugin>
