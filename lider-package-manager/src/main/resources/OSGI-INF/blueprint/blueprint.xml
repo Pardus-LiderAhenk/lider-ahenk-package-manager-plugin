@@ -90,11 +90,18 @@
 		<property name="pluginInfo" ref="pluginInfoImpl" />
 	</bean>
 	<!-- ICommand implementation is used to process a task execution -->
-	<service ref="CheckPackageCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<service ref="CheckPackageCommand">
+		<interfaces>
+			<value>tr.org.liderahenk.lider.core.api.plugin.ICommand</value>
+			<value>tr.org.liderahenk.lider.core.api.plugin.ITaskAwareCommand</value>
+		</interfaces>
+	</service>
 	<bean id="CheckPackageCommand"
 		class="tr.org.liderahenk.packagemanager.commands.CheckPackageCommand">
 		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
+		<property name="agentDao" ref="agentDaoImpl" />
+		<property name="entityFactory" ref="entityFactory" />
 	</bean>
 	<!-- ICommand implementation is used to process a task execution -->
 	<service ref="PackagesCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
@@ -146,4 +153,6 @@
 		interface="tr.org.liderahenk.lider.core.api.persistence.dao.ITaskDao" />
 	<reference id="commandDaoImpl"
 		interface="tr.org.liderahenk.lider.core.api.persistence.dao.ICommandDao" />
+	<reference id="entityFactory"
+		interface="tr.org.liderahenk.lider.core.api.persistence.factories.IEntityFactory" />
 </blueprint>
