@@ -5,7 +5,7 @@
 def info():
     inf = dict()
     inf['name'] = 'package-manager'
-    inf['version'] = '1.0.0'
+    inf['version'] = '1.0.0-beta'
     inf['support'] = 'debian'
     inf['description'] = 'General repository and package operations (like repo/package installing/uninstalling, searching repo/package...etc)'
     inf['task'] = True

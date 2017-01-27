@@ -1,4 +1,4 @@
-package-manager (1.0.0) unstable; urgency=low
+package-manager (1.0.0-beta) unstable; urgency=low
 
   * package-manager Plugin
 
