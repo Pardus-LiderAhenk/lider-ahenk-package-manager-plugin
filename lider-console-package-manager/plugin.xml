@@ -289,4 +289,38 @@
          <task code="CHECK_PACKAGE" label="%command.checkpackage.task" />
         <plugin name="package-manager" label="%plugin.label" />
      </extension>
+     
+     
+       	<!-- Add extension point contribution for "task execution" dialogs -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.taskmenu">
+  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask" />
+  	</extension>
+       	<!-- Add extension point contribution for "task execution" dialogs -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.taskmenu">
+  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask" />
+  	</extension>
+       	<!-- Add extension point contribution for "task execution" dialogs -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.taskmenu">
+  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackagesTask" />
+  	</extension>
+       	<!-- Add extension point contribution for "task execution" dialogs -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.taskmenu">
+  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask" />
+  	</extension>
+       	<!-- Add extension point contribution for "task execution" dialogs -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.taskmenu">
+  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask" />
+  	</extension>
+       	<!-- Add extension point contribution for "task execution" dialogs -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.taskmenu">
+  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask" />
+  	</extension>
+     
+     
 </plugin>
