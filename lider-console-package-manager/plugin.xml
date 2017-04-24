@@ -294,33 +294,39 @@
        	<!-- Add extension point contribution for "task execution" dialogs -->
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
-  		<taskItem label="%command.checkpackage.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask" selectionType="multi" description="Adı ve (isteğe bağlı olarak) sürüm bilgisi belirtilen paketin seçilmiş olan Ahenk/ler içerisinde yüklü olup olmadığı bilgisini tabloda kullanıcıya sunar.&#xA;Paket kontrolü yapmak için tıklayınız..." />
+  		<taskItem label="%command.checkpackage.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask" selectionType="multi" description="Adı ve (isteğe bağlı olarak) sürüm bilgisi belirtilen paketin seçilmiş olan Ahenk/ler içerisinde yüklü olup olmadığı bilgisini tabloda kullanıcıya sunar.&#xA;Paket kontrolü yapmak için tıklayınız..." 
+  		imagePath="package-managament.png"/>
   	</extension>
        	<!-- Add extension point contribution for "task execution" dialogs -->
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
-  		<taskItem label="%command.packagearchive.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask" description="Bir Ahenk makine için çalışan bu görev, ‘Paket Adı’ bölümüne girilen paket ismini içeren paketlerin yüklenme, güncellenme, kurulum zamanı bilgilerini kullanıcıya sunar." />
+  		<taskItem label="%command.packagearchive.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask" description="Bir Ahenk makine için çalışan bu görev, ‘Paket Adı’ bölümüne girilen paket ismini içeren paketlerin yüklenme, güncellenme, kurulum zamanı bilgilerini kullanıcıya sunar." 
+  		imagePath="package-managament.png"/>
   	</extension>
        	<!-- Add extension point contribution for "task execution" dialogs -->
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
-  		<taskItem label="%command.addremovepackage.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackagesTask" selectionType="multi" description="Belirtilen bir ya da daha fazla deponun içeriğindeki paketleri listeler. Listelenen bu paketler arasından bir ya da daha çok paket şeçilip yükleme/kaldırma işlemleri yapılabilir.&#xA;Paket ve Depo yönetimi için tıklayınız..." />
+  		<taskItem label="%command.addremovepackage.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackagesTask" selectionType="multi" description="Belirtilen bir ya da daha fazla deponun içeriğindeki paketleri listeler. Listelenen bu paketler arasından bir ya da daha çok paket şeçilip yükleme/kaldırma işlemleri yapılabilir.&#xA;Paket ve Depo yönetimi için tıklayınız..." 
+  		imagePath="package-managament.png"/>
   	</extension>
        	<!-- Add extension point contribution for "task execution" dialogs -->
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
-  		<taskItem label="%command.package.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask" description="Bir Ahenk makine için çalışan bu görev, makinedeki tüm paketleri, yüklü olup olmadığı bilgisiyle kullanıcıya sunar. Kulanıcı buradan istenen durum bilgisini değiştirerek her bir paket için yükleme ve kaldırma işlemi yapabilmektedir.&#xA;Paket yüklemek/kaldırmak için tıklayınız.." />
+  		<taskItem label="%command.package.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTask" description="Bir Ahenk makine için çalışan bu görev, makinedeki tüm paketleri, yüklü olup olmadığı bilgisiyle kullanıcıya sunar. Kulanıcı buradan istenen durum bilgisini değiştirerek her bir paket için yükleme ve kaldırma işlemi yapabilmektedir.&#xA;Paket yüklemek/kaldırmak için tıklayınız.." 
+  		imagePath="package-managament.png"/>
   	</extension>
        	<!-- Add extension point contribution for "task execution" dialogs -->
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
-  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask" description="Bir Ahenk makine için çalışan bu görev, makinede bulunan tüm depoların listelenmesini, varolan depoları düzenlemeyi, silmeyi veya yeni bir depo eklemeyi sağlamaktadır.&#xA;Paket depeolarını yönetimi için tıklayınız..  " />
+  		<taskItem label="%command.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask" description="Bir Ahenk makine için çalışan bu görev, makinede bulunan tüm depoların listelenmesini, varolan depoları düzenlemeyi, silmeyi veya yeni bir depo eklemeyi sağlamaktadır.&#xA;Paket depeolarını yönetimi için tıklayınız..  " 
+  		imagePath="package-managament.png"/>
   	</extension>
        	<!-- Add extension point contribution for "task execution" dialogs -->
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
   		<taskItem label="%command.getExecutionInfo.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask" selectionType="multi" description="Birçok Ahenk makinede aynı anda çalışabilen bu görev, belirli bir kullanıcı ya da komut için kac kere işletildiği bilgisi, işletim tarihleri, işletim süreleri gibi bilgileri tabloda sunan ve aynı zamanda ileride raporunu alabilmek adına bu bilgileri, eş zamanlı olarak, veri tabanına kaydeden
-görevdir.&#xA;Uygulama çalıştırma istatistikleri için tıklayınız.." />
+görevdir.&#xA;Uygulama çalıştırma istatistikleri için tıklayınız.." 
+       imagePath="package-managament.png"/>
   	</extension>
      
      
