@@ -37,6 +37,11 @@
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
             id="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"            
             name="%command.getExecutionInfo.task">
+      </command>
+    <command
+            categoryId="tr.org.liderahenk.liderconsole.commands.category"
+            id="tr.org.liderahenk.liderconsole.commands.PackageManagerTaskList"            
+            name="%editor.package.manager">
       </command>    
    </extension>
    
@@ -66,10 +71,26 @@
             class="tr.org.liderahenk.packagemanager.handlers.CheckPackageTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.CheckPackageTask">
       </handler>
+      	<!-- Editor handler -->
+       <handler
+            class="tr.org.liderahenk.packagemanager.handlers.PackageManagerTaskListHandler"
+            commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTaskList">
+      </handler>
   </extension>
   
   <extension
          point="org.eclipse.ui.menus">
+         
+         
+      <menuContribution
+            locationURI="menu:tr.org.liderahenk.liderconsole.menus.LiderMain?after=additions">
+  		<command
+           	  commandId="tr.org.liderahenk.liderconsole.commands.PackageManagerTaskList"
+	          id="tr.org.liderahenk.liderconsole.commands.PackageManagerTaskList"
+	          icon="icons/16/package-managament.png"
+	          tooltip="%editor.package.manager">
+        </command>
+    </menuContribution>
          
 		<menuContribution
 			locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
@@ -329,5 +350,14 @@ görevdir.&#xA;Uygulama çalıştırma istatistikleri için tıklayınız.."
        imagePath="package-managament.png"/>
   	</extension>
      
+     	<extension
+		point="org.eclipse.ui.editors">
+		<editor
+		    class="tr.org.liderahenk.packagemanager.editors.PackageManagerTaskListEditor"
+		    icon="icons/16/package-managament.png"
+		    id="tr.org.liderahenk.packagemanager.editors.PackageManagerTaskListEditor"
+		    name="%editor.package.manager">
+	    </editor>
+	</extension>
      
 </plugin>
