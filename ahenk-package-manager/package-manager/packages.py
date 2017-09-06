@@ -106,7 +106,7 @@ class Packages(AbstractPlugin):
 
             self.logger.debug('Task handled successfully')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='{0}\nTüm paket işlemleri başarıyla çalıştırıldı'.format(cn))
+                                         message='{0} ahenginde, {1} paketi({2}) {3} işlemi başarı ile gerçekleştirildi.'.format(cn,item['packageName'], item['version'], item['tag']))
         except Exception as e:
             self.logger.error('Unpredictable error exists. Error Message: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
