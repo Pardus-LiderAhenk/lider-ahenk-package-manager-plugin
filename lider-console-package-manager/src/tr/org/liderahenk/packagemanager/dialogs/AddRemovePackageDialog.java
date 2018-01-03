@@ -174,8 +174,8 @@ public class AddRemovePackageDialog extends DefaultTaskDialog {
 		packageComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		createPackageEntry(packageComposite);
-		txtUrl.setText("http://depo.pardus.org.tr/pardus-yenikusak/");
-		txtComponents.setText("yenikusak main contrib non-free");
+		txtUrl.setText("http://depo.pardus.org.tr/pardus/");
+		txtComponents.setText("onyedi main contrib non-free");
 
 		btnAddRep = new Button(packageComposite, SWT.NONE);
 		btnAddRep.setImage(
