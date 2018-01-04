@@ -125,7 +125,7 @@ class Packages(AbstractPlugin):
         return False
 
     def add_source(self, source):
-        self.write_file('/etc/apt/sources.list.d/ahenk.list', source, 'a+')
+        self.write_file('/etc/apt/sources.list.d/ahenk.list', source+'\n', 'a+')
 
 
 def handle_task(task, context):
