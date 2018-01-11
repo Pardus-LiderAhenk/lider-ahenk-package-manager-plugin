@@ -1,4 +1,4 @@
-package-manager (1.0.0) unstable; urgency=low
+ahenk-package-manager (1.0.0) unstable; urgency=low
 
   * package-manager Plugin
 
