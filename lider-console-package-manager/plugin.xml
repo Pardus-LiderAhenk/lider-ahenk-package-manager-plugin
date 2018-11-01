@@ -15,11 +15,6 @@
       </command>    
       <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
-            id="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask"            
-            name="%command.packagearchive.task">
-      </command>    
-      <command
-            categoryId="tr.org.liderahenk.liderconsole.commands.category"
             id="tr.org.liderahenk.liderconsole.commands.PackagesTask"            
             name="%command.addremovepackage.task">
       </command>     
@@ -33,11 +28,18 @@
             id="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask"            
             name="%command.task">
       </command>
+      <!--
       <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
             id="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask"            
             name="%command.getExecutionInfo.task">
       </command>
+      <command
+            categoryId="tr.org.liderahenk.liderconsole.commands.category"
+            id="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask"            
+            name="%command.packagearchive.task">
+      </command>
+      -->
     <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
             id="tr.org.liderahenk.liderconsole.commands.PackageManagerTaskList"            
@@ -47,6 +49,7 @@
    
 	<extension
        point="org.eclipse.ui.handlers">
+       <!--
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageArchiveTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask">
@@ -55,6 +58,7 @@
             class="tr.org.liderahenk.packagemanager.handlers.GetExecutionInfoTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask">
       </handler>
+      -->
        <handler
             class="tr.org.liderahenk.packagemanager.handlers.PackageSourcesTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.PackageSourcesTask">
@@ -136,6 +140,7 @@
 		
          
 	<!-- Add extension point contribution for "task execution" dialogs -->
+	<!--
 	<menuContribution
       		allPopups="false"
             locationURI="popup:tr.org.liderahenk.liderconsole.menus.PackageManager?after=additions">
@@ -167,6 +172,7 @@
 					</visibleWhen>
            		</command>
 		</menuContribution>
+		-->
       	<!-- Add extension point contribution for "task execution" dialogs -->
 		<menuContribution
       		allPopups="false"
@@ -304,9 +310,9 @@
          point="tr.org.liderahenk.liderconsole.core.i18n">
          <task code="PACKAGE_SOURCES" label="%command.task" />
          <task code="PACKAGE_MANAGEMENT" label="%command.package.task" />
-         <task code="GET_EXECUTION_INFO" label="%command.getExecutionInfo.task" />
+         <!--<task code="GET_EXECUTION_INFO" label="%command.getExecutionInfo.task" />-->
          <task code="PACKAGES" label="%command.addremovepackage.task" />
-         <task code="PACKAGE_ARCHIVE" label="%command.packagearchive.task" />
+         <!--<task code="PACKAGE_ARCHIVE" label="%command.packagearchive.task" />-->
          <task code="CHECK_PACKAGE" label="%command.checkpackage.task" />
         <plugin name="package-manager" label="%plugin.label" />
      </extension>
@@ -319,11 +325,13 @@
   		imagePath="package-managament.png"/>
   	</extension>
        	<!-- Add extension point contribution for "task execution" dialogs -->
+    <!--
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
   		<taskItem label="%command.packagearchive.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.PackageArchiveTask" description="Bir Ahenk makine için çalışan bu görev, ‘Paket Adı’ bölümüne girilen paket ismini içeren paketlerin yüklenme, güncellenme, kurulum zamanı bilgilerini kullanıcıya sunar." 
   		imagePath="package-managament.png"/>
   	</extension>
+    -->
        	<!-- Add extension point contribution for "task execution" dialogs -->
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
@@ -343,13 +351,14 @@
   		imagePath="package-managament.png"/>
   	</extension>
        	<!-- Add extension point contribution for "task execution" dialogs -->
+    <!--
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
   		<taskItem label="%command.getExecutionInfo.task" pluginName="package-manager" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.GetExecutionInfoTask" selectionType="multi" description="Birçok Ahenk makinede aynı anda çalışabilen bu görev, belirli bir kullanıcı ya da komut için kac kere işletildiği bilgisi, işletim tarihleri, işletim süreleri gibi bilgileri tabloda sunan ve aynı zamanda ileride raporunu alabilmek adına bu bilgileri, eş zamanlı olarak, veri tabanına kaydeden
 görevdir.&#xA;Uygulama çalıştırma istatistikleri için tıklayınız.." 
        imagePath="package-managament.png"/>
   	</extension>
-     
+    -->
      	<extension
 		point="org.eclipse.ui.editors">
 		<editor

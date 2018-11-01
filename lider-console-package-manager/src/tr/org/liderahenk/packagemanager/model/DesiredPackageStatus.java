@@ -3,7 +3,7 @@ package tr.org.liderahenk.packagemanager.model;
 import tr.org.liderahenk.packagemanager.i18n.Messages;
 
 public enum DesiredPackageStatus {
-	INSTALL, UNINSTALL, NA;
+	UNINSTALL, NA;
 
 	/**
 	 * Provide i18n message representation of the enum type.

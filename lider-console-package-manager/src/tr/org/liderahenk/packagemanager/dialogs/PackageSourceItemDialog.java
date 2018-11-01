@@ -3,6 +3,7 @@ package tr.org.liderahenk.packagemanager.dialogs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -67,6 +68,7 @@ public class PackageSourceItemDialog extends DefaultLiderTitleAreaDialog {
 
 		if (item != null && item.getUrl() != null) {
 			txtUrl.setText(item.getUrl());
+			txtUrl.setEditable(false);
 		}
 
 		return composite;
@@ -80,6 +82,10 @@ public class PackageSourceItemDialog extends DefaultLiderTitleAreaDialog {
 
 		if (txtUrl.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("FILL_ALL_FIELDS"));
+			return;
+		}
+		else if(!txtUrl.getText().startsWith("deb ")) {
+			Notifier.error(null, Messages.getString("PACKAGE_ARCHIVE_ERROR"));
 			return;
 		}
 

@@ -284,7 +284,7 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 				if (packageInfo.getDesiredStatus() == DesiredPackageStatus.NA) {
 					continue;
 				}
-				packageInfo.setTag(packageInfo.getDesiredStatus() == DesiredPackageStatus.INSTALL ? "i" : "u");
+				packageInfo.setTag(packageInfo.getDesiredStatus() == DesiredPackageStatus.UNINSTALL ? "u" : "i");
 				selectedPackages.add(packageInfo);
 			}
 		}
@@ -387,7 +387,6 @@ public class PackageManagementTaskDialog extends DefaultTaskDialog {
 			job.schedule();
 		}
 	};
-
 	@Override
 	public String getCommandId() {
 		return "PACKAGE_MANAGEMENT";
