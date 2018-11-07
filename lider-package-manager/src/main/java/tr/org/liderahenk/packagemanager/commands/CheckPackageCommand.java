@@ -64,7 +64,7 @@ public class CheckPackageCommand implements ICommand, ITaskAwareCommand {
 				List<? extends IAgent> agents = agentDao.findByProperty(IAgent.class, "jid",
 						result.getCommandExecution().getUid(), 1);
 				IAgent agent = agents != null && !agents.isEmpty() ? agents.get(0) : null;
-				agent = entityFactory.createAgent(agent, agent.getPassword(), agent.getHostname(),
+				agent = entityFactory.createAgent(agent, null, agent.getPassword(), agent.getHostname(),
 						agent.getIpAddresses(), agent.getMacAddresses(), data);
 				agentDao.update(agent);
 			}
